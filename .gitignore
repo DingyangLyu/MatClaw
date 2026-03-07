@@ -39,3 +39,6 @@ groups/global/*
 agents-sdk-docs
 test*/
 cases/
+benchmarks/
+repo-tokens/
+docs/nanoclaw-*

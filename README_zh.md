@@ -224,20 +224,6 @@ MatClaw 支持任何 Anthropic 兼容 API。通过 stdin JSON 传入凭据：
 
 ## 测试
 
-MatClaw 包含完整的测试套件，验证所有计算引擎：
-
-```bash
-sudo bash test.sh        # 运行全部 6 项测试
-sudo bash test.sh 1      # 测试 1: Python + MACE 能量计算
-sudo bash test.sh 2      # 测试 2: Quantum ESPRESSO SCF
-sudo bash test.sh 3      # 测试 3: LAMMPS MD 模拟
-sudo bash test.sh 4      # 测试 4: RASPA3 蒙特卡洛
-sudo bash test.sh 5      # 测试 5: Python 包完整性
-sudo bash test.sh 6      # 测试 6: 端到端 Agent 任务
-```
-
-测试结果自动保存到 `test-logs/` 目录（带时间戳）。
-
 **最新测试结果（全部通过）：**
 
 | 测试 | 结果 | 详情 |
@@ -269,8 +255,6 @@ matclaw/
 │   └── skills/
 │       ├── materials-compute/  # 计算引擎文档
 │       └── agent-browser/      # 浏览器自动化
-├── test.sh                     # 6 项验证测试
-├── test-logs/                  # 带时间戳的测试结果
 └── groups/                     # 按组隔离的记忆
 ```
 

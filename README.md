@@ -169,7 +169,7 @@ The agent will:
 │  │                                                  │ │
 │  │  Computation Tools:                              │ │
 │  │  ┌─────────┐ ┌────────┐ ┌───────┐ ┌──────┐     │ │
-│  │  │ QE 7.5  │ │ LAMMPS │ │RASPA3 │ │ MACE │     │ │
+│  │  │ QE 7.5  │ │ LAMMPS │ │RASPA3 │ │ MLIP │     │ │
 │  │  └─────────┘ └────────┘ └───────┘ └──────┘     │ │
 │  │  ┌──────────────────────────────────────────┐   │ │
 │  │  │ Python: pymatgen, ASE, torch, numpy, …   │   │ │
@@ -220,20 +220,6 @@ MatClaw works with any Anthropic-compatible API. Pass credentials via stdin JSON
 
 ## Testing
 
-MatClaw includes a comprehensive test suite that validates all computation engines:
-
-```bash
-sudo bash test.sh        # Run all 6 tests
-sudo bash test.sh 1      # Test 1: Python + MACE energy calculation
-sudo bash test.sh 2      # Test 2: Quantum ESPRESSO SCF
-sudo bash test.sh 3      # Test 3: LAMMPS MD simulation
-sudo bash test.sh 4      # Test 4: RASPA3 Monte Carlo
-sudo bash test.sh 5      # Test 5: Python package integrity
-sudo bash test.sh 6      # Test 6: End-to-end agent task
-```
-
-Test results are saved to `test-logs/` with timestamps.
-
 **Latest test results (all passing):**
 
 | Test | Result | Detail |
@@ -265,8 +251,6 @@ matclaw/
 │   └── skills/
 │       ├── materials-compute/  # Computation engine documentation
 │       └── agent-browser/      # Browser automation
-├── test.sh                     # 6-test validation suite
-├── test-logs/                  # Timestamped test results
 └── groups/                     # Per-group isolated memory
 ```
 

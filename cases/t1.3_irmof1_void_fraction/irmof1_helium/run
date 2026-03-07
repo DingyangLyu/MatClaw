@@ -1,3 +1,0 @@
-#! /bin/sh -f
-export RASPA_DIR="/usr/share/raspa3"
-"/usr/bin/raspa3"
