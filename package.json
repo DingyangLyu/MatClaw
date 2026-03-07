@@ -16,6 +16,7 @@
     "setup": "tsx setup/index.ts",
     "auth": "tsx src/whatsapp-auth.ts",
     "auth:feishu": "tsx src/feishu-auth.ts",
+    "auth:dingtalk": "tsx src/dingtalk-auth.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -23,6 +24,7 @@
     "@larksuiteoapi/node-sdk": "^1.59.0",
     "better-sqlite3": "^11.8.1",
     "cron-parser": "^5.5.0",
+    "dingtalk-stream": "^2.1.4",
     "googleapis": "^144.0.0",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",

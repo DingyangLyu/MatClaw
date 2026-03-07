@@ -1,0 +1,20 @@
+skill: dingtalk
+version: 1.0.0
+description: "DingTalk Bot integration via Stream Mode (WebSocket)"
+core_version: 0.1.0
+adds:
+  - src/channels/dingtalk.ts
+  - src/dingtalk-auth.ts
+modifies:
+  - src/channels/index.ts
+structured:
+  npm_dependencies:
+    "dingtalk-stream": "^2.1.4"
+  npm_scripts:
+    "auth:dingtalk": "tsx src/dingtalk-auth.ts"
+  env_additions:
+    - DINGTALK_CLIENT_ID
+    - DINGTALK_CLIENT_SECRET
+conflicts: []
+depends: []
+test: "npx tsc --noEmit"

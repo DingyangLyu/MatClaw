@@ -6,11 +6,7 @@ import './dingtalk.js';
 
 // discord
 
-// feishu
-import './feishu.js';
-
 // gmail
-// import './gmail.js';
 
 // slack
 

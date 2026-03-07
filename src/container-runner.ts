@@ -136,13 +136,15 @@ function buildVolumeMounts(
   }
 
   // Sync skills from container/skills/ into each group's .claude/skills/
+  // Preserves nested group structure: each top-level directory (with SKILL.md
+  // index) is copied recursively. Agent discovers groups, then reads sub-skills.
   const skillsSrc = path.join(process.cwd(), 'container', 'skills');
   const skillsDst = path.join(groupSessionsDir, 'skills');
   if (fs.existsSync(skillsSrc)) {
-    for (const skillDir of fs.readdirSync(skillsSrc)) {
-      const srcDir = path.join(skillsSrc, skillDir);
+    for (const entry of fs.readdirSync(skillsSrc)) {
+      const srcDir = path.join(skillsSrc, entry);
       if (!fs.statSync(srcDir).isDirectory()) continue;
-      const dstDir = path.join(skillsDst, skillDir);
+      const dstDir = path.join(skillsDst, entry);
       fs.cpSync(srcDir, dstDir, { recursive: true });
     }
   }

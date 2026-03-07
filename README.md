@@ -17,7 +17,8 @@
 <p align="center">
   <img src="https://img.shields.io/badge/QE-7.5-4F46E5" alt="QE 7.5">&nbsp;
   <img src="https://img.shields.io/badge/LAMMPS-2021-7C3AED" alt="LAMMPS">&nbsp;
-  <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">
+  <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">&nbsp;
+  <img src="https://img.shields.io/badge/Skills-213-E11D48" alt="213 Skills">
 </p>
 
 ---
@@ -25,6 +26,7 @@
 ## Contents
 
 - [What is MatClaw?](#what-is-matclaw)
+- [Built-in Computation Skills](#built-in-computation-skills)
 - [Basic Usage](#basic-usage)
 - [Examples](#examples)
 - [Computation Stack](#computation-stack)
@@ -45,11 +47,67 @@ MatClaw is an **AI agent that autonomously performs materials science computatio
 **Key Features:**
 
 - **Autonomous computation** — Understands your task, writes code, executes it, analyzes output, retries on errors
+- **213 built-in computation skills** — 44 skill groups covering the full spectrum of computational materials science: electronic structure, phonons, mechanical properties, defects, optical/magnetic/topological properties, catalysis, batteries, phase diagrams, transport, spectroscopy, Monte Carlo, molecular dynamics, and more. Each skill contains complete runnable scripts, parameter guides, and method selection decision trees. See [Materials Compute Skills Reference](docs/materials-compute-skills.md) for the full inventory.
 - **All-in-one container** — QE 7.5, LAMMPS, RASPA3, MACE, pymatgen, ASE, PyTorch pre-installed and ready
 - **Secure isolation** — Every computation runs in a disposable Docker container with filesystem isolation
 - **Flexible LLM backend** — Works with Anthropic Claude, DeepSeek, or any Anthropic-compatible API
 - **Multi-channel access** — Chat via Feishu, Gmail, WhatsApp, Telegram, Discord, Slack (via [NanoClaw](https://github.com/qwibitai/nanoclaw) skill system)
 - **Extensible** — Conda/pip available inside container; agent can install additional packages on-the-fly
+
+## Built-in Computation Skills
+
+MatClaw ships with **213 SKILL.md files across 44 skill groups**, covering the full spectrum of computational materials science. Each skill contains complete runnable scripts, parameter guides, method selection decision trees, and troubleshooting tables — enabling the agent to autonomously execute any mainstream materials computation workflow.
+
+**44 groups / 169 sub-skills / 213 SKILL.md files**
+
+| # | Skill Group | Sub-Skills | Contents |
+|---|-------------|:----------:|----------|
+| 1 | **2d-materials** | 4 | band-edges, layer-manipulation, stacking-energy, vacuum-resize |
+| 2 | **advanced-electronic** | 5 | gw-approximation, hubbard-u, spin-orbit-coupling, topological-invariants, van-der-waals |
+| 3 | **agent-browser** | 0 | *(browser automation, non-computation)* |
+| 4 | **alloy-disorder** | 2 | cluster-expansion, sqs-generation |
+| 5 | **band-advanced** | 3 | 3d-band-structure, band-unfolding, hybrid-dft-bands |
+| 6 | **battery-electrode** | 2 | intercalation-voltage, ion-diffusion |
+| 7 | **biomolecular-md** | 1 | openmm-simulation |
+| 8 | **bonding-analysis** | 10 | bader2pqr, bader-charge, charge-density, charge-density-difference, charge-format-conversion, elf-analysis, lobster-cohp, orbital-projection, planar-charge, stm-simulation |
+| 9 | **catalysis-electrochem** | 5 | band-center, imaginary-freq-correction, neb-analysis, reaction-kinetics, thermal-corrections |
+| 10 | **catalyst-screening** | 3 | d-band-center, overpotential, scaling-relations |
+| 11 | **code-interfaces** | 5 | boltztrap-interface, ifc-analysis, phonopy-interface, vasp-qe-converter, wannier90-interface |
+| 12 | **defects-reactions** | 12 | adsorption-energy, configuration-coordinate, defect-thermodynamics, interstitial-defect, migration-barrier, neb-transition-state, point-defect, reaction-pathway, substitution-defect, surface-adsorption, surface-energy, vacancy-formation |
+| 13 | **dft-corrections** | 3 | hubbard-u, spin-orbit-coupling, vdw-correction |
+| 14 | **electronic-structure** | 8 | band-structure, convergence-testing, density-of-states, inverse-participation-ratio, projected-dos, scf-relax, spatially-resolved-dos, vasp-bands |
+| 15 | **electron-phonon** | 4 | deformation-potential, electronic-transport, elph-coupling, superconductivity |
+| 16 | **fermi-surface** | 3 | 2d-fermi-surface, 3d-fermi-surface, projected-fermi-surface |
+| 17 | **ferroelectric** | 5 | born-effective-charge, dielectric-tensor, ferroelectric-switching, piezoelectric, polarization |
+| 18 | **high-throughput** | 7 | batch-calculations, batch-screening, materials-filtering, matpes-dual-static, phase-stability, property-prediction, screening-workflow |
+| 19 | **interface** | 2 | grain-boundary, heterostructure |
+| 20 | **kpath-utilities** | 5 | 1d-kpath, 2d-kpath, bulk-kpath, cp2k-kpath, phonopy-kpath |
+| 21 | **magnetic-properties** | 3 | magnetic-anisotropy, magnetic-ordering, spin-polarized |
+| 22 | **materials-compute** | 0 | *(root skill: QE/LAMMPS/MACE environment reference)* |
+| 23 | **materials-databases** | 2 | 2d-semiconductors, materials-project |
+| 24 | **mechanical-properties** | 5 | angular-mechanics, elastic-constants, energy-strain-method, equation-of-state, stress-strain-method |
+| 25 | **mlip-guide** | 4 | mace-advanced, mlip-validation, torchsim-batch, universal-mlip |
+| 26 | **molecular-qchem** | 1 | gaussian-qchem-workflow |
+| 27 | **monte-carlo** | 5 | adsorption-isotherm, gas-adsorption, gas-separation, gcmc-simulation, pore-analysis |
+| 28 | **optical-properties** | 6 | absorption-spectrum, dielectric-function, joint-dos, optical-conductivity, slme, transition-dipole |
+| 29 | **phase-diagram** | 2 | convex-hull, pourbaix-diagram |
+| 30 | **phase-transition** | 4 | amorphous-structure, mpmorph-melting, order-parameter, phase-diagram |
+| 31 | **piezoelectric** | 1 | piezoelectric-tensor |
+| 32 | **potential-analysis** | 3 | macroscopic-average, planar-average, work-function |
+| 33 | **semiconductor-kit** | 4 | angular-effective-mass, band-gap, effective-mass, fermi-velocity |
+| 34 | **spectroscopy** | 2 | raman-ir, xas-xanes |
+| 35 | **spin-texture** | 2 | 2d-spin-texture, 3d-spin-texture |
+| 36 | **structure-models** | 8 | alloy-builder, defect-builder, heterostructure, moire-superlattice, nanowire-nanotube, quantum-dot, supercell-builder, surface-builder |
+| 37 | **structure-tools** | 7 | format-conversion, input-generation, pdf-analysis, structure-editing, structure-matching, symmetry-analysis, xrd-pattern |
+| 38 | **surface-energy** | 2 | surface-energy-calc, wulff-construction |
+| 39 | **thermal-properties** | 11 | anharmonicity, bond-distribution, gruneisen-qha, md-trajectory-tools, molecular-dynamics, msd-diffusion, phonon, phonon-from-outcar, rdf-analysis, thermal-conductivity, vacf-vdos |
+| 40 | **thermoconductivity** | 1 | lattice-thermal-conductivity |
+| 41 | **topological** | 2 | berry-curvature, z2-invariant |
+| 42 | **transport-properties** | 2 | boltzmann-transport, kpoints-transport |
+| 43 | **wannier-functions** | 1 | wannier90-workflow |
+| 44 | **wavefunction-analysis** | 2 | real-space-wavefunction, wavefunction-parity |
+
+> **Coverage**: electronic structure, mechanics, thermodynamics, phonons, defects, optics, magnetism, topology, catalysis, batteries, phase diagrams, ferroelectric/piezoelectric, transport, surfaces, interfaces, 2D materials, alloys, Monte Carlo, molecular dynamics, machine learning potentials, biomolecular simulation, quantum chemistry, and more. Verified against [atomate2](https://github.com/materialsproject/atomate2), [aiida-quantumespresso](https://github.com/aiidateam/aiida-quantumespresso), and [aiida-vasp](https://github.com/aiida-vasp/aiida-vasp) — all workflow capabilities are covered. See [Materials Compute Skills Reference](docs/materials-compute-skills.md) for detailed descriptions of each skill.
 
 ## Basic Usage
 
@@ -319,6 +377,14 @@ MatClaw is built on [NanoClaw](https://github.com/qwibitai/nanoclaw) and relies 
 - [Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk) — AI agent framework
 - [QUASAR](https://github.com/fengxuyy/QUASAR) — Benchmark test cases referenced from this project
 
+The built-in computation skills were designed and verified against the following workflow frameworks:
+
+- [atomate2](https://github.com/materialsproject/atomate2) — Materials Project's computational workflows (VASP, QE, force fields, and more)
+- [VASPKIT](https://vaspkit.com/) — VASP pre-/post-processing toolkit
+- [AiiDA](https://github.com/aiidateam/aiida-core) — Automated Interactive Infrastructure and Database for Computational Science
+- [aiida-quantumespresso](https://github.com/aiidateam/aiida-quantumespresso) — AiiDA plugin for Quantum ESPRESSO workflows
+- [aiida-vasp](https://github.com/aiida-vasp/aiida-vasp) — AiiDA plugin for VASP workflows
+
 <details>
 <summary><strong>Project Structure</strong></summary>
 
@@ -333,9 +399,20 @@ matclaw/
 ├── container/
 │   ├── Dockerfile              # Multi-stage build (QE builder + runtime)
 │   ├── agent-runner/           # Claude Agent SDK runner (inside container)
-│   └── skills/
-│       ├── materials-compute/  # Computation engine documentation
-│       └── agent-browser/      # Browser automation
+│   └── skills/                 # 213 computation skills (44 groups)
+│       ├── materials-compute/  # Root: computation engine docs
+│       ├── electronic-structure/  # Band structure, DOS, SCF
+│       ├── thermal-properties/    # Phonons, QHA, MD, thermal transport
+│       ├── mechanical-properties/ # Elastic constants, EOS
+│       ├── defects-reactions/     # Defects, NEB, adsorption, CCD
+│       ├── optical-properties/    # Dielectric function, absorption
+│       ├── magnetic-properties/   # Spin ordering, MAE
+│       ├── topological/           # Z2, Berry curvature
+│       ├── catalysis-electrochem/ # Reaction kinetics, d-band
+│       ├── battery-electrode/     # Intercalation voltage, ion diffusion
+│       ├── monte-carlo/           # GCMC, gas adsorption (RASPA3)
+│       ├── ...                    # 34 more groups
+│       └── agent-browser/         # Browser automation
 └── groups/                     # Per-group isolated memory
 ```
 
@@ -352,6 +429,7 @@ matclaw/
 | [Feishu Setup](docs/feishu-setup.md) | Feishu channel configuration guide |
 | [Gmail Setup](docs/gmail-setup.md) | Gmail channel configuration guide |
 | [SDK Deep Dive](docs/SDK_DEEP_DIVE.md) | Claude Agent SDK internals |
+| [Materials Compute Skills](docs/materials-compute-skills.md) | Full inventory of 213 built-in computation skills |
 | [Creating Skills](docs/creating-skills.md) | How to create a new skill (template included) |
 | [Skills Architecture](docs/nanorepo-architecture.md) | How the skill system works (internals) |
 | [Apple Container Networking](docs/APPLE-CONTAINER-NETWORKING.md) | macOS container network setup |
