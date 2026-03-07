@@ -111,3 +111,116 @@ forces = atoms.get_forces()
 2. Configure simulation input (guest molecules, temperature, pressure)
 3. Run RASPA3
 4. Analyze adsorption isotherm
+
+---
+
+## Skill Reference Index
+
+**IMPORTANT:** Before performing any materials science computation, check the relevant skill guide below. Each skill provides complete, runnable code for three approaches: ASE+MACE (fast screening), QE DFT (accurate), and VASP (future external). Read the SKILL.md in the skill directory for step-by-step instructions.
+
+Skills are located at `~/.claude/skills/<group>/<sub-skill>/SKILL.md`.
+
+### Structure & Symmetry
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `structure-tools` | input-generation, structure-editing, symmetry-analysis, format-conversion, structure-matching, xrd-pattern, pdf-analysis | VASP/QE input files, editing structures, symmetry finding, format conversion (CIF/POSCAR/XYZ) |
+| `structure-models` | supercell-builder, surface-builder, alloy-builder, defect-builder, heterostructure, nanowire-nanotube, quantum-dot, moire-superlattice | Build supercells, surfaces, alloys, defects, heterostructures, nanowires, quantum dots, moire patterns |
+| `kpath-utilities` | bulk-kpath, 2d-kpath, 1d-kpath, phonopy-kpath, cp2k-kpath | K-point paths for band structure in any code |
+
+### Electronic Structure
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `electronic-structure` | scf-relax, band-structure, density-of-states, projected-dos, spatially-resolved-dos, vasp-bands, convergence-testing, inverse-participation-ratio | SCF, relaxation, band structure, DOS, PDOS, IPR, convergence tests |
+| `band-advanced` | 3d-band-structure, hybrid-dft-bands, band-unfolding | 3D bands, HSE/PBE0 bands, supercell band unfolding |
+| `fermi-surface` | 3d-fermi-surface, 2d-fermi-surface, projected-fermi-surface | Fermi surface visualization (bulk and 2D) |
+| `advanced-electronic` | hubbard-u, spin-orbit-coupling, gw-approximation, van-der-waals, topological-invariants | DFT+U, SOC, GW, vdW-DF, Z2 invariants |
+
+### Mechanical & Thermal Properties
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `mechanical-properties` | elastic-constants, stress-strain-method, energy-strain-method, equation-of-state, angular-mechanics | Elastic tensor, bulk/shear modulus, EOS, angular-dependent mechanics |
+| `thermal-properties` | phonon, phonon-from-outcar, molecular-dynamics, msd-diffusion, rdf-analysis, vacf-vdos, md-trajectory-tools, bond-distribution, gruneisen-qha, thermal-conductivity, anharmonicity | Phonons, MD analysis, MSD, RDF, VDOS, bond length/angle distributions, QHA, thermal conductivity |
+| `thermoconductivity` | lattice-thermal-conductivity | Lattice thermal conductivity (BTE) |
+
+### Bonding & Charge Analysis
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `bonding-analysis` | charge-density, charge-density-difference, planar-charge, bader-charge, bader2pqr, elf-analysis, lobster-cohp, orbital-projection, stm-simulation, charge-format-conversion | Charge density, CDD, Bader, ELF, COHP, orbital projections, STM simulation |
+| `potential-analysis` | work-function, planar-average, macroscopic-average | Work function, planar/macroscopic averaged potential |
+| `wavefunction-analysis` | real-space-wavefunction, wavefunction-parity | Real-space wavefunction visualization, parity analysis |
+
+### Optical, Magnetic & Transport
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `optical-properties` | dielectric-function, absorption-spectrum, optical-conductivity, joint-dos, transition-dipole, slme | Dielectric function, absorption, optical conductivity, JDOS, SLME |
+| `magnetic-properties` | magnetic-anisotropy, magnetic-ordering, spin-polarized | MAE, magnetic ground state, spin-polarized calculations |
+| `spin-texture` | 2d-spin-texture, 3d-spin-texture | Spin texture for 2D/3D materials with SOC |
+| `transport-properties` | boltzmann-transport, kpoints-transport | Boltzmann transport (BoltzTraP), transport k-meshes |
+| `electron-phonon` | elph-coupling, superconductivity, deformation-potential, electronic-transport | Electron-phonon coupling, Tc, deformation potentials |
+
+### Ferroelectric & Piezoelectric
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `ferroelectric` | polarization, born-effective-charge, dielectric-tensor, piezoelectric, ferroelectric-switching | Berry phase polarization, Born charges, dielectric tensor, piezoelectric tensor |
+| `piezoelectric` | piezoelectric-tensor | Piezoelectric constants from DFPT |
+
+### Catalysis & Defects
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `catalysis-electrochem` | thermal-corrections, neb-analysis, band-center, reaction-kinetics, imaginary-freq-correction | Adsorbate thermodynamics, NEB, d-band center, Arrhenius kinetics, imaginary freq fix |
+| `catalyst-screening` | d-band-center, scaling-relations, overpotential | D-band theory, adsorption scaling, OER/HER overpotential |
+| `defects-reactions` | vacancy-formation, substitution-defect, interstitial-defect, point-defect, defect-thermodynamics, migration-barrier, neb-transition-state, reaction-pathway, adsorption-energy, surface-adsorption, surface-energy, configuration-coordinate | Point defects, formation energies, NEB barriers, adsorption, surface energy, CC diagrams |
+| `surface-energy` | surface-energy-calc, wulff-construction | Surface energy convergence, Wulff shape |
+
+### 2D Materials & Semiconductors
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `2d-materials` | vacuum-resize, layer-manipulation, band-edges, stacking-energy | Vacuum control, layer centering, band alignment, stacking PES (gamma surface) |
+| `semiconductor-kit` | band-gap, effective-mass, angular-effective-mass, fermi-velocity | Band gap, effective mass (isotropic & angular), Fermi velocity |
+
+### Monte Carlo & Phase Diagrams
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `monte-carlo` | gcmc-simulation, adsorption-isotherm, gas-adsorption, gas-separation, pore-analysis | GCMC with RASPA3, isotherms, selectivity, pore size distribution |
+| `phase-diagram` | convex-hull, pourbaix-diagram | Thermodynamic convex hull, Pourbaix diagrams |
+| `phase-transition` | phase-diagram, mpmorph-melting, order-parameter, amorphous-structure | Phase boundaries, melting point, order parameters, amorphous structures |
+| `alloy-disorder` | cluster-expansion, sqs-generation | Cluster expansion, special quasirandom structures |
+
+### Code Interfaces & MLIP
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `code-interfaces` | vasp-qe-converter, boltztrap-interface, phonopy-interface, wannier90-interface, ifc-analysis | VASP↔QE conversion, BoltzTraP, phonopy, Wannier90, IFC tensors |
+| `wannier-functions` | wannier90-workflow | Wannier90 tight-binding from DFT |
+| `mlip-guide` | universal-mlip, mace-advanced, mlip-validation, torchsim-batch | MACE-MP-0 usage, fine-tuning, validation against DFT, batch screening |
+
+### Other
+
+| Skill Group | Sub-skills | Use For |
+|---|---|---|
+| `battery-electrode` | intercalation-voltage, ion-diffusion | Battery voltage profiles, ion migration barriers |
+| `topological` | z2-invariant, berry-curvature | Z2 topological invariant, Berry curvature |
+| `spectroscopy` | raman-ir, xas-xanes | Raman/IR spectra, XAS/XANES simulation |
+| `dft-corrections` | hubbard-u, spin-orbit-coupling, vdw-correction | When and how to apply DFT corrections |
+| `high-throughput` | screening-workflow, batch-calculations, batch-screening, materials-filtering, phase-stability, property-prediction, matpes-dual-static | High-throughput screening and batch computation |
+| `materials-databases` | materials-project, 2d-semiconductors | Query Materials Project, 2D materials databases |
+| `interface` | heterostructure, grain-boundary | Heterostructure and grain boundary construction |
+| `biomolecular-md` | openmm-simulation | Biomolecular MD with OpenMM |
+| `molecular-qchem` | gaussian-qchem-workflow | Molecular quantum chemistry workflows |
+
+### How to Use a Skill
+
+1. **Identify** the relevant skill from the index above
+2. **Read** the SKILL.md: `cat ~/.claude/skills/<group>/<sub-skill>/SKILL.md`
+3. **Choose method**: Method A (ASE+MACE, fast) or Method B (QE DFT, accurate) or Method C (VASP)
+4. **Follow** the step-by-step code in the SKILL.md — all code is complete and runnable
+5. **Check** the "Common Issues" table at the bottom if anything goes wrong
