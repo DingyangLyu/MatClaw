@@ -15,9 +15,7 @@ We welcome contributions! Whether it's a new computation skill, a bug fix, or a 
 
 ## Source Code Changes
 
-**Accepted:** Bug fixes, security fixes, simplifications, reducing code.
-
-**Not accepted:** Features, capabilities, enhancements. These should be skills.
+Source code contributions are welcome — bug fixes, security fixes, new features, and improvements to the core platform are all accepted.
 
 ---
 
