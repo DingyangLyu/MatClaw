@@ -1,187 +1,300 @@
-# MatClaw
+<p align="center">
+  <img src="assets/matclaw-logo.svg" alt="MatClaw" width="600">
+</p>
 
-基于 Claude Agent SDK 的材料科学 AI 助手。构建于 [NanoClaw](https://github.com/qwibitai/nanoclaw) 架构之上，集成了计算材料科学工具。
+<p align="center">
+  <strong>告诉它要算什么，它自动写脚本、跑 DFT/MD/MC/MLIP，然后返回结果。</strong>
+</p>
 
-通过 **飞书** 或 **Gmail** 从手机提交任务 —— MatClaw 运行 DFT、MD、MC 模拟并将结果返回到您的聊天。
+<p align="center">
+  <a href="README.md">English</a>&nbsp; · &nbsp;
+  <img src="https://img.shields.io/badge/QE-7.5-4F46E5" alt="QE 7.5">&nbsp;
+  <img src="https://img.shields.io/badge/LAMMPS-2021-7C3AED" alt="LAMMPS">&nbsp;
+  <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">&nbsp;
+  <img src="https://img.shields.io/badge/MACE--MP--0-latest-D97706" alt="MACE">&nbsp;
+  <img src="https://img.shields.io/badge/测试-6%2F6%20通过-brightgreen" alt="Tests">
+</p>
 
-## 功能
+---
 
-- **计算材料科学** — Quantum ESPRESSO (DFT)、LAMMPS (MD)、RASPA3 (MC)、MACE (MLIPs)、pymatgen、ASE
-- **多渠道消息** — 通过飞书或 Gmail 与 MatClaw 对话。频道在收到第一条消息时自动注册。
-- **容器隔离** — 每个任务在独立的 Docker 容器中运行，拥有自己的文件系统
-- **定时任务** — 设置定期计算或监控作业
-- **网络访问** — 搜索论文、从材料数据库获取数据
+## MatClaw 是什么？
+
+MatClaw 是一个**能自主执行材料科学计算的 AI Agent**。你用自然语言描述任务，它自动编写 Python/Shell 脚本，在隔离的 Docker 容器中运行（容器内预装了完整的计算工具链），然后返回结果。
+
+```
+你：  "用 MACE-MP-0 medium 模型计算 2 原子硅金刚石晶胞的能量。"
+
+MatClaw: 正在编写 si_energy.py...
+         正在运行计算...
+         ✅ 总能量: -10.8248 eV (-5.4124 eV/atom)
+         力: [0, 0, 0] eV/Å（平衡态）
+         结构已保存到 si_diamond_primitive.xyz
+```
+
+不需要手写脚本，不需要调试输入文件，直接拿结果。
+
+## 核心特性
+
+- **自主计算** — 理解任务、编写代码、执行计算、分析输出、遇错自动重试
+- **开箱即用** — QE 7.5、LAMMPS、RASPA3、MACE、pymatgen、ASE、PyTorch 全部预装在一个容器内
+- **安全隔离** — 每次计算都在一次性 Docker 容器中运行，文件系统隔离
+- **灵活的 LLM 后端** — 支持 Anthropic Claude、DeepSeek 或任何 Anthropic 兼容 API
+- **多通道接入** — 通过 WhatsApp、Telegram、Discord、Slack 对话（基于 [NanoClaw](https://github.com/qwibitai/nanoclaw) 技能系统）
+- **可扩展** — 容器内有 conda/pip，Agent 可以按需安装额外的包
+
+## 计算引擎
+
+| 引擎 | 版本 | 方法 | 应用场景 |
+|------|------|------|---------|
+| [Quantum ESPRESSO](https://www.quantum-espresso.org/) | 7.5 | DFT | 电子结构、带隙、态密度、声子、弹性常数 |
+| [LAMMPS](https://www.lammps.org/) | 2021 | MD | 热学性质、扩散系数、力学性质、相变 |
+| [RASPA3](https://github.com/iRASPA/RASPA3) | 3.0.16 | MC | MOF/沸石中的气体吸附、吸附等温线、Henry 常数 |
+| [MACE-MP-0](https://github.com/ACEsuit/mace) | latest | MLIP | 通用机器学习势，快速能量/力/应力预测 |
+
+### Python 材料科学工具栈
+
+全部预装在 conda base 环境中：
+
+| 包 | 用途 |
+|---|------|
+| [pymatgen](https://pymatgen.org/) | 晶体结构操作、相图、电子结构分析 |
+| [ASE](https://wiki.fysik.dtu.dk/ase/) | 原子对象、计算器、结构优化、分子动力学 |
+| [MACE-torch](https://github.com/ACEsuit/mace) | 通用机器学习原子间势 |
+| [mp-api](https://materialsproject.org/) | Materials Project 数据库访问 |
+| [spglib](https://spglib.github.io/spglib/) | 空间群/对称性分析 |
+| [PyTorch](https://pytorch.org/) | 机器学习框架（CPU 版） |
+| numpy, scipy, matplotlib, pandas, seaborn | 科学计算与可视化 |
 
 ## 快速开始
 
+### 前置要求
+
+- Linux（推荐 Ubuntu 20.04+）或 macOS
+- [Docker](https://docs.docker.com/get-docker/)
+- Anthropic 兼容的 API 密钥（Claude、DeepSeek 等）
+
+### 1. 构建容器
+
 ```bash
-git clone <your-repo-url>
+git clone https://gitee.com/baiyuan1/mat-claw.git
 cd matclaw
-npm install
-```
-
-### 1. 配置 AI 模型
-
-在项目根目录创建 `.env`：
-
-```bash
-ANTHROPIC_API_KEY=your-api-key-here
-# 可选：使用兼容的 API 端点（如 DeepSeek）
-# ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
-```
-
-### 2. 构建智能体容器
-
-```bash
 ./container/build.sh
 ```
 
-构建包含所有计算工具的 Docker 镜像（QE、LAMMPS、MACE、pymatgen、ASE 等）。
+首次构建约需 10 分钟（从源码编译 QE 7.5），后续构建使用 Docker 缓存。
 
-### 3. 添加消息渠道
-
-至少设置一个渠道与 MatClaw 通信：
-
-#### 飞书（推荐）
-
-1. 前往[飞书开放平台](https://open.feishu.cn/app)创建自建应用
-2. 启用**机器人**能力
-3. 在**事件与回调**中，订阅方式选择**长连接**，添加事件 `im.message.receive_v1`
-4. 添加权限：`im:message`、`im:message:send_as_bot`、`im:chat:readonly`、`contact:contact.base:readonly`
-5. 发布应用版本
-6. 运行认证：
+### 2. 运行计算
 
 ```bash
-npm run auth:feishu
+echo '{
+  "prompt": "用 MACE-MP-0 计算体硅的能量",
+  "groupFolder": "test",
+  "chatJid": "test@g.us",
+  "isMain": false,
+  "secrets": {
+    "ANTHROPIC_API_KEY": "your-api-key",
+    "ANTHROPIC_BASE_URL": "https://api.anthropic.com"
+  }
+}' | docker run -i -v ./workspace:/workspace/group matclaw-agent:latest
 ```
 
-输入 App ID 和 App Secret 即可。启动 MatClaw 后给机器人发消息，聊天会**自动注册**为群组，无需手动操作数据库。
-
-#### Gmail
-
-1. 在 GCP 项目中启用 Gmail API
-2. 创建 OAuth 2.0 凭据（桌面应用类型）
-3. 将 `client_secret_*.json` 放在项目根目录
-4. 运行 Gmail 技能添加渠道：
+### 3. 完整 Agent 部署 + 消息通道
 
 ```bash
-npx tsx scripts/apply-skill.ts .claude/skills/add-gmail
-npm run build
+npm install
 ```
 
-5. 认证：
+配置至少一个消息通道：
 
-```bash
-npm run auth
-```
+- **[飞书配置指南](docs/feishu-setup.md)** — 推荐中国用户使用，WebSocket 长连接，无需公网 URL
+- **[Gmail 配置指南](docs/gmail-setup.md)** — 通过邮件发送任务
 
-### 4. 启动 MatClaw
+然后启动 MatClaw：
 
 ```bash
 npm run dev
 ```
 
-MatClaw 连接所有已配置的渠道并开始监听消息。
+## 示例工作流
 
-## 使用方法
-
-在飞书聊天或 Gmail 中给 MatClaw 发消息：
+### DFT：Quantum ESPRESSO 硅 SCF 计算
 
 ```
-帮我设置一个硅的能带结构 QE 计算
-
-用 MACE-MP-0 计算 FCC 铝的状态方程
-
-运行一个铜在 300K 下使用 EAM 势的 LAMMPS MD 模拟
-
-用 pymatgen 从 Materials Project 查找 Li-Fe-O 体系的所有稳定化合物
+"用 QE 对硅进行 SCF 计算，使用 PAW 赝势，4×4×4 k 点网格，ecutwfc=30 Ry。"
 ```
 
-在群聊中需要加触发词（默认 `@MatClaw`）：
+Agent 会自动：
+1. 从 QE 仓库下载 Si 赝势文件
+2. 生成包含 `&CONTROL`、`&SYSTEM`、`&ELECTRONS` 的 `si_scf.in`
+3. 运行 `mpirun -np 2 pw.x < si_scf.in`
+4. 解析输出：总能量、收敛信息、受力
+5. 汇报结果
+
+### MD：LAMMPS 铜的分子动力学
 
 ```
-@MatClaw MgO 的形成能是多少？
+"用 LAMMPS 模拟 500 个 FCC 铜原子在 300K 下运行 10ps，使用 LJ 势。
+ 报告最终温度和总能量。"
 ```
 
-在私聊（直接消息）中不需要触发词，所有消息都会被自动处理。
+### MLIP：MACE 快速能量筛选
+
+```
+"用 MACE-MP-0 计算 Li、Na、K、Rb、Cs 的 BCC 结构能量，
+ 与实验内聚能进行比较。"
+```
+
+### MC：RASPA3 甲烷吸附
+
+```
+"用 RASPA3 在 300K、1 atm 下对甲烷进行巨正则蒙特卡洛模拟。"
+```
 
 ## 架构
 
 ```
-飞书/Gmail --> SQLite --> 轮询循环 --> Docker 容器 (Claude Agent SDK) --> 回复
+┌──────────────────────────────────────────────────────┐
+│  宿主机 (Node.js)                                     │
+│  ┌────────────┐  ┌──────────┐  ┌──────────────────┐ │
+│  │  消息通道    │→│  SQLite   │→│  容器运行器       │ │
+│  │ (WhatsApp,  │  │ (消息,    │  │ (启动 Docker     │ │
+│  │  Telegram,  │  │  任务,    │  │  容器)           │ │
+│  │  Discord…)  │  │  状态)    │  └────────┬─────────┘ │
+│  └────────────┘  └──────────┘           │           │
+└──────────────────────────────────────────┼───────────┘
+                                           │ stdin/stdout JSON
+┌──────────────────────────────────────────┼───────────┐
+│  容器 (Ubuntu 24.04)                      │           │
+│  ┌───────────────────────────────────────┘         │ │
+│  │  Agent Runner (Claude Agent SDK)                │ │
+│  │  ┌─────────────────────────────────────────┐    │ │
+│  │  │  LLM ←→ 工具调用 (bash, browser, MCP)   │    │ │
+│  │  └─────────────────────────────────────────┘    │ │
+│  │                                                  │ │
+│  │  计算工具:                                        │ │
+│  │  ┌─────────┐ ┌────────┐ ┌───────┐ ┌──────┐     │ │
+│  │  │ QE 7.5  │ │ LAMMPS │ │RASPA3 │ │ MACE │     │ │
+│  │  └─────────┘ └────────┘ └───────┘ └──────┘     │ │
+│  │  ┌──────────────────────────────────────────┐   │ │
+│  │  │ Python: pymatgen, ASE, torch, numpy, …   │   │ │
+│  │  └──────────────────────────────────────────┘   │ │
+│  └──────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────┘
 ```
 
-- **单 Node.js 进程** — 编排渠道、消息路由和容器生命周期
-- **渠道自注册** — 启动时自动检测凭据
-- **飞书自动注册** — 新聊天在收到第一条消息时自动注册为群组
-- **容器隔离** — 每个任务在独立 Docker 容器中运行
-- **群组独立记忆** — 每个群组有隔离的 `CLAUDE.md`、对话历史和文件系统
-
-### 关键文件
-
-| 文件 | 用途 |
-|------|------|
-| `src/index.ts` | 编排器：状态管理、消息循环、智能体调用 |
-| `src/channels/feishu.ts` | 飞书渠道（WebSocket，自动注册） |
-| `src/channels/gmail.ts` | Gmail 渠道（轮询） |
-| `src/channels/registry.ts` | 渠道注册表（自注册） |
-| `src/container-runner.ts` | 生成智能体容器 |
-| `src/db.ts` | SQLite 操作 |
-| `groups/*/CLAUDE.md` | 群组智能体记忆和人格 |
-| `container/` | 包含计算工具的 Docker 镜像 |
+**工作原理：**
+1. 用户发送自然语言 prompt（通过 stdin JSON 或消息通道）
+2. 宿主机编排器将其路由到新的 Docker 容器
+3. 容器内 Claude Agent SDK 接收 prompt，迭代执行：
+   - 编写计算脚本（Python、Shell、QE 输入文件、LAMMPS 脚本…）
+   - 通过 bash 工具执行
+   - 读取并分析输出
+   - 出错时自动调试和重试
+4. 最终结果通过 stdout 标记返回给用户
 
 ## 配置
 
-MatClaw 使用代码而非配置文件。要自定义行为，编辑 `groups/{name}/CLAUDE.md` 调整智能体人格，或直接修改源文件。
+### API 密钥
 
-### 环境变量（`.env`）
+MatClaw 支持任何 Anthropic 兼容 API。通过 stdin JSON 传入凭据：
 
-| 变量 | 必需 | 说明 |
-|------|------|------|
-| `ANTHROPIC_API_KEY` | 是 | 模型 API 密钥 |
-| `ANTHROPIC_BASE_URL` | 否 | 自定义 API 端点 |
-| `ASSISTANT_NAME` | 否 | 触发词（默认：`MatClaw`） |
-
-### 飞书凭据（`store/feishu-credentials.json`）
-
-由 `npm run auth:feishu` 自动创建。包含 App ID 和 App Secret。
-
-### Gmail 凭据（`store/gmail-credentials.json`）
-
-由 `npm run auth` 自动创建。包含 OAuth 令牌。
-
-## 开发
-
-```bash
-npm run dev          # 热重载运行
-npm run build        # 编译 TypeScript
-npm run test         # 运行测试
-./container/build.sh # 重建智能体容器
+```json
+{
+  "secrets": {
+    "ANTHROPIC_API_KEY": "your-key",
+    "ANTHROPIC_BASE_URL": "https://api.anthropic.com"
+  }
+}
 ```
 
-## 系统要求
+**已测试的提供商：**
 
-- Linux 或 macOS
-- Node.js 20+
-- Docker
-- 飞书机器人应用 和/或 Gmail API 凭据
+| 提供商 | Base URL | 备注 |
+|--------|----------|------|
+| [Anthropic](https://www.anthropic.com/) | `https://api.anthropic.com` | Claude 系列模型，推荐 |
+| [DeepSeek](https://www.deepseek.com/) | `https://api.deepseek.com/anthropic` | 性价比高，支持 tool_use |
 
-## 常见问题
+### 环境变量
 
-**飞书消息没有被处理？**
-- 检查应用版本是否已在飞书开发者后台发布
-- 确认事件订阅方式设置为"长连接"
-- 确保已添加 `im.message.receive_v1` 事件
-- 检查权限是否已授予：`im:message`、`im:message:send_as_bot`
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `CONTAINER_RUNTIME` | `docker` | 容器运行时（`docker`、`podman`、`nerdctl`） |
+| `MAX_CONCURRENT_CONTAINERS` | `5` | 最大并行 Agent 容器数 |
+| `AGENT_TIMEOUT` | `300` | Agent 执行超时（秒） |
 
-**Gmail 连接错误？**
-- 网络问题（VPN/代理干扰）可能导致间歇性 ECONNRESET
-- 如果使用 TUN 模式代理，尝试关闭
+## 测试
 
-**容器无法启动？**
-- 确保用户在 docker 组中：`sudo usermod -aG docker $USER`（需重新登录）
-- 验证镜像已构建：`docker images | grep matclaw`
+MatClaw 包含完整的测试套件，验证所有计算引擎：
+
+```bash
+sudo bash test.sh        # 运行全部 6 项测试
+sudo bash test.sh 1      # 测试 1: Python + MACE 能量计算
+sudo bash test.sh 2      # 测试 2: Quantum ESPRESSO SCF
+sudo bash test.sh 3      # 测试 3: LAMMPS MD 模拟
+sudo bash test.sh 4      # 测试 4: RASPA3 蒙特卡洛
+sudo bash test.sh 5      # 测试 5: Python 包完整性
+sudo bash test.sh 6      # 测试 6: 端到端 Agent 任务
+```
+
+测试结果自动保存到 `test-logs/` 目录（带时间戳）。
+
+**最新测试结果（全部通过）：**
+
+| 测试 | 结果 | 详情 |
+|------|------|------|
+| MACE 能量 | **-10.68 eV** | 2 原子 Si 金刚石晶胞 |
+| QE SCF | **-93.44 Ry** | Si，PAW 赝势，4×4×4 k 点网格 |
+| LAMMPS MD | **50 步** | FCC Cu，LJ 势，NVE 系综 |
+| RASPA3 MC | **98.66 kg/m³** | 甲烷盒子，300K |
+| Python 包 | **8/8 完整** | pymatgen, ASE, MACE, torch, numpy, scipy, matplotlib, spglib |
+| Agent (E2E) | **-10.82 eV** | 通过 DeepSeek API 自主完成 Si 能量计算 |
+
+## 基于 NanoClaw
+
+MatClaw 基于 [NanoClaw](https://github.com/qwibitai/nanoclaw) 构建，NanoClaw 是 [qwibitai](https://github.com/qwibitai) 开发的轻量级个人 AI 助手框架。NanoClaw 提供了编排器架构、通道系统、容器隔离和技能框架。MatClaw 在此基础上扩展了完整的材料科学计算环境。
+
+## 项目结构
+
+```
+matclaw/
+├── src/                        # 宿主机编排器
+│   ├── index.ts                # 主循环：消息、Agent、调度
+│   ├── container-runner.ts     # 启动隔离的 Docker 容器
+│   ├── db.ts                   # SQLite（消息、任务、状态）
+│   ├── channels/               # 消息通道注册表
+│   └── ...
+├── container/
+│   ├── Dockerfile              # 多阶段构建（QE 编译 + 运行时）
+│   ├── agent-runner/           # Claude Agent SDK 运行器（容器内）
+│   └── skills/
+│       ├── materials-compute/  # 计算引擎文档
+│       └── agent-browser/      # 浏览器自动化
+├── test.sh                     # 6 项验证测试
+├── test-logs/                  # 带时间戳的测试结果
+└── groups/                     # 按组隔离的记忆
+```
+
+## 路线图
+
+- [ ] GPU 支持（CUDA 容器，加速 PyTorch/MACE）
+- [ ] 更多 MLIP 模型（CHGNet、SevenNet、ALIGNN）
+- [ ] 工作流自动化（多步计算流水线）
+- [ ] Materials Project 集成（查询 + 计算工作流）
+- [ ] 自动生成 Jupyter Notebook 以确保可复现性
+
+## 引用
+
+如果你在研究中使用了 MatClaw，请引用：
+
+```bibtex
+@software{matclaw2026,
+  title  = {MatClaw: AI-Powered Autonomous Materials Science Agent},
+  author = {Yuan Bai},
+  year   = {2026},
+  url    = {https://gitee.com/baiyuan1/mat-claw}
+}
+```
 
 ## 许可证
 
-MIT
+[MIT](LICENSE)
