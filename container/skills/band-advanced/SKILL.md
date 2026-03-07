@@ -1,3 +1,8 @@
+---
+name: band-advanced
+description: Advanced Band Structure Methods (3 sub-skills: 3d-band-structure, band-unfolding, hybrid-dft-bands)
+---
+
 # Advanced Band Structure Methods
 
 ## Overview

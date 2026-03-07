@@ -1,3 +1,8 @@
+---
+name: mechanical-properties
+description: Mechanical Properties (5 sub-skills: angular-mechanics, elastic-constants, energy-strain-method, equation-of-state, stress-strain-method)
+---
+
 # Mechanical Properties
 
 ## Overview

@@ -1,3 +1,8 @@
+---
+name: structure-models
+description: Advanced Structure Models (8 sub-skills: alloy-builder, defect-builder, heterostructure, moire-superlattice, nanowire-nanotube, quantum-dot, supercell-builder, surface-builder)
+---
+
 # Advanced Structure Models
 
 ## Overview

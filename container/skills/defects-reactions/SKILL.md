@@ -1,3 +1,8 @@
+---
+name: defects-reactions
+description: Defects and Reactions (12 sub-skills: adsorption-energy, configuration-coordinate, defect-thermodynamics, interstitial-defect, migration-barrier, neb-transition-state, point-defect, reaction-pathway, 
+---
+
 # Defects and Reactions
 
 ## Overview

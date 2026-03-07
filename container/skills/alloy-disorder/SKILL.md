@@ -1,3 +1,8 @@
+---
+name: alloy-disorder
+description: Alloy Disorder Modeling (2 sub-skills: cluster-expansion, sqs-generation)
+---
+
 # Alloy Disorder Modeling
 
 ## Overview

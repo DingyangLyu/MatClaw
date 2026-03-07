@@ -1,3 +1,8 @@
+---
+name: molecular-qchem
+description: Molecular Quantum Chemistry (1 sub-skills: gaussian-qchem-workflow)
+---
+
 # Molecular Quantum Chemistry
 
 Quantum chemistry calculations for molecules and molecular clusters (non-periodic systems). This skill group covers geometry optimization, vibrational analysis, thermochemistry, solvation, excited states, and reaction energetics using open-source quantum chemistry engines (PySCF, Psi4) that can be installed via pip/conda. Inspired by the atomate2 Q-Chem module but adapted for the open-source tools available in MatClaw's container environment.

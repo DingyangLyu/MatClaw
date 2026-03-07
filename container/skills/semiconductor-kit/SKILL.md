@@ -1,3 +1,8 @@
+---
+name: semiconductor-kit
+description: Semiconductor Kit (4 sub-skills: angular-effective-mass, band-gap, effective-mass, fermi-velocity)
+---
+
 # Semiconductor Kit
 
 ## Overview

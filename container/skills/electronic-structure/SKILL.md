@@ -1,3 +1,8 @@
+---
+name: electronic-structure
+description: Electronic Structure Calculations (8 sub-skills: band-structure, convergence-testing, density-of-states, inverse-participation-ratio, projected-dos, scf-relax, spatially-resolved-dos, vasp-bands)
+---
+
 # Electronic Structure Calculations
 
 ## Overview

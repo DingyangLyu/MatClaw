@@ -1,3 +1,8 @@
+---
+name: potential-analysis
+description: Potential Analysis (3 sub-skills: macroscopic-average, planar-average, work-function)
+---
+
 # Potential Analysis
 
 ## Overview

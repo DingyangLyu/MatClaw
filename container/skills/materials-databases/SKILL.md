@@ -1,3 +1,8 @@
+---
+name: materials-databases
+description: Materials Databases Toolkit (2 sub-skills: 2d-semiconductors, materials-project)
+---
+
 # Materials Databases Toolkit
 
 ## Overview

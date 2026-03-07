@@ -1,3 +1,8 @@
+---
+name: 2d-materials
+description: 2D Materials Toolkit (4 sub-skills: band-edges, layer-manipulation, stacking-energy, vacuum-resize)
+---
+
 # 2D Materials Toolkit
 
 ## Overview

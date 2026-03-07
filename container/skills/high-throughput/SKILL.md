@@ -1,3 +1,8 @@
+---
+name: high-throughput
+description: High-Throughput Computational Workflows (7 sub-skills: batch-calculations, batch-screening, materials-filtering, matpes-dual-static, phase-stability, property-prediction, screening-workflow)
+---
+
 # High-Throughput Computational Workflows
 
 ## Sub-skills

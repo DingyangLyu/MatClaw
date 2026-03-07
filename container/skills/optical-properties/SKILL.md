@@ -1,3 +1,8 @@
+---
+name: optical-properties
+description: Optical Properties Calculations (6 sub-skills: absorption-spectrum, dielectric-function, joint-dos, optical-conductivity, slme, transition-dipole)
+---
+
 # Optical Properties Calculations
 
 ## Overview

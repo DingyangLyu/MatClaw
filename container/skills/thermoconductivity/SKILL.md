@@ -1,3 +1,8 @@
+---
+name: thermoconductivity
+description: Thermal Conductivity (1 sub-skills: lattice-thermal-conductivity)
+---
+
 # Thermal Conductivity
 
 ## Skills Index

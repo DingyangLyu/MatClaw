@@ -1,3 +1,8 @@
+---
+name: surface-energy
+description: Surface Energy Calculations (2 sub-skills: surface-energy-calc, wulff-construction)
+---
+
 # Surface Energy Calculations
 
 ## Overview

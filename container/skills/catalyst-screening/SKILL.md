@@ -1,3 +1,8 @@
+---
+name: catalyst-screening
+description: Catalyst Screening (3 sub-skills: d-band-center, overpotential, scaling-relations)
+---
+
 # Catalyst Screening
 
 ## Skills Index

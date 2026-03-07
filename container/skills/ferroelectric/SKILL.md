@@ -1,3 +1,8 @@
+---
+name: ferroelectric
+description: Ferroelectric Properties (5 sub-skills: born-effective-charge, dielectric-tensor, ferroelectric-switching, piezoelectric, polarization)
+---
+
 # Ferroelectric Properties
 
 ## Overview

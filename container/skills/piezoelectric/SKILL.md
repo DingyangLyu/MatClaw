@@ -1,3 +1,8 @@
+---
+name: piezoelectric
+description: Piezoelectric Properties (1 sub-skills: piezoelectric-tensor)
+---
+
 # Piezoelectric Properties
 
 ## Skills Index

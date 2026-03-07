@@ -1,3 +1,8 @@
+---
+name: monte-carlo
+description: Monte Carlo Simulations (5 sub-skills: adsorption-isotherm, gas-adsorption, gas-separation, gcmc-simulation, pore-analysis)
+---
+
 # Monte Carlo Simulations
 
 Grand Canonical Monte Carlo (GCMC) and related ensemble simulations for gas adsorption, mixture separation, and thermodynamic property estimation in porous materials (MOFs, zeolites, covalent organic frameworks).

@@ -1,3 +1,8 @@
+---
+name: catalysis-electrochem
+description: Catalysis and Electrochemistry Toolkit (5 sub-skills: band-center, imaginary-freq-correction, neb-analysis, reaction-kinetics, thermal-corrections)
+---
+
 # Catalysis and Electrochemistry Toolkit
 
 ## Overview

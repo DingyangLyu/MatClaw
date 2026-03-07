@@ -1,3 +1,8 @@
+---
+name: wannier-functions
+description: Wannier Functions (1 sub-skills: wannier90-workflow)
+---
+
 # Wannier Functions
 
 ## Overview

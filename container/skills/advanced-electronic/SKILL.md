@@ -1,3 +1,8 @@
+---
+name: advanced-electronic
+description: Advanced Electronic Structure Methods (5 sub-skills: gw-approximation, hubbard-u, spin-orbit-coupling, topological-invariants, van-der-waals)
+---
+
 # Advanced Electronic Structure Methods
 
 Beyond-standard-DFT methods for accurate electronic properties in materials where standard GGA/LDA fails qualitatively. These methods address strong correlation, spin-orbit physics, topological classification, quasiparticle energies, and long-range dispersion interactions.

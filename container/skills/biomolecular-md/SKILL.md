@@ -1,3 +1,8 @@
+---
+name: biomolecular-md
+description: Biomolecular MD (1 sub-skills: openmm-simulation)
+---
+
 # Biomolecular MD
 
 Biomolecular molecular dynamics simulations using OpenMM for proteins, solvated molecular systems, drug-protein interactions, and soft matter. Covers force field assignment (AMBER, CHARMM, OpenFF), explicit solvent models, free energy calculations, and trajectory analysis with mdtraj.

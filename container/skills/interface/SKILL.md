@@ -1,3 +1,8 @@
+---
+name: interface
+description: Interface and Defect Structure Workflows (2 sub-skills: grain-boundary, heterostructure)
+---
+
 # Interface and Defect Structure Workflows
 
 ## Sub-skills

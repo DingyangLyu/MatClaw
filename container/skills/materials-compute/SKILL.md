@@ -1,3 +1,8 @@
+---
+name: materials-compute
+description: "Materials computation environment reference and skill index. READ THIS FIRST when performing any materials science calculation — contains the master index of all 213 skills across 44 groups."
+---
+
 # Materials Computation Environment
 
 This container includes a full materials science computation environment. Use these tools for atomistic simulation tasks.

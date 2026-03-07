@@ -1,3 +1,8 @@
+---
+name: spectroscopy
+description: Spectroscopy Simulation (2 sub-skills: raman-ir, xas-xanes)
+---
+
 # Spectroscopy Simulation
 
 ## Overview

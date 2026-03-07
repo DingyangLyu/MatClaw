@@ -1,3 +1,8 @@
+---
+name: fermi-surface
+description: Fermi Surface Calculations (3 sub-skills: 2d-fermi-surface, 3d-fermi-surface, projected-fermi-surface)
+---
+
 # Fermi Surface Calculations
 
 ## Overview

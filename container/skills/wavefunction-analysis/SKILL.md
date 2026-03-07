@@ -1,3 +1,8 @@
+---
+name: wavefunction-analysis
+description: Wavefunction Analysis (2 sub-skills: real-space-wavefunction, wavefunction-parity)
+---
+
 # Wavefunction Analysis
 
 ## Overview

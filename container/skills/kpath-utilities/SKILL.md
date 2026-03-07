@@ -1,3 +1,8 @@
+---
+name: kpath-utilities
+description: K-Path Utilities (5 sub-skills: 1d-kpath, 2d-kpath, bulk-kpath, cp2k-kpath, phonopy-kpath)
+---
+
 # K-Path Utilities
 
 ## Overview

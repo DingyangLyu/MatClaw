@@ -1,3 +1,8 @@
+---
+name: spin-texture
+description: Spin Texture (2 sub-skills: 2d-spin-texture, 3d-spin-texture)
+---
+
 # Spin Texture
 
 ## Overview

@@ -1,3 +1,8 @@
+---
+name: mlip-guide
+description: Machine Learning Interatomic Potentials (MLIPs) (4 sub-skills: mace-advanced, mlip-validation, torchsim-batch, universal-mlip)
+---
+
 # Machine Learning Interatomic Potentials (MLIPs)
 
 Universal and specialized machine learning interatomic potentials for rapid atomistic simulation without DFT. Covers model selection, usage patterns, validation strategies, and known limitations.

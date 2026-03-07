@@ -1,3 +1,8 @@
+---
+name: thermal-properties
+description: Thermal Properties (11 sub-skills: anharmonicity, bond-distribution, gruneisen-qha, md-trajectory-tools, molecular-dynamics, msd-diffusion, phonon, phonon-from-outcar, rdf-analysis, thermal-conductivi
+---
+
 # Thermal Properties
 
 Phonon calculations, molecular dynamics, and quasi-harmonic thermodynamics for crystalline and amorphous materials.

@@ -1,3 +1,8 @@
+---
+name: code-interfaces
+description: Code Interfaces and Conversion Utilities (5 sub-skills: boltztrap-interface, ifc-analysis, phonopy-interface, vasp-qe-converter, wannier90-interface)
+---
+
 # Code Interfaces and Conversion Utilities
 
 Bridge between different computational materials science codes. Convert input/output formats, interface with post-processing tools, and chain workflows across QE, VASP, phonopy, BoltzTraP2, and Wannier90.

@@ -1,3 +1,8 @@
+---
+name: magnetic-properties
+description: Magnetic Properties (3 sub-skills: magnetic-anisotropy, magnetic-ordering, spin-polarized)
+---
+
 # Magnetic Properties
 
 ## Overview
