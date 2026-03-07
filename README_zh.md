@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/matclaw-logo.svg" alt="MatClaw" width="600">
+  <img src="assets/matclaw-logo.svg" alt="MatClaw" width="720">
 </p>
 
 <p align="center">
