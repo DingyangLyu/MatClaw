@@ -372,7 +372,7 @@ If you use MatClaw in your research, please cite:
 @software{matclaw2026,
   title  = {MatClaw: AI-Powered Autonomous Materials Science Agent},
   author = {Dingyang Lyu and Baole Wei and Yongheng Li and Feng Yu and Hongwei Du},
-  email  = {s-ldy25@bjzgca.edu.cn, weibaole@zgci.ac.cn, liyongheng@zgci.ac.cn, yufeng@zgci.ac.cn, duhongwei@zgci.ac.cn},
+  email  = {s-ldy25@bjzgca.edu.cn, weibaole@zgci.ac.cn, duhongwei@zgci.ac.cn},
   year   = {2026},
   url    = {https://gitee.com/baiyuan1/mat-claw}
 }
