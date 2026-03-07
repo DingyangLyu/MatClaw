@@ -3,11 +3,18 @@
 </p>
 
 <p align="center">
-  <strong>Tell it what to compute. It writes the scripts, runs DFT/MD/MC/MLIP, and reports back.</strong>
+  <strong>Describe a materials problem in plain language. MatClaw writes the code, runs the simulation, and delivers results.</strong>
 </p>
 
 <p align="center">
-  <a href="README_zh.md">中文</a>&nbsp; · &nbsp;
+  <a href="README_draft_zh.md">中文</a>&nbsp; · &nbsp;
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>&nbsp;
+  <img src="https://img.shields.io/badge/Docker-24.04-2496ED?logo=docker&logoColor=white" alt="Docker">&nbsp;
+  <img src="https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs&logoColor=white" alt="Node.js 20+">&nbsp;
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/QE-7.5-4F46E5" alt="QE 7.5">&nbsp;
   <img src="https://img.shields.io/badge/LAMMPS-2021-7C3AED" alt="LAMMPS">&nbsp;
   <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">&nbsp;
@@ -17,17 +24,27 @@
 
 ---
 
+## Contents
+
+- [What is MatClaw?](#what-is-matclaw)
+- [Basic Usage](#basic-usage)
+- [Examples](#examples)
+- [Computation Stack](#computation-stack)
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Configuration](#configuration)
+- [Documentation](#documentation)
+- [Citation](#citation)
+
 ## What is MatClaw?
 
 MatClaw is an **AI agent that autonomously performs materials science computations**. You describe a task in natural language — it writes Python/shell scripts, runs them inside an isolated Docker container equipped with a full computation stack, and returns the results.
 
-Send a task in natural language via Feishu (or any other channel). MatClaw writes the scripts, runs the simulation, and sends back the results — including plots:
-
 <p align="center"><img src="examples/water_density/feishu-chat-1.png" width="800"></p>
 
-No manual scripting. No input file debugging. Just results.
+<p align="center"><em>Send a task via Feishu (or any channel). Get back scripts, simulations, plots, and analysis — no manual coding required.</em></p>
 
-## Key Features
+**Key Features:**
 
 - **Autonomous computation** — Understands your task, writes code, executes it, analyzes output, retries on errors
 - **All-in-one container** — QE 7.5, LAMMPS, RASPA3, MACE, pymatgen, ASE, PyTorch pre-installed and ready
@@ -35,6 +52,109 @@ No manual scripting. No input file debugging. Just results.
 - **Flexible LLM backend** — Works with Anthropic Claude, DeepSeek, or any Anthropic-compatible API
 - **Multi-channel access** — Chat via Feishu, Gmail, WhatsApp, Telegram, Discord, Slack (via [NanoClaw](https://github.com/qwibitai/nanoclaw) skill system)
 - **Extensible** — Conda/pip available inside container; agent can install additional packages on-the-fly
+
+## Basic Usage
+
+Send a natural language task via any connected channel (Feishu, WhatsApp, Gmail, etc.) or directly via Docker:
+
+```bash
+echo '{
+  "prompt": "Calculate the band gap of silicon using DFT (Quantum ESPRESSO)",
+  "groupFolder": "test",
+  "chatJid": "test@g.us",
+  "isMain": false,
+  "secrets": {
+    "ANTHROPIC_API_KEY": "your-api-key",
+    "ANTHROPIC_BASE_URL": "https://api.anthropic.com"
+  }
+}' | docker run -i -v ./workspace:/workspace/group matclaw-agent:latest
+```
+
+The agent will autonomously:
+
+1. Parse your request and plan the computation
+2. Write input files and scripts
+3. Run the simulation (DFT, MD, MC, or MLIP)
+4. Analyze results, generate plots, and report back
+5. Retry with adjustments if errors occur
+
+Results — including figures, data files, and structured summaries — are returned directly.
+
+## Examples
+
+Benchmark tasks adapted from [QUASAR](https://github.com/fengxuyy/QUASAR). All executed autonomously — the agent writes scripts, runs simulations, and reports results. See [`examples/`](examples/) for full details.
+
+### Basic Tasks
+
+#### Cu K-point Convergence (DFT / Quantum ESPRESSO)
+> Converge bulk Cu energy to < 1 meV/atom. Agent runs 8 QE calculations and plots the convergence curve.
+
+<p align="center"><img src="examples/cu_kpoint_convergence/feishu-chat-1.png" width="700"></p>
+
+---
+
+#### Water Density (MD / LAMMPS)
+> Calculate the density of water at 298 K, 1 bar. Agent builds a SPC/E water box, runs NPT, and reports with diagnostic plots.
+
+<p align="center"><img src="examples/water_density/feishu-chat-1.png" width="700"></p>
+
+---
+
+#### IRMOF-1 Void Fraction (MC / RASPA3)
+> Compute helium-accessible void fraction for IRMOF-1 at 298 K. Agent configures RASPA3 Widom insertion MC.
+
+<p align="center"><img src="examples/irmof1_void_fraction/feishu-chat-1.png" width="700"></p>
+
+---
+
+### Workflow Orchestration
+
+#### NiO Band Gap (DFT+U / Quantum ESPRESSO)
+> Calculate the electronic band gap of NiO. Agent recognizes a strongly correlated system and **autonomously applies DFT+U**.
+
+<p align="center"><img src="examples/nio_bandgap/feishu-chat-1.png" width="700"></p>
+
+> [!TIP]
+> The agent was only asked to "calculate the band gap of NiO" — it independently decided DFT+U was necessary for a correlated oxide, chose appropriate U values, and ran the full SCF → NSCF → DOS workflow.
+
+---
+
+#### CO₂ Adsorption in UiO-66 (MC / RASPA3)
+> Calculate CO₂ adsorption isotherm at 4 pressure points. Agent runs GCMC simulations and generates the isotherm plot.
+
+<p align="center"><img src="examples/co2_uio66_adsorption/feishu-chat-1.png" width="700"></p>
+
+---
+
+#### Al Melting Point (MD / LAMMPS)
+> Determine the melting point of aluminum via two-phase coexistence. Agent builds an 8000-atom system and analyzes with bond-order parameters.
+
+<p align="center"><img src="examples/al_melting_point/feishu-chat-1.png" width="700"></p>
+
+---
+
+#### NaCl Solution Density (MD / LAMMPS + packmol)
+> Calculate density of 1 mol/L NaCl solution. Agent **autonomously installs packmol** (not pre-installed), builds the system, and runs MD.
+
+<p align="center"><img src="examples/nacl_solution_density/feishu-chat-1.png" width="700"></p>
+
+> [!TIP]
+> packmol was not pre-installed in the container. The agent detected the missing dependency, downloaded and compiled it from source (retrying 3 times with different approaches), then proceeded with the simulation.
+
+---
+
+### Results Summary
+
+| Example | Method | Engine | Reference | Agent Result |
+|---------|--------|--------|-----------|-------------|
+| [Cu k-point convergence](examples/cu_kpoint_convergence/) | DFT | QE | < 1 meV/atom | Converged at 12×12×12 |
+| [Water density](examples/water_density/) | MD | LAMMPS | 0.997 g/cm³ | 0.985 g/cm³ |
+| [IRMOF-1 void fraction](examples/irmof1_void_fraction/) | MC | RASPA3 | 0.7988 | 0.8025 |
+| [NiO band gap](examples/nio_bandgap/) | DFT+U | QE | 4.0 eV | 2.11 eV |
+| [CO₂ in UiO-66](examples/co2_uio66_adsorption/) | MC | RASPA3 | 5.98 mmol/g | 5.48 mmol/g |
+| [Al melting point](examples/al_melting_point/) | MD | LAMMPS | 933 K | ~850–880 K |
+| [NaCl solution density](examples/nacl_solution_density/) | MD | LAMMPS | 1.038 g/cm³ | 1.033 g/cm³ |
+
 
 ## Computation Stack
 
@@ -45,9 +165,8 @@ No manual scripting. No input file debugging. Just results.
 | [RASPA3](https://github.com/iRASPA/RASPA3) | 3.0.16 | MC | Gas adsorption in MOFs/zeolites, isotherms, Henry constants |
 | [MACE-MP-0](https://github.com/ACEsuit/mace) | latest | MLIP | Universal ML potential, fast energy/force/stress predictions |
 
-### Python Materials Science Stack
-
-All pre-installed in conda base environment:
+<details>
+<summary><strong>Python Materials Science Stack</strong> (all pre-installed)</summary>
 
 | Package | Purpose |
 |---------|---------|
@@ -58,6 +177,8 @@ All pre-installed in conda base environment:
 | [spglib](https://spglib.github.io/spglib/) | Space group / symmetry analysis |
 | [PyTorch](https://pytorch.org/) | ML framework (CPU) |
 | numpy, scipy, matplotlib, pandas, seaborn | Scientific computing & visualization |
+
+</details>
 
 ## Quick Start
 
@@ -75,7 +196,8 @@ cd mat-claw
 ./container/build.sh
 ```
 
-The first build takes ~10 minutes (compiles QE 7.5 from source). Subsequent builds use Docker cache.
+> [!NOTE]
+> The first build takes ~10 minutes (compiles QE 7.5 from source). Subsequent builds use Docker cache.
 
 ### 2. Run a computation
 
@@ -107,34 +229,7 @@ Configure at least one messaging channel to chat with your agent:
 - **Telegram** — Add via `/add-telegram` skill, Bot API.
 - **Discord / Slack** — Add via `/add-discord` or `/add-slack` skill.
 
-Please refer to each channel's setup guide for detailed instructions. Channels are added via [NanoClaw skills](https://github.com/qwibitai/nanoclaw) — run the corresponding `/add-*` command inside `claude` CLI.
-
-## Examples
-
-Benchmark tasks adapted from [QUASAR](https://github.com/fengxuyy/QUASAR). All executed autonomously — the agent writes scripts, runs simulations, and reports results. See [`examples/`](examples/) for full details.
-
-### Basic Tasks
-
-| Example | Method | Engine | Reference | Agent Result |
-|---------|--------|--------|-----------|-------------|
-| [Cu k-point convergence](examples/cu_kpoint_convergence/) | DFT | QE | < 1 meV/atom | Converged at 12x12x12 |
-| [Water density](examples/water_density/) | MD | LAMMPS | 0.997 g/cm³ | 0.985 g/cm³ |
-| [IRMOF-1 void fraction](examples/irmof1_void_fraction/) | MC | RASPA3 | 0.7988 | 0.8025 |
-
-### Workflow Orchestration
-
-| Example | Method | Engine | Reference | Agent Result |
-|---------|--------|--------|-----------|-------------|
-| [NiO band gap](examples/nio_bandgap/) | DFT | QE | 4.0 eV | 2.11 eV (DFT+U) |
-| [CO₂ in UiO-66](examples/co2_uio66_adsorption/) | MC | RASPA3 | 5.98 mmol/g | 5.48 mmol/g |
-| [Al melting point](examples/al_melting_point/) | MD | LAMMPS | 933 K | ~850-880 K |
-| [NaCl solution density](examples/nacl_solution_density/) | MD | LAMMPS | 1.038 g/cm³ | 1.033 g/cm³ |
-
-<p align="center">
-  <img src="examples/cu_kpoint_convergence/k_convergence_plot.png" width="260">
-  <img src="examples/nio_bandgap/nio_bandgap.png" width="260">
-  <img src="examples/co2_uio66_adsorption/output/co2_isotherm.png" width="260">
-</p>
+Channels are added via [NanoClaw skills](https://github.com/qwibitai/nanoclaw) — run the corresponding `/add-*` command inside `claude` CLI.
 
 ## Architecture
 
@@ -180,7 +275,8 @@ Benchmark tasks adapted from [QUASAR](https://github.com/fengxuyy/QUASAR). All e
 
 For full architecture details, see [docs/SPEC.md](docs/SPEC.md). For the security model and container isolation design, see [docs/SECURITY.md](docs/SECURITY.md).
 
-## Configuration
+<details>
+<summary><strong>Configuration</strong></summary>
 
 ### API Keys
 
@@ -210,7 +306,10 @@ MatClaw works with any Anthropic-compatible API. Pass credentials via stdin JSON
 | `MAX_CONCURRENT_CONTAINERS` | `5` | Max parallel agent containers |
 | `AGENT_TIMEOUT` | `300` | Agent execution timeout (seconds) |
 
-## Testing
+</details>
+
+<details>
+<summary><strong>Testing</strong></summary>
 
 **Latest test results (all passing):**
 
@@ -222,6 +321,8 @@ MatClaw works with any Anthropic-compatible API. Pass credentials via stdin JSON
 | RASPA3 MC | **98.66 kg/m³** | Methane in box, 300K |
 | Python packages | **8/8 present** | pymatgen, ASE, MACE, torch, numpy, scipy, matplotlib, spglib |
 | Agent (E2E) | **-10.82 eV** | Autonomous Si energy calculation |
+
+</details>
 
 ## Acknowledgments
 
@@ -236,7 +337,8 @@ MatClaw is built on [NanoClaw](https://github.com/qwibitai/nanoclaw) and relies 
 - [Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk) — AI agent framework
 - [QUASAR](https://github.com/fengxuyy/QUASAR) — Benchmark test cases referenced from this project
 
-## Project Structure
+<details>
+<summary><strong>Project Structure</strong></summary>
 
 ```
 matclaw/
@@ -254,6 +356,8 @@ matclaw/
 │       └── agent-browser/      # Browser automation
 └── groups/                     # Per-group isolated memory
 ```
+
+</details>
 
 ## Documentation
 
