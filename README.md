@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/LAMMPS-2021-7C3AED" alt="LAMMPS">&nbsp;
   <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">&nbsp;
   <img src="https://img.shields.io/badge/MACE--MP--0-latest-D97706" alt="MACE">&nbsp;
-  <img src="https://img.shields.io/badge/tests-6%2F6%20passed-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-passing-brightgreen" alt="Tests">
 </p>
 
 ---
@@ -77,7 +77,7 @@ All pre-installed in conda base environment:
 
 ```bash
 git clone https://gitee.com/baiyuan1/mat-claw.git
-cd matclaw
+cd mat-claw
 ./container/build.sh
 ```
 
@@ -100,14 +100,13 @@ echo '{
 
 ### 3. Full agent setup with messaging channels
 
-PLACEHOLDER_BASH
+```bash
 npm install
 # Configure a channel (see docs):
-
-
 # - Feishu: docs/feishu-setup.md
 # - Gmail: docs/gmail-setup.md
 npm run dev
+```
 
 ## Example Workflows
 
@@ -229,7 +228,7 @@ MatClaw works with any Anthropic-compatible API. Pass credentials via stdin JSON
 | LAMMPS MD | **50 steps** | FCC Cu, LJ potential, NVE ensemble |
 | RASPA3 MC | **98.66 kg/m³** | Methane in box, 300K |
 | Python packages | **8/8 present** | pymatgen, ASE, MACE, torch, numpy, scipy, matplotlib, spglib |
-| Agent (E2E) | **-10.82 eV** | Autonomous Si energy calculation via DeepSeek API |
+| Agent (E2E) | **-10.82 eV** | Autonomous Si energy calculation |
 
 ## Built on NanoClaw
 

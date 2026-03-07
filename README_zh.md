@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/LAMMPS-2021-7C3AED" alt="LAMMPS">&nbsp;
   <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">&nbsp;
   <img src="https://img.shields.io/badge/MACE--MP--0-latest-D97706" alt="MACE">&nbsp;
-  <img src="https://img.shields.io/badge/测试-6%2F6%20通过-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/测试-通过-brightgreen" alt="Tests">
 </p>
 
 ---
@@ -77,7 +77,7 @@ MatClaw: 正在编写 si_energy.py...
 
 ```bash
 git clone https://gitee.com/baiyuan1/mat-claw.git
-cd matclaw
+cd mat-claw
 ./container/build.sh
 ```
 
@@ -233,7 +233,7 @@ MatClaw 支持任何 Anthropic 兼容 API。通过 stdin JSON 传入凭据：
 | LAMMPS MD | **50 步** | FCC Cu，LJ 势，NVE 系综 |
 | RASPA3 MC | **98.66 kg/m³** | 甲烷盒子，300K |
 | Python 包 | **8/8 完整** | pymatgen, ASE, MACE, torch, numpy, scipy, matplotlib, spglib |
-| Agent (E2E) | **-10.82 eV** | 通过 DeepSeek API 自主完成 Si 能量计算 |
+| Agent (E2E) | **-10.82 eV** | 自主完成 Si 能量计算 |
 
 ## 基于 NanoClaw
 
