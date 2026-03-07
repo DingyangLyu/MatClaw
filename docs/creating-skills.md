@@ -1,6 +1,6 @@
 # Creating Skills
 
-MatClaw uses [NanoClaw's skill system](https://github.com/qwibitai/nanoclaw) to extend functionality. Skills are not plugins — they modify the actual codebase via git three-way merges, so they can change anything: add channels, integrations, container tools, or replace internals entirely.
+MatClaw uses a skill system to extend functionality. Skills are not plugins — they modify the actual codebase via git three-way merges, so they can change anything: add channels, integrations, container tools, or replace internals entirely.
 
 For the full architecture details, see [Skills Architecture](nanorepo-architecture.md).
 

@@ -34,6 +34,7 @@
 - [Architecture](#architecture)
 - [Configuration](#configuration)
 - [Documentation](#documentation)
+- [Contributing](#contributing)
 - [Citation](#citation)
 
 ## What is MatClaw?
@@ -51,7 +52,7 @@ MatClaw is an **AI agent that autonomously performs materials science computatio
 - **All-in-one container** — QE 7.5, LAMMPS, RASPA3, MACE, pymatgen, ASE, PyTorch pre-installed and ready
 - **Secure isolation** — Every computation runs in a disposable Docker container with filesystem isolation
 - **Flexible LLM backend** — Works with Anthropic Claude, DeepSeek, or any Anthropic-compatible API
-- **Multi-channel access** — Chat via Feishu, Gmail, WhatsApp, Telegram, Discord, Slack (via [NanoClaw](https://github.com/qwibitai/nanoclaw) skill system)
+- **Multi-channel access** — Chat via Feishu, DingTalk, Gmail, WhatsApp, Telegram, Discord, Slack
 - **Extensible** — Conda/pip available inside container; agent can install additional packages on-the-fly
 
 ## Built-in Computation Skills
@@ -280,12 +281,13 @@ npm run dev
 Configure at least one messaging channel to chat with your agent:
 
 - **[Feishu (飞书)](docs/feishu-setup.md)** — WebSocket connection, no public URL needed. Recommended for China users.
+- **[DingTalk (钉钉)](docs/dingtalk-setup.md)** — Stream Mode (WebSocket), no public URL needed. Auto-registers groups on first message.
 - **[Gmail](docs/gmail-setup.md)** — Send computation tasks via email, receive results back.
 - **WhatsApp** — Add via `/add-whatsapp` skill, QR code authentication.
 - **Telegram** — Add via `/add-telegram` skill, Bot API.
 - **Discord / Slack** — Add via `/add-discord` or `/add-slack` skill.
 
-Channels are added via [NanoClaw skills](https://github.com/qwibitai/nanoclaw) — run the corresponding `/add-*` command inside `claude` CLI.
+Channels are added via the skill system — run the corresponding `/add-*` command inside `claude` CLI.
 
 ## Architecture
 
@@ -364,6 +366,16 @@ MatClaw works with any Anthropic-compatible API. Pass credentials via stdin JSON
 
 </details>
 
+## Contributing
+
+We welcome contributions — especially new computation skills! Adding a skill is as simple as writing a single `SKILL.md` file with runnable scripts and parameter guides. No need to touch core code.
+
+```
+container/skills/<group>/<your-skill>/SKILL.md
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including the SKILL.md template, testing instructions, and PR workflow.
+
 ## Acknowledgments
 
 MatClaw is built on [NanoClaw](https://github.com/qwibitai/nanoclaw) and relies on the following open-source projects:
@@ -425,14 +437,13 @@ matclaw/
 | [Architecture Spec](docs/SPEC.md) | Full system architecture and design |
 | [Security Model](docs/SECURITY.md) | Container isolation and trust model |
 | [Requirements](docs/REQUIREMENTS.md) | Original requirements and design decisions |
-| [Debug Checklist](docs/DEBUG_CHECKLIST.md) | Troubleshooting known issues |
 | [Feishu Setup](docs/feishu-setup.md) | Feishu channel configuration guide |
+| [DingTalk Setup](docs/dingtalk-setup.md) | DingTalk channel configuration guide |
 | [Gmail Setup](docs/gmail-setup.md) | Gmail channel configuration guide |
 | [SDK Deep Dive](docs/SDK_DEEP_DIVE.md) | Claude Agent SDK internals |
 | [Materials Compute Skills](docs/materials-compute-skills.md) | Full inventory of 213 built-in computation skills |
 | [Creating Skills](docs/creating-skills.md) | How to create a new skill (template included) |
 | [Skills Architecture](docs/nanorepo-architecture.md) | How the skill system works (internals) |
-| [Apple Container Networking](docs/APPLE-CONTAINER-NETWORKING.md) | macOS container network setup |
 
 ## Roadmap
 

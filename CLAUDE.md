@@ -1,6 +1,6 @@
 # MatClaw
 
-Materials science AI assistant powered by Claude Agent SDK. Built on [NanoClaw](https://github.com/qwibitai/nanoclaw) architecture with integrated computational materials science tools (Quantum ESPRESSO, LAMMPS, RASPA3, MACE, pymatgen, ASE, etc.).
+Materials science AI assistant powered by Claude Agent SDK, with integrated computational materials science tools (Quantum ESPRESSO, LAMMPS, RASPA3, MACE, pymatgen, ASE, etc.).
 
 ## Quick Context
 
