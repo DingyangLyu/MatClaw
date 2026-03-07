@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="README_draft_zh.md">中文</a>&nbsp; · &nbsp;
+  <a href="README_zh.md">中文</a>&nbsp; · &nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>&nbsp;
   <img src="https://img.shields.io/badge/Docker-24.04-2496ED?logo=docker&logoColor=white" alt="Docker">&nbsp;
   <img src="https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs&logoColor=white" alt="Node.js 20+">&nbsp;
