@@ -17,9 +17,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/QE-7.5-4F46E5" alt="QE 7.5">&nbsp;
   <img src="https://img.shields.io/badge/LAMMPS-2021-7C3AED" alt="LAMMPS">&nbsp;
-  <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">&nbsp;
-  <img src="https://img.shields.io/badge/MACE--MP--0-latest-D97706" alt="MACE">&nbsp;
-  <img src="https://img.shields.io/badge/tests-passing-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">
 </p>
 
 ---
@@ -305,22 +303,6 @@ MatClaw works with any Anthropic-compatible API. Pass credentials via stdin JSON
 | `CONTAINER_RUNTIME` | `docker` | Container runtime (`docker`, `podman`, `nerdctl`) |
 | `MAX_CONCURRENT_CONTAINERS` | `5` | Max parallel agent containers |
 | `AGENT_TIMEOUT` | `300` | Agent execution timeout (seconds) |
-
-</details>
-
-<details>
-<summary><strong>Testing</strong></summary>
-
-**Latest test results (all passing):**
-
-| Test | Result | Detail |
-|------|--------|--------|
-| MACE energy | **-10.68 eV** | 2-atom Si diamond cell |
-| QE SCF | **-93.44 Ry** | Si with PAW pseudopotentials, 4×4×4 k-grid |
-| LAMMPS MD | **50 steps** | FCC Cu, LJ potential, NVE ensemble |
-| RASPA3 MC | **98.66 kg/m³** | Methane in box, 300K |
-| Python packages | **8/8 present** | pymatgen, ASE, MACE, torch, numpy, scipy, matplotlib, spglib |
-| Agent (E2E) | **-10.82 eV** | Autonomous Si energy calculation |
 
 </details>
 

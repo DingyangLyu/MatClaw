@@ -17,9 +17,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/QE-7.5-4F46E5" alt="QE 7.5">&nbsp;
   <img src="https://img.shields.io/badge/LAMMPS-2021-7C3AED" alt="LAMMPS">&nbsp;
-  <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">&nbsp;
-  <img src="https://img.shields.io/badge/MACE--MP--0-latest-D97706" alt="MACE">&nbsp;
-  <img src="https://img.shields.io/badge/测试-通过-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">
 </p>
 
 ---
@@ -305,22 +303,6 @@ MatClaw 支持任何 Anthropic 兼容 API。通过 stdin JSON 传入凭据：
 | `CONTAINER_RUNTIME` | `docker` | 容器运行时（`docker`、`podman`、`nerdctl`） |
 | `MAX_CONCURRENT_CONTAINERS` | `5` | 最大并行 Agent 容器数 |
 | `AGENT_TIMEOUT` | `300` | Agent 执行超时（秒） |
-
-</details>
-
-<details>
-<summary><strong>测试</strong></summary>
-
-**最新测试结果（全部通过）：**
-
-| 测试 | 结果 | 详情 |
-|------|------|------|
-| MACE 能量 | **-10.68 eV** | 2 原子 Si 金刚石晶胞 |
-| QE SCF | **-93.44 Ry** | Si，PAW 赝势，4×4×4 k 点网格 |
-| LAMMPS MD | **50 步** | FCC Cu，LJ 势，NVE 系综 |
-| RASPA3 MC | **98.66 kg/m³** | 甲烷盒子，300K |
-| Python 包 | **8/8 完整** | pymatgen, ASE, MACE, torch, numpy, scipy, matplotlib, spglib |
-| Agent (E2E) | **-10.82 eV** | 自主完成 Si 能量计算 |
 
 </details>
 
