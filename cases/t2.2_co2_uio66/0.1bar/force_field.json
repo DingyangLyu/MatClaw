@@ -1,0 +1,146 @@
+{
+  "PseudoAtoms" :
+  [
+    {
+      "name" : "Zr01",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "Zr",
+      "print_as" : "Zr",
+      "mass" : 91.224,
+      "charge" : 0.0
+    },
+    {
+      "name" : "O001",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "O",
+      "print_as" : "O",
+      "mass" : 15.9994,
+      "charge" : 0.0
+    },
+    {
+      "name" : "O002",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "O",
+      "print_as" : "O",
+      "mass" : 15.9994,
+      "charge" : 0.0
+    },
+    {
+      "name" : "C001",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "C",
+      "print_as" : "C",
+      "mass" : 12.0107,
+      "charge" : 0.0
+    },
+    {
+      "name" : "C002",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "C",
+      "print_as" : "C",
+      "mass" : 12.0107,
+      "charge" : 0.0
+    },
+    {
+      "name" : "C003",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "C",
+      "print_as" : "C",
+      "mass" : 12.0107,
+      "charge" : 0.0
+    },
+    {
+      "name" : "H003",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "H",
+      "print_as" : "H",
+      "mass" : 1.00794,
+      "charge" : 0.0
+    },
+    {
+      "name" : "C_co2",
+      "framework" : false,
+      "print_to_output" : true,
+      "element" : "C",
+      "print_as" : "C",
+      "mass" : 12.0,
+      "charge" : 0.6512
+    },
+    {
+      "name" : "O_co2",
+      "framework" : false,
+      "print_to_output" : true,
+      "element" : "O",
+      "print_as" : "O",
+      "mass" : 15.9994,
+      "charge" : -0.3256
+    }
+  ],
+  "SelfInteractions" :
+  [
+    {
+      "name" : "Zr01",
+      "type" : "lennard-jones",
+      "parameters" : [34.722, 2.783],
+      "source" : "UFF estimated"
+    },
+    {
+      "name" : "O001",
+      "type" : "lennard-jones",
+      "parameters" : [48.1581, 3.03315],
+      "source" : "DREIDING S.L. Mayo et al., J. Phys. Chem. 1990, 94, 8897-8909"
+    },
+    {
+      "name" : "O002",
+      "type" : "lennard-jones",
+      "parameters" : [48.1581, 3.03315],
+      "source" : "DREIDING S.L. Mayo et al., J. Phys. Chem. 1990, 94, 8897-8909"
+    },
+    {
+      "name" : "C001",
+      "type" : "lennard-jones",
+      "parameters" : [47.8562, 3.47299],
+      "source" : "DREIDING S.L. Mayo et al., J. Phys. Chem. 1990, 94, 8897-8909"
+    },
+    {
+      "name" : "C002",
+      "type" : "lennard-jones",
+      "parameters" : [47.8562, 3.47299],
+      "source" : "DREIDING S.L. Mayo et al., J. Phys. Chem. 1990, 94, 8897-8909"
+    },
+    {
+      "name" : "C003",
+      "type" : "lennard-jones",
+      "parameters" : [47.8562, 3.47299],
+      "source" : "DREIDING S.L. Mayo et al., J. Phys. Chem. 1990, 94, 8897-8909"
+    },
+    {
+      "name" : "H003",
+      "type" : "lennard-jones",
+      "parameters" : [7.64893, 2.84642],
+      "source" : "DREIDING S.L. Mayo et al., J. Phys. Chem. 1990, 94, 8897-8909"
+    },
+    {
+      "name" : "O_co2",
+      "type" : "lennard-jones",
+      "parameters" : [85.671, 3.017],
+      "source" : "A. Garcia-Sanchez et al., J. Phys. Chem. C 2009, 113, 8814-8820"
+    },
+    {
+      "name" : "C_co2",
+      "type" : "lennard-jones",
+      "parameters" : [29.933, 2.745],
+      "source" : "A. Garcia-Sanchez et al., J. Phys. Chem. C 2009, 113, 8814-8820"
+    }
+  ],
+  "MixingRule" : "Lorentz-Berthelot",
+  "TruncationMethod" : "shifted",
+  "TailCorrections" : false
+}

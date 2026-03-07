@@ -1,0 +1,58 @@
+# LAMMPS NVT heating simulation for aluminum melting point
+# Using Zhou EAM potential
+# Read equilibrated configuration and heat with NVT
+
+# Units
+units metal
+
+# Atom style
+atom_style atomic
+
+# Read data file
+read_data final.data
+
+# Define potential
+pair_style eam/alloy
+pair_coeff * * /usr/share/lammps/potentials/Al_zhou.eam.alloy Al
+
+# Velocity initialization
+velocity all create 300.0 12345 rot yes dist gaussian
+
+# Neighbor settings
+neighbor 3.0 bin
+neigh_modify delay 5 every 1 check yes
+
+# Thermodynamic output
+thermo 100
+thermo_style custom step temp pe ke etotal press density vol
+
+# Minimization (optional)
+minimize 1e-10 1e-10 1000 1000
+
+# Equilibration at 300K NVT
+reset_timestep 0
+timestep 0.001
+fix 1 all nvt temp 300 300 0.5
+run 5000
+unfix 1
+
+# Heating run: linear temperature ramp from 300K to 1200K over 10 ps with NVT
+fix 2 all nvt temp 300 1200 0.5
+
+# Compute potential energy per atom
+compute peatom all pe/atom
+compute pe all reduce sum c_peatom
+variable peatom equal c_pe/atoms
+variable density equal density
+
+# Output temperature, peatom, density every 50 steps
+fix 3 all print 50 "${step} ${temp} ${peatom} ${density}" file nvt_test.out screen no title "# Step Temp PEatom Density"
+
+# Run heating for 10000 steps (10 ps)
+run 10000
+
+# Write final configuration
+write_data final_nvt_test.data
+write_dump all atom final_nvt_test.dump
+
+print "NVT heating simulation completed"

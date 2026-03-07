@@ -1,0 +1,77 @@
+# LAMMPS input script for NaCl aqueous solution density calculation
+# 1 mol/L NaCl, SPC/E water, OPLS-AA ions
+# Initial configuration from packmol
+
+# Initialization
+units real
+atom_style full
+dimension 3
+boundary p p p
+newton on
+
+# Read data file
+read_data data.nacl
+
+# Pair potentials
+pair_style lj/cut/coul/long 10.0
+pair_coeff 1 1 0.1554 3.166    # O-O (SPC/E)
+pair_coeff 2 2 0.0 0.0         # H-H (no LJ)
+pair_coeff 3 3 0.130 2.35      # Na-Na (OPLS-AA)
+pair_coeff 4 4 0.100 4.40      # Cl-Cl (OPLS-AA)
+# cross interactions using default geometric mixing (Lorentz-Berthelot)
+
+# Bond and angle potentials (water)
+bond_style harmonic
+angle_style harmonic
+bond_coeff 1 1000.0 1.0        # OH bond
+angle_coeff 1 100.0 109.47     # HOH angle
+
+# KSpace for long-range electrostatics
+kspace_style pppm 1.0e-4
+
+# SHAKE to constrain water geometry (will be applied after minimization)
+# fix shake all shake 0.0001 20 0 b 1 a 1
+
+# Output
+thermo_style custom step temp press density vol etotal ebond eangle evdwl ecoul elong
+thermo 100
+
+# Dump trajectory
+dump 1 all atom 1000 traj.nacl.lammpstrj
+dump_modify 1 sort id
+
+# Timestep
+timestep 2.0
+
+# Energy minimization
+min_style cg
+minimize 1.0e-4 1.0e-6 1000 10000
+
+# Equilibration NVT
+velocity all create 298.0 12345
+fix 1 all nvt temp 298.0 298.0 100.0
+run 2000
+unfix 1
+
+# Equilibration NPT
+fix 2 all npt temp 298.0 298.0 100.0 iso 1.0 1.0 1000.0
+run 5000
+unfix 2
+
+# Production NPT (measure density)
+fix 3 all npt temp 298.0 298.0 100.0 iso 1.0 1.0 1000.0
+run 10000
+
+# Compute average density
+variable dens equal density
+variable dens_avg equal ave(v_dens)
+variable dens_std equal sqrt(ave(v_dens*v_dens)-v_dens_avg*v_dens_avg)
+thermo_style custom step temp press density v_dens_avg v_dens_std
+run 20000
+
+# Print final results
+print "Average density: ${dens_avg} g/cm^3"
+print "Standard deviation: ${dens_std} g/cm^3"
+
+# Write restart file
+write_restart final.restart

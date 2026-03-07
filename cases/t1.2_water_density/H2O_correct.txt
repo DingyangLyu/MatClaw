@@ -1,0 +1,28 @@
+# Water molecule TIP3P geometry
+
+3 atoms
+2 bonds
+1 angles
+0 dihedrals
+0 impropers
+
+Coords
+
+1  0.0 0.0 0.0
+2  0.9572 0.0 0.0
+3  -0.2399872084090341 0.9266272064859951 0.0
+
+Types
+
+1 1
+2 2
+3 2
+
+Bonds
+
+1 1 1 2
+2 1 1 3
+
+Angles
+
+1 1 2 1 3

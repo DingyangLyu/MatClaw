@@ -1,0 +1,29 @@
+ &input
+   title='Ni',
+   zed=28.,
+   rel=1,
+   config='[Ar] 4s2 4p0 3d8',
+   iswitch=3,
+   dft='PBE'
+ /
+ &inputp
+   lpaw=.true.,
+   pseudotype=3,
+   file_pseudopw='Ni.pbe-spn-kjpaw_psl.1.0.0.UPF',
+   author='ADC',
+   lloc=-1,
+   rcloc=1.5,
+   which_augfun='PSQ',
+   rmatch_augfun_nc=.true.,
+   nlcc=.true.,
+   new_core_ps=.true.,
+   rcore=0.8,
+   tm=.true.
+ /
+6
+3S  1  0  2.00  0.00  0.80  1.20  0.0
+4S  2  0  2.00  0.00  0.80  1.20  0.0
+3P  2  1  6.00  0.00  1.00  1.20  0.0
+4P  3  1  0.00  7.00  1.00  1.20  0.0
+3D  3  2  8.00  0.00  1.00  1.40  0.0
+3D  3  2  0.00  4.00  1.00  1.40  0.0

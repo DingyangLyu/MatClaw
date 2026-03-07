@@ -1,0 +1,32 @@
+{
+  "SimulationType": "MonteCarlo",
+  "NumberOfCycles": 200000,
+  "NumberOfInitializationCycles": 20000,
+  "PrintEvery": 10000,
+
+  "Systems": [
+    {
+      "Type": "Framework",
+      "Name": "IRMOF-1",
+      "NumberOfUnitCells": [1, 1, 1],
+      "ChargeMethod": "Ewald",
+      "ExternalTemperature": 298.0,
+      "ExternalPressure": 1e5
+    }
+  ],
+
+  "Components": [
+    {
+      "Name": "He",
+      "MoleculeDefinition": ".",
+      "MolFraction": 1.0,
+      "IdealGasRosenbluthWeight": 1.0,
+      "TranslationProbability": 0.5,
+      "RotationProbability": 0.5,
+      "ReinsertionProbability": 0.5,
+      "SwapProbability": 1.0,
+      "WidomProbability": 1.0,
+      "CreateNumberOfMolecules": 0
+    }
+  ]
+}

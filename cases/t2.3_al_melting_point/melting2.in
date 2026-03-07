@@ -1,0 +1,66 @@
+# LAMMPS input script for aluminum melting point calculation
+# Using Zhou EAM potential
+# Loop over temperatures
+
+# Units
+units metal
+
+# Atom style
+atom_style atomic
+
+# Create box and lattice
+lattice fcc 4.041
+region box block 0 4 0 4 0 4
+create_box 1 box
+create_atoms 1 box
+
+# Define potential
+pair_style eam/alloy
+pair_coeff * * /usr/share/lammps/potentials/Al_zhou.eam.alloy Al
+
+# Velocity initialization
+velocity all create 300.0 12345 rot yes dist gaussian
+
+# Neighbor settings
+neighbor 2.0 bin
+neigh_modify delay 0 every 1 check yes
+
+# Thermodynamic output
+thermo 100
+thermo_style custom step temp pe ke etotal press density vol
+
+# Minimization
+minimize 1e-10 1e-10 1000 1000
+
+# Equilibration at 300K and 1 atm (NPT)
+reset_timestep 0
+timestep 0.001
+fix 1 all npt temp 300 300 0.1 iso 0 0 1.0
+run 5000
+unfix 1
+
+# Define temperature list
+variable T index 300 350 400 450 500 550 600 650 700 750 800 850 900 950 1000 1050 1100 1150 1200 1250 1300 1350 1400 1450 1500
+
+# Setup compute for potential energy per atom
+compute peatom all pe/atom
+compute pe all reduce sum c_peatom
+variable peatom equal c_pe/atoms
+variable density equal density
+
+# Output file
+variable myTemp equal ${T}
+fix 2 all print 100 "${myTemp} ${peatom} ${density}" file thermo.out screen no
+
+# Loop over temperatures
+label loop
+variable Tcur equal ${T}
+fix 3 all npt temp ${Tcur} ${Tcur} 0.1 iso 0 0 1.0
+run 2000
+unfix 3
+next T
+jump SELF loop
+
+# After loop
+write_data final.data
+write_dump all atom final.dump
