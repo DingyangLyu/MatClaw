@@ -1,0 +1,131 @@
+{
+  "PseudoAtoms" :
+  [
+    {
+      "name" : "Zn1",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "Zn",
+      "print_as" : "Zn",
+      "mass" : 65.37,
+      "charge" : 0.0
+    },
+    {
+      "name" : "O1",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "O",
+      "print_as" : "O",
+      "mass" : 15.9994,
+      "charge" : 0.0
+    },
+    {
+      "name" : "O2",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "O",
+      "print_as" : "O",
+      "mass" : 15.9994,
+      "charge" : 0.0
+    },
+    {
+      "name" : "C1",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "C",
+      "print_as" : "C",
+      "mass" : 12.0107,
+      "charge" : 0.0
+    },
+    {
+      "name" : "C2",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "C",
+      "print_as" : "C",
+      "mass" : 12.0107,
+      "charge" : 0.0
+    },
+    {
+      "name" : "C3",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "C",
+      "print_as" : "C",
+      "mass" : 12.0107,
+      "charge" : 0.0
+    },
+    {
+      "name" : "H1",
+      "framework" : true,
+      "print_to_output" : true,
+      "element" : "H",
+      "print_as" : "H",
+      "mass" : 1.00794,
+      "charge" : 0.0
+    },
+    {
+      "name" : "He",
+      "framework" : false,
+      "print_to_output" : true,
+      "element" : "He",
+      "print_as" : "He",
+      "mass" : 4.002602,
+      "charge" : 0.0
+    }
+  ],
+  "SelfInteractions" :
+  [
+    {
+      "name" : "Zn1",
+      "type" : "lennard-jones",
+      "parameters" : [62.399, 2.461],
+      "source" : "UFF: A.K. Rappe et al., J. Am. Chem. Soc. 1992, 114, 10024"
+    },
+    {
+      "name" : "O1",
+      "type" : "lennard-jones",
+      "parameters" : [30.193, 3.118],
+      "source" : "UFF: A.K. Rappe et al., J. Am. Chem. Soc. 1992, 114, 10024"
+    },
+    {
+      "name" : "O2",
+      "type" : "lennard-jones",
+      "parameters" : [30.193, 3.118],
+      "source" : "UFF: A.K. Rappe et al., J. Am. Chem. Soc. 1992, 114, 10024"
+    },
+    {
+      "name" : "C1",
+      "type" : "lennard-jones",
+      "parameters" : [52.838, 3.431],
+      "source" : "UFF: A.K. Rappe et al., J. Am. Chem. Soc. 1992, 114, 10024"
+    },
+    {
+      "name" : "C2",
+      "type" : "lennard-jones",
+      "parameters" : [52.838, 3.431],
+      "source" : "UFF: A.K. Rappe et al., J. Am. Chem. Soc. 1992, 114, 10024"
+    },
+    {
+      "name" : "C3",
+      "type" : "lennard-jones",
+      "parameters" : [52.838, 3.431],
+      "source" : "UFF: A.K. Rappe et al., J. Am. Chem. Soc. 1992, 114, 10024"
+    },
+    {
+      "name" : "H1",
+      "type" : "lennard-jones",
+      "parameters" : [22.142, 2.571],
+      "source" : "UFF: A.K. Rappe et al., J. Am. Chem. Soc. 1992, 114, 10024"
+    },
+    {
+      "name" : "He",
+      "type" : "lennard-jones",
+      "parameters" : [10.9, 2.64],
+      "source" : "Talu & Myers, AIChE J. 2001, 47, 1160-1168"
+    }
+  ],
+  "MixingRule" : "Lorentz-Berthelot",
+  "TruncationMethod" : "shifted",
+  "TailCorrections" : false
+}

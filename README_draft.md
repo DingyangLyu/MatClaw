@@ -17,6 +17,17 @@
 
 ---
 
+## Contents
+
+- [What is MatClaw?](#what-is-matclaw)
+- [Examples](#examples)
+- [Computation Stack](#computation-stack)
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Configuration](#configuration)
+- [Documentation](#documentation)
+- [Citation](#citation)
+
 ## What is MatClaw?
 
 MatClaw is an **AI agent that autonomously performs materials science computations**. You describe a task in natural language — it writes Python/shell scripts, runs them inside an isolated Docker container equipped with a full computation stack, and returns the results.
@@ -27,7 +38,7 @@ Send a task in natural language via Feishu (or any other channel). MatClaw write
 
 No manual scripting. No input file debugging. Just results.
 
-## Key Features
+**Key Features:**
 
 - **Autonomous computation** — Understands your task, writes code, executes it, analyzes output, retries on errors
 - **All-in-one container** — QE 7.5, LAMMPS, RASPA3, MACE, pymatgen, ASE, PyTorch pre-installed and ready
@@ -35,6 +46,77 @@ No manual scripting. No input file debugging. Just results.
 - **Flexible LLM backend** — Works with Anthropic Claude, DeepSeek, or any Anthropic-compatible API
 - **Multi-channel access** — Chat via Feishu, Gmail, WhatsApp, Telegram, Discord, Slack (via [NanoClaw](https://github.com/qwibitai/nanoclaw) skill system)
 - **Extensible** — Conda/pip available inside container; agent can install additional packages on-the-fly
+
+## Examples
+
+Benchmark tasks adapted from [QUASAR](https://github.com/fengxuyy/QUASAR). All executed autonomously — the agent writes scripts, runs simulations, and reports results. See [`examples/`](examples/) for full details.
+
+### Cu K-point Convergence (DFT / Quantum ESPRESSO)
+> Calculate k-point density to converge bulk Cu energy to 1 meV/atom. Agent runs 8 QE calculations and plots convergence.
+
+<p align="center"><img src="examples/cu_kpoint_convergence/feishu-chat-1.png" width="700"></p>
+
+---
+
+### Water Density (MD / LAMMPS)
+> Calculate the density of water at 298 K and 1 bar. Agent builds a SPC/E water box, runs NPT simulation, and reports with diagnostic plots.
+
+<p align="center"><img src="examples/water_density/feishu-chat-1.png" width="700"></p>
+
+---
+
+### IRMOF-1 Void Fraction (MC / RASPA3)
+> Calculate helium-accessible void fraction and pore volume for IRMOF-1 at 298 K. Agent configures and runs RASPA3 Widom insertion MC.
+
+<p align="center"><img src="examples/irmof1_void_fraction/feishu-chat-1.png" width="700"></p>
+
+---
+
+### NiO Band Gap (DFT+U / Quantum ESPRESSO)
+> Calculate the electronic band gap of NiO. Agent recognizes it as a strongly correlated system and autonomously applies DFT+U.
+
+<p align="center"><img src="examples/nio_bandgap/feishu-chat-1.png" width="700"></p>
+
+---
+
+### CO₂ Adsorption in UiO-66 (MC / RASPA3)
+> Calculate CO₂ adsorption isotherm at 4 pressure points. Agent runs GCMC simulations and generates the isotherm plot.
+
+<p align="center"><img src="examples/co2_uio66_adsorption/feishu-chat-1.png" width="700"></p>
+
+---
+
+### Al Melting Point (MD / LAMMPS)
+> Calculate the melting point of aluminum via two-phase coexistence. Agent builds 8000-atom system and analyzes with bond-order parameters.
+
+<p align="center"><img src="examples/al_melting_point/feishu-chat-1.png" width="700"></p>
+
+---
+
+### NaCl Solution Density (MD / LAMMPS + packmol)
+> Calculate density of 1 mol/L NaCl solution. Agent autonomously installs packmol (not pre-installed), builds the system, and runs MD.
+
+<p align="center"><img src="examples/nacl_solution_density/feishu-chat-1.png" width="700"></p>
+
+---
+
+### Results Summary
+
+| Example | Method | Engine | Reference | Agent Result |
+|---------|--------|--------|-----------|-------------|
+| [Cu k-point convergence](examples/cu_kpoint_convergence/) | DFT | QE | < 1 meV/atom | Converged at 12x12x12 |
+| [Water density](examples/water_density/) | MD | LAMMPS | 0.997 g/cm³ | 0.985 g/cm³ |
+| [IRMOF-1 void fraction](examples/irmof1_void_fraction/) | MC | RASPA3 | 0.7988 | 0.8025 |
+| [NiO band gap](examples/nio_bandgap/) | DFT | QE | 4.0 eV | 2.11 eV (DFT+U) |
+| [CO₂ in UiO-66](examples/co2_uio66_adsorption/) | MC | RASPA3 | 5.98 mmol/g | 5.48 mmol/g |
+| [Al melting point](examples/al_melting_point/) | MD | LAMMPS | 933 K | ~850-880 K |
+| [NaCl solution density](examples/nacl_solution_density/) | MD | LAMMPS | 1.038 g/cm³ | 1.033 g/cm³ |
+
+<p align="center">
+  <img src="examples/cu_kpoint_convergence/k_convergence_plot.png" width="260">
+  <img src="examples/nio_bandgap/nio_bandgap.png" width="260">
+  <img src="examples/co2_uio66_adsorption/output/co2_isotherm.png" width="260">
+</p>
 
 ## Computation Stack
 
@@ -108,33 +190,6 @@ Configure at least one messaging channel to chat with your agent:
 - **Discord / Slack** — Add via `/add-discord` or `/add-slack` skill.
 
 Please refer to each channel's setup guide for detailed instructions. Channels are added via [NanoClaw skills](https://github.com/qwibitai/nanoclaw) — run the corresponding `/add-*` command inside `claude` CLI.
-
-## Examples
-
-Benchmark tasks adapted from [QUASAR](https://github.com/fengxuyy/QUASAR). All executed autonomously — the agent writes scripts, runs simulations, and reports results. See [`examples/`](examples/) for full details.
-
-### Basic Tasks
-
-| Example | Method | Engine | Reference | Agent Result |
-|---------|--------|--------|-----------|-------------|
-| [Cu k-point convergence](examples/cu_kpoint_convergence/) | DFT | QE | < 1 meV/atom | Converged at 12x12x12 |
-| [Water density](examples/water_density/) | MD | LAMMPS | 0.997 g/cm³ | 0.985 g/cm³ |
-| [IRMOF-1 void fraction](examples/irmof1_void_fraction/) | MC | RASPA3 | 0.7988 | 0.8025 |
-
-### Workflow Orchestration
-
-| Example | Method | Engine | Reference | Agent Result |
-|---------|--------|--------|-----------|-------------|
-| [NiO band gap](examples/nio_bandgap/) | DFT | QE | 4.0 eV | 2.11 eV (DFT+U) |
-| [CO₂ in UiO-66](examples/co2_uio66_adsorption/) | MC | RASPA3 | 5.98 mmol/g | 5.48 mmol/g |
-| [Al melting point](examples/al_melting_point/) | MD | LAMMPS | 933 K | ~850-880 K |
-| [NaCl solution density](examples/nacl_solution_density/) | MD | LAMMPS | 1.038 g/cm³ | 1.033 g/cm³ |
-
-<p align="center">
-  <img src="examples/cu_kpoint_convergence/k_convergence_plot.png" width="260">
-  <img src="examples/nio_bandgap/nio_bandgap.png" width="260">
-  <img src="examples/co2_uio66_adsorption/output/co2_isotherm.png" width="260">
-</p>
 
 ## Architecture
 

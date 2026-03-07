@@ -1,0 +1,28 @@
+# Step 3: Two-phase coexistence - run at target temperature
+# Usage: lmp -var T 933 -in in.step3_coexistence.lmp
+
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+
+read_data       twophase_950K.dat
+
+mass            1 26.982
+
+pair_style      eam/alloy
+pair_coeff      * * /usr/share/lammps/potentials/Al_zhou.eam.alloy Al
+
+# Run NPT at target temperature
+fix             1 all npt temp ${T} ${T} 0.1 aniso 0.0 0.0 1.0
+
+thermo          500
+thermo_style    custom step temp pe ke etotal press vol
+
+run             30000
+
+unfix           1
+
+write_data      final_T${T}.dat
+
+print "Coexistence run at T=${T} K done. Final temp: $(temp)"

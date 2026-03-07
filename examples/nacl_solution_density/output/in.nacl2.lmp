@@ -1,0 +1,74 @@
+# NaCl aqueous solution density at 298 K, 1 atm
+# SPC/E water + Joung-Cheatham (JPCB 2008) ion parameters
+
+units           real
+atom_style      full
+boundary        p p p
+
+read_data       nacl2.data
+
+# ---------------------------------------------------------------
+# Force field
+# ---------------------------------------------------------------
+pair_style      lj/cut/coul/long 10.0
+kspace_style    pppm 1.0e-5
+
+# SPC/E water
+pair_coeff 1 1  0.15535  3.16600   # O-O
+pair_coeff 2 2  0.00000  1.00000   # H-H (dummy)
+# Joung-Cheatham for SPC/E (JPCB 2008, Table 1)
+pair_coeff 3 3  0.35260  2.15953   # Na-Na
+pair_coeff 4 4  0.01279  4.83052   # Cl-Cl
+pair_modify    mix arithmetic
+
+bond_style      harmonic
+bond_coeff   1  1000.0  1.0000
+
+angle_style     harmonic
+angle_coeff  1  1000.0  109.47
+
+# ---------------------------------------------------------------
+# SHAKE for rigid SPC/E geometry
+# ---------------------------------------------------------------
+fix shake_water all shake 1.0e-4 200 0 b 1 a 1
+
+# ---------------------------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+# ---------------------------------------------------------------
+# Stage 1: Gentle NVT warmup with small timestep to remove overlaps
+# ---------------------------------------------------------------
+velocity all create 10.0 12345 dist gaussian
+fix nvt_warm all nvt temp 10.0 298.0 100.0
+timestep 0.5
+thermo 1000
+thermo_style custom step temp press vol density
+run 20000   # 10 ps warmup
+unfix nvt_warm
+
+# ---------------------------------------------------------------
+# Stage 2: NPT equilibration 298 K / 1 atm
+# ---------------------------------------------------------------
+fix npt_equil all npt temp 298.0 298.0 100.0 iso 1.0 1.0 1000.0
+timestep 2.0
+thermo 1000
+thermo_style custom step temp press vol density
+run 100000   # 200 ps
+unfix npt_equil
+
+# ---------------------------------------------------------------
+# Stage 3: NPT production 298 K / 1 atm
+# ---------------------------------------------------------------
+fix npt_prod all npt temp 298.0 298.0 100.0 iso 1.0 1.0 1000.0
+timestep 2.0
+thermo 500
+thermo_style custom step temp press vol density
+
+variable rho_gcc equal density
+fix avg_density all ave/time 500 10 5000 v_rho_gcc file density_prod.dat
+
+run 200000   # 400 ps production
+
+write_data nacl_final.data
+print "DONE"

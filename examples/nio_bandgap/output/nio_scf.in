@@ -1,0 +1,47 @@
+&CONTROL
+  calculation   = 'scf'
+  prefix        = 'NiO'
+  outdir        = './outdir'
+  pseudo_dir    = './pseudo'
+  verbosity     = 'high'
+  tprnfor       = .true.
+  tstress       = .true.
+/
+
+&SYSTEM
+  ibrav         = 2          ! FCC primitive cell
+  celldm(1)     = 7.892      ! a = 4.177 Å = 7.892 bohr
+  nat           = 2
+  ntyp          = 2
+  ecutwfc       = 60.0       ! Ry — appropriate for PAW+spn
+  ecutrho       = 480.0      ! Ry
+  nspin         = 2          ! spin-polarized
+  tot_magnetization = 2.0    ! Ni²⁺ high-spin: d⁸ → 2 unpaired → S=1 → 2 μB
+  occupations   = 'smearing'
+  smearing      = 'mv'
+  degauss       = 0.005      ! small smearing for insulator
+  starting_magnetization(1) = 0.5   ! Ni spin-up start
+  starting_magnetization(2) = 0.0   ! O non-magnetic
+/
+
+&ELECTRONS
+  conv_thr      = 1.0d-8
+  mixing_beta   = 0.3
+  mixing_mode   = 'plain'
+  electron_maxstep = 200
+  diagonalization = 'david'
+/
+
+ATOMIC_SPECIES
+  Ni  58.693  Ni.pbe-spn-kjpaw_psl.1.0.0.UPF
+  O   15.999  O.pbe-n-kjpaw_psl.1.0.0.UPF
+
+ATOMIC_POSITIONS {crystal}
+  Ni  0.0  0.0  0.0
+  O   0.5  0.5  0.5
+
+K_POINTS {automatic}
+  8 8 8  0 0 0
+
+HUBBARD (ortho-atomic)
+  U Ni-3d 6.0

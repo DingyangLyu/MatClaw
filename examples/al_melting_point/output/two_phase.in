@@ -1,0 +1,61 @@
+# Two-phase solid-liquid coexistence simulation
+# Determine melting point by interface motion
+# Usage: lmp -var T 950 -var datafile two_phase_T950.data -in two_phase.in
+
+units metal
+atom_style atomic
+boundary p p p
+
+# Read combined solid-liquid data
+read_data ${datafile}
+
+pair_style eam/alloy
+pair_coeff * * Al_zhou.eam.alloy Al
+
+neighbor 2.0 bin
+neigh_modify delay 0 every 1 check yes
+
+# Define regions for solid and liquid halves (based on initial configuration)
+# Assume solid occupies z < Lz/2, liquid z > Lz/2
+variable Lz equal lz
+variable half equal 0.5*${Lz}
+region solid_region block INF INF INF INF INF ${half}
+region liquid_region block INF INF INF INF ${half} INF
+group solid region solid_region
+group liquid region liquid_region
+
+# Compute center of mass of each group
+compute com_solid solid com
+compute com_liquid liquid com
+variable z_solid equal c_com_solid[3]
+variable z_liquid equal c_com_liquid[3]
+variable delta_z equal v_z_liquid - v_z_solid
+
+# Compute number of atoms in each group (to track phase change)
+variable N_solid equal count(solid)
+variable N_liquid equal count(liquid)
+
+# Thermodynamic output
+thermo 1000
+thermo_style custom step temp pe ke etotal press vol v_z_solid v_z_liquid v_delta_z v_N_solid v_N_liquid
+
+# Velocity initialization at temperature T
+velocity all create ${T} 12345
+
+# NVT ensemble (constant volume, constant temperature)
+fix 1 all nvt temp ${T} ${T} 0.1
+
+# Run simulation
+timestep 0.001
+run 100000  # 100 ps
+
+# Write final configuration
+write_data two_phase_final_T${T}.data
+
+# Write time history of interface position
+fix 2 all ave/time 100 10 1000 v_z_solid v_z_liquid v_delta_z v_N_solid v_N_liquid file interface_T${T}.txt
+
+print "Two-phase simulation completed at T = ${T} K"
+print "Initial solid atoms: ${N_solid}, liquid atoms: ${N_liquid}"
+print "Final solid atoms: ${N_solid}, liquid atoms: ${N_liquid}"
+print "Interface position delta_z = ${delta_z} Å"

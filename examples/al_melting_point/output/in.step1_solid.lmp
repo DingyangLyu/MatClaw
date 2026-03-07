@@ -1,0 +1,40 @@
+# Step 1: Create FCC Al solid and equilibrate
+# Then melt upper half to create two-phase system
+
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+
+# FCC Al lattice, a = 4.05 Angstrom
+lattice         fcc 4.05
+region          box block 0 10 0 10 0 20
+create_box      1 box
+create_atoms    1 box
+
+mass            1 26.982
+
+pair_style      eam/alloy
+pair_coeff      * * /usr/share/lammps/potentials/Al_zhou.eam.alloy Al
+
+# Initial minimization
+minimize        1e-6 1e-8 1000 10000
+
+# Equilibrate solid at 300 K
+velocity        all create 300.0 12345 dist gaussian
+fix             1 all nvt temp 300 300 0.1
+thermo          500
+thermo_style    custom step temp pe ke etotal press vol lx ly lz
+run             10000
+unfix           1
+
+# Now NPT to relax box at 300K
+fix             2 all npt temp 300 300 0.1 iso 0.0 0.0 1.0
+run             10000
+unfix           2
+
+# Save solid configuration
+write_data      solid_300K.dat
+write_restart   solid_300K.restart
+
+print "Solid equilibration done"

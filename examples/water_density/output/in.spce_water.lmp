@@ -1,0 +1,84 @@
+# ============================================================
+# SPC/E Water — Density at 298 K, 1 bar
+# NPT MD with SHAKE constraints, PPPM electrostatics
+# ============================================================
+
+units           real
+dimension       3
+boundary        p p p
+atom_style      full
+
+# ── Read initial configuration ──────────────────────────────
+read_data       water.data
+
+# ── SPC/E force field ───────────────────────────────────────
+pair_style      lj/cut/coul/long 9.0 9.0
+pair_coeff      1 1  0.15535 3.1660   # O-O: eps(kcal/mol), sigma(Å)
+pair_coeff      1 2  0.0     0.0
+pair_coeff      2 2  0.0     0.0
+
+bond_style      harmonic
+bond_coeff      1  1000.0  1.000      # O-H: stiff spring (SHAKE handles geometry)
+
+angle_style     harmonic
+angle_coeff     1  100.0  109.47      # H-O-H
+
+kspace_style    pppm  1.0e-5
+
+# ── Neighbor list ────────────────────────────────────────────
+neighbor        2.0 bin
+neigh_modify    delay 0 every 1 check yes
+
+# ── SHAKE constraints (rigid SPC/E geometry) ─────────────────
+fix             shk all shake 1.0e-4 200 0 b 1 a 1
+
+# ── Variable for density (g/cm³) ─────────────────────────────
+# In LAMMPS real units: mass [g/mol], vol [Å³]
+# density = total_mass_gmol / (vol_A3 * 6.022e23 * 1e-24)
+variable        rho equal mass(all)/(vol*6.02214076e-1)
+# Note: mass(all) gives sum of masses in g/mol
+# vol in Å³; 1 Å³ = 1e-24 cm³; 1 mol = 6.022e23 molecules
+# rho [g/cm³] = mass[g/mol] / (NA * vol[cm³])
+#             = mass[g/mol] / (6.022e23 * vol[Å³] * 1e-24)
+#             = mass[g/mol] / (vol[Å³] * 6.022e-1)
+
+thermo_style    custom step temp press vol v_rho etotal
+thermo          500
+
+# ── Step 1: Energy minimization ──────────────────────────────
+min_style       cg
+minimize        1.0e-4 1.0e-6 2000 20000
+
+# ── Step 2: NVT equilibration at 298 K (10 ps) ───────────────
+reset_timestep  0
+timestep        1.0
+
+velocity        all create 600.0 12345 dist gaussian
+fix             nvt1 all nvt temp 600.0 298.0 100.0
+run             5000
+unfix           nvt1
+
+fix             nvt2 all nvt temp 298.0 298.0 100.0
+run             5000
+unfix           nvt2
+
+# ── Step 3: NPT equilibration at 298 K, 1 atm (100 ps) ──────
+fix             npt_eq all npt temp 298.0 298.0 100.0 iso 1.0 1.0 1000.0
+run             100000
+unfix           npt_eq
+
+# ── Step 4: NPT production run (200 ps) ─────────────────────
+reset_timestep  0
+fix             npt_prod all npt temp 298.0 298.0 100.0 iso 1.0 1.0 1000.0
+
+# Average density every 100 steps, block-average over 500 samples
+fix             avg_rho all ave/time 100 5 500 v_rho &
+                file density_prod.dat
+
+thermo_style    custom step temp press vol v_rho etotal
+thermo          1000
+
+run             200000
+
+write_data      water_final.data
+print           "=== FINAL density = $(v_rho) g/cm^3 ==="

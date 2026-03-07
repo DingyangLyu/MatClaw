@@ -1,0 +1,99 @@
+{
+  "PseudoAtoms": [
+    {
+      "name": "Zr01", "framework": true, "print_to_output": true,
+      "element": "Zr", "print_as": "Zr", "mass": 91.224,
+      "charge": 2.29
+    },
+    {
+      "name": "O001", "framework": true, "print_to_output": true,
+      "element": "O", "print_as": "O", "mass": 15.9994,
+      "charge": -1.09
+    },
+    {
+      "name": "O002", "framework": true, "print_to_output": true,
+      "element": "O", "print_as": "O", "mass": 15.9994,
+      "charge": -0.636
+    },
+    {
+      "name": "C001", "framework": true, "print_to_output": true,
+      "element": "C", "print_as": "C", "mass": 12.0107,
+      "charge": 0.795
+    },
+    {
+      "name": "C002", "framework": true, "print_to_output": true,
+      "element": "C", "print_as": "C", "mass": 12.0107,
+      "charge": -0.079
+    },
+    {
+      "name": "C003", "framework": true, "print_to_output": true,
+      "element": "C", "print_as": "C", "mass": 12.0107,
+      "charge": -0.079
+    },
+    {
+      "name": "H003", "framework": true, "print_to_output": true,
+      "element": "H", "print_as": "H", "mass": 1.00794,
+      "charge": 0.148
+    },
+    {
+      "name": "C_co2", "framework": false, "print_to_output": true,
+      "element": "C", "print_as": "C", "mass": 12.0,
+      "charge": 0.6512
+    },
+    {
+      "name": "O_co2", "framework": false, "print_to_output": true,
+      "element": "O", "print_as": "O", "mass": 15.9994,
+      "charge": -0.3256
+    }
+  ],
+  "SelfInteractions": [
+    {
+      "name": "Zr01",  "type": "lennard-jones",
+      "parameters": [34.72, 2.783],
+      "source": "UFF: Rappe et al. JACS 1992"
+    },
+    {
+      "name": "O001",  "type": "lennard-jones",
+      "parameters": [30.193, 3.118],
+      "source": "UFF: Rappe et al. JACS 1992"
+    },
+    {
+      "name": "O002",  "type": "lennard-jones",
+      "parameters": [30.193, 3.118],
+      "source": "UFF: Rappe et al. JACS 1992"
+    },
+    {
+      "name": "C001",  "type": "lennard-jones",
+      "parameters": [52.838, 3.431],
+      "source": "UFF: Rappe et al. JACS 1992"
+    },
+    {
+      "name": "C002",  "type": "lennard-jones",
+      "parameters": [52.838, 3.431],
+      "source": "UFF: Rappe et al. JACS 1992"
+    },
+    {
+      "name": "C003",  "type": "lennard-jones",
+      "parameters": [52.838, 3.431],
+      "source": "UFF: Rappe et al. JACS 1992"
+    },
+    {
+      "name": "H003",  "type": "lennard-jones",
+      "parameters": [22.142, 2.571],
+      "source": "UFF: Rappe et al. JACS 1992"
+    },
+    {
+      "name": "C_co2", "type": "lennard-jones",
+      "parameters": [28.129, 2.757],
+      "source": "TraPPE: Garcia-Sanchez et al. JPCC 2009"
+    },
+    {
+      "name": "O_co2", "type": "lennard-jones",
+      "parameters": [80.507, 3.033],
+      "source": "TraPPE: Garcia-Sanchez et al. JPCC 2009"
+    }
+  ],
+  "MixingRule": "Lorentz-Berthelot",
+  "TruncationMethod": "shifted",
+  "TailCorrections": false
+}

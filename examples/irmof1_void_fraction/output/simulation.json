@@ -1,0 +1,25 @@
+{
+  "SimulationType" : "MonteCarlo",
+  "NumberOfCycles" : 100000,
+  "NumberOfInitializationCycles" : 0,
+  "PrintEvery" : 10000,
+
+  "Systems" : [
+    {
+      "Type" : "Framework",
+      "Name" : "IRMOF-1",
+      "NumberOfUnitCells" : [1, 1, 1],
+      "ChargeMethod" : "None",
+      "ExternalTemperature" : 298.0
+    }
+  ],
+
+  "Components" : [
+    {
+      "Name" : "He",
+      "IdealGasRosenbluthWeight" : 1.0,
+      "WidomProbability" : 1.0,
+      "CreateNumberOfMolecules" : 0
+    }
+  ]
+}

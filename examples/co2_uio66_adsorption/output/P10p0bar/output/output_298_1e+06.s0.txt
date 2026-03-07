@@ -1,0 +1,1406 @@
+Compiler and run-time data
+===============================================================================
+RASPA 3.0.16
+
+Random seed: 3477618049
+
+Compiled as a 64-bits application
+Compiler: gcc Ubuntu Clang 18.1.3 (1ubuntu1)
+Compile Date = Oct 27 2025, Compile Time = 19:32:18
+
+2026-03-07 05:54:39.358091
+Simulation started on Sat, Mar 07
+The start time was 05:54:00
+
+Hostname:    7c6e865b64ec
+OS type:     Linux on x86_64
+OS release:  6.17.0-14-generic
+OS version:  #14~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Jan 15 15:52:10 UTC 2
+
+
+Mutual consistent basic set of units:
+===============================================================================
+
+Unit of temperature: 1 [K]
+Unit of length:      1e-10 [m]
+Unit of time:        1e-12 [s]
+Unit of mass:        1.6605402e-27 [kg]
+Unit of charge:      1.60217733e-19 [C/particle]
+
+
+Boltzmann constant (internal units):          0.8314464919307584 [-]
+represents conversion from energy (internal units) to temperature (in Kelvin)
+
+Derived units and their conversion factors:
+===============================================================================
+
+Unit of energy:                           1.6605402000000002e-23 [J]
+Unit of energy:                           10.000008872307538 [J.mol⁻¹]
+Unit of velocity:                         100 [m.s⁻¹]
+Unit of force:                            1.6605402000000002e-13 [N]
+Unit of diffusion:                        1e-08 [m².s⁻¹]
+Unit of acceleration:                     1e-08 [m².s⁻¹]
+Unit of torque:                           1.6605402000000002e-23 [N.m]
+Unit of pressure:                         16605402 [Pa]
+Unit of volume:                           1e-30 [m³]
+Unit of density:                          1660.5402 [kg.m⁻³]
+Unit of dynamic viscosity:                1.6605401999999997e-05 [N.s.m⁻²]
+Unit of enthalpy:                         1.6605402000000002e-23 [J]
+Unit of polarizability:                   1.5458657349975198e-35 [-]
+Unit of Coulomb potential:                167101.08000665612 [K]
+Unit of dielectric constant:              1.5458657349975193e-05 [s².C².kg⁻¹.m⁻³]
+Unit of dipole moment:                    1.60217733e-29 [C.m]
+Unit of Debye:                            4.803206799099162 [C.m]
+Unit of electric potential:               0.00010364272224473431 [V]
+Unit of electric field:                   1036427.222447343 [V.m⁻¹]
+Unit of isothermal compressibility:       6.02213665167516e-08 [Pa⁻¹]
+Unit of heat capacity:                    10.000008872307538 [J.mol⁻¹.K⁻¹]
+Unit of volumetric expansion coefficient: 1 [K⁻¹]
+
+
+Internal conversion factors:
+===============================================================================
+
+Energy (internal units) to Kelvin:      1.202724284692786 [-]
+Kelvin to energy (internal units):      0.8314457542157567 [-]
+
+
+System definitions
+===============================================================================
+
+Temperature:          298 [K]
+Beta:                 0.004035983951527738 [-]
+Pressure:             1e+06 [Pa]
+Helium void fraction: 0.47 [-]
+
+Box:      20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000
+Rectangular boundary conditions
+Perpendicular widths:   20.81000  20.81000  20.81000
+
+
+
+
+Property measurement settings
+===============================================================================
+
+
+
+
+Pseudo-atoms
+===============================================================================
+
+  0 - Zr01     framework-atom: true
+  1 - O001     framework-atom: true
+  2 - O002     framework-atom: true
+  3 - C001     framework-atom: true
+  4 - C002     framework-atom: true
+  5 - C003     framework-atom: true
+  6 - H003     framework-atom: true
+  7 - C_co2    framework-atom: false
+  8 - O_co2    framework-atom: false
+
+  0 - Zr01     mass: 91.22400, charge:  2.29000
+  1 - O001     mass: 15.99940, charge: -1.09000
+  2 - O002     mass: 15.99940, charge: -0.63600
+  3 - C001     mass: 12.01070, charge:  0.79500
+  4 - C002     mass: 12.01070, charge: -0.07900
+  5 - C003     mass: 12.01070, charge: -0.07900
+  6 - H003     mass:  1.00794, charge:  0.14800
+  7 - C_co2    mass: 12.00000, charge:  0.65120
+  8 - O_co2    mass: 15.99940, charge: -0.32560
+
+  0 - Zr01     polarizability:  0.00000
+  1 - O001     polarizability:  0.00000
+  2 - O002     polarizability:  0.00000
+  3 - C001     polarizability:  0.00000
+  4 - C002     polarizability:  0.00000
+  5 - C003     polarizability:  0.00000
+  6 - H003     polarizability:  0.00000
+  7 - C_co2    polarizability:  0.00000
+  8 - O_co2    polarizability:  0.00000
+
+
+Force field status
+===============================================================================
+
+Cutoff Framework-Molecule VDW:  12.00000 [Å]
+Cutoff Molecule-Molecule VDW:   12.00000 [Å]
+Cutoff Coulomb:                 auto
+Overlap-criteria VDW:           1.000000e+06 [K]
+
+Zr01     - Zr01     Lennard-Jones p₀/kʙ:  34.72000 [K], p₁:  2.78300 [Å]
+                                  shift:  -0.02161 [K], tailcorrections: false
+Zr01     - O001     Lennard-Jones p₀/kʙ:  32.37748 [K], p₁:  2.95050 [Å]
+                                  shift:  -0.02861 [K], tailcorrections: false
+Zr01     - O002     Lennard-Jones p₀/kʙ:  32.37748 [K], p₁:  2.95050 [Å]
+                                  shift:  -0.02861 [K], tailcorrections: false
+Zr01     - C001     Lennard-Jones p₀/kʙ:  42.83148 [K], p₁:  3.10700 [Å]
+                                  shift:  -0.05160 [K], tailcorrections: false
+Zr01     - C002     Lennard-Jones p₀/kʙ:  42.83148 [K], p₁:  3.10700 [Å]
+                                  shift:  -0.05160 [K], tailcorrections: false
+Zr01     - C003     Lennard-Jones p₀/kʙ:  42.83148 [K], p₁:  3.10700 [Å]
+                                  shift:  -0.05160 [K], tailcorrections: false
+Zr01     - H003     Lennard-Jones p₀/kʙ:  27.72671 [K], p₁:  2.67700 [Å]
+                                  shift:  -0.01367 [K], tailcorrections: false
+Zr01     - C_co2    Lennard-Jones p₀/kʙ:  31.25122 [K], p₁:  2.77000 [Å]
+                                  shift:  -0.01891 [K], tailcorrections: false
+Zr01     - O_co2    Lennard-Jones p₀/kʙ:  52.86968 [K], p₁:  2.90800 [Å]
+                                  shift:  -0.04282 [K], tailcorrections: false
+O001     - O001     Lennard-Jones p₀/kʙ:  30.19300 [K], p₁:  3.11800 [Å]
+                                  shift:  -0.03715 [K], tailcorrections: false
+O001     - O002     Lennard-Jones p₀/kʙ:  30.19300 [K], p₁:  3.11800 [Å]
+                                  shift:  -0.03715 [K], tailcorrections: false
+O001     - C001     Lennard-Jones p₀/kʙ:  39.94168 [K], p₁:  3.27450 [Å]
+                                  shift:  -0.06593 [K], tailcorrections: false
+O001     - C002     Lennard-Jones p₀/kʙ:  39.94168 [K], p₁:  3.27450 [Å]
+                                  shift:  -0.06593 [K], tailcorrections: false
+O001     - C003     Lennard-Jones p₀/kʙ:  39.94168 [K], p₁:  3.27450 [Å]
+                                  shift:  -0.06593 [K], tailcorrections: false
+O001     - H003     Lennard-Jones p₀/kʙ:  25.85601 [K], p₁:  2.84450 [Å]
+                                  shift:  -0.01834 [K], tailcorrections: false
+O001     - C_co2    Lennard-Jones p₀/kʙ:  29.14273 [K], p₁:  2.93750 [Å]
+                                  shift:  -0.02508 [K], tailcorrections: false
+O001     - O_co2    Lennard-Jones p₀/kʙ:  49.30262 [K], p₁:  3.07550 [Å]
+                                  shift:  -0.05587 [K], tailcorrections: false
+O002     - O002     Lennard-Jones p₀/kʙ:  30.19300 [K], p₁:  3.11800 [Å]
+                                  shift:  -0.03715 [K], tailcorrections: false
+O002     - C001     Lennard-Jones p₀/kʙ:  39.94168 [K], p₁:  3.27450 [Å]
+                                  shift:  -0.06593 [K], tailcorrections: false
+O002     - C002     Lennard-Jones p₀/kʙ:  39.94168 [K], p₁:  3.27450 [Å]
+                                  shift:  -0.06593 [K], tailcorrections: false
+O002     - C003     Lennard-Jones p₀/kʙ:  39.94168 [K], p₁:  3.27450 [Å]
+                                  shift:  -0.06593 [K], tailcorrections: false
+O002     - H003     Lennard-Jones p₀/kʙ:  25.85601 [K], p₁:  2.84450 [Å]
+                                  shift:  -0.01834 [K], tailcorrections: false
+O002     - C_co2    Lennard-Jones p₀/kʙ:  29.14273 [K], p₁:  2.93750 [Å]
+                                  shift:  -0.02508 [K], tailcorrections: false
+O002     - O_co2    Lennard-Jones p₀/kʙ:  49.30262 [K], p₁:  3.07550 [Å]
+                                  shift:  -0.05587 [K], tailcorrections: false
+C001     - C001     Lennard-Jones p₀/kʙ:  52.83800 [K], p₁:  3.43100 [Å]
+                                  shift:  -0.11540 [K], tailcorrections: false
+C001     - C002     Lennard-Jones p₀/kʙ:  52.83800 [K], p₁:  3.43100 [Å]
+                                  shift:  -0.11540 [K], tailcorrections: false
+C001     - C003     Lennard-Jones p₀/kʙ:  52.83800 [K], p₁:  3.43100 [Å]
+                                  shift:  -0.11540 [K], tailcorrections: false
+C001     - H003     Lennard-Jones p₀/kʙ:  34.20437 [K], p₁:  3.00100 [Å]
+                                  shift:  -0.03346 [K], tailcorrections: false
+C001     - C_co2    Lennard-Jones p₀/kʙ:  38.55230 [K], p₁:  3.09400 [Å]
+                                  shift:  -0.04529 [K], tailcorrections: false
+C001     - O_co2    Lennard-Jones p₀/kʙ:  65.22138 [K], p₁:  3.23200 [Å]
+                                  shift:  -0.09955 [K], tailcorrections: false
+C002     - C002     Lennard-Jones p₀/kʙ:  52.83800 [K], p₁:  3.43100 [Å]
+                                  shift:  -0.11540 [K], tailcorrections: false
+C002     - C003     Lennard-Jones p₀/kʙ:  52.83800 [K], p₁:  3.43100 [Å]
+                                  shift:  -0.11540 [K], tailcorrections: false
+C002     - H003     Lennard-Jones p₀/kʙ:  34.20437 [K], p₁:  3.00100 [Å]
+                                  shift:  -0.03346 [K], tailcorrections: false
+C002     - C_co2    Lennard-Jones p₀/kʙ:  38.55230 [K], p₁:  3.09400 [Å]
+                                  shift:  -0.04529 [K], tailcorrections: false
+C002     - O_co2    Lennard-Jones p₀/kʙ:  65.22138 [K], p₁:  3.23200 [Å]
+                                  shift:  -0.09955 [K], tailcorrections: false
+C003     - C003     Lennard-Jones p₀/kʙ:  52.83800 [K], p₁:  3.43100 [Å]
+                                  shift:  -0.11540 [K], tailcorrections: false
+C003     - H003     Lennard-Jones p₀/kʙ:  34.20437 [K], p₁:  3.00100 [Å]
+                                  shift:  -0.03346 [K], tailcorrections: false
+C003     - C_co2    Lennard-Jones p₀/kʙ:  38.55230 [K], p₁:  3.09400 [Å]
+                                  shift:  -0.04529 [K], tailcorrections: false
+C003     - O_co2    Lennard-Jones p₀/kʙ:  65.22138 [K], p₁:  3.23200 [Å]
+                                  shift:  -0.09955 [K], tailcorrections: false
+H003     - H003     Lennard-Jones p₀/kʙ:  22.14200 [K], p₁:  2.57100 [Å]
+                                  shift:  -0.00857 [K], tailcorrections: false
+H003     - C_co2    Lennard-Jones p₀/kʙ:  24.95661 [K], p₁:  2.66400 [Å]
+                                  shift:  -0.01195 [K], tailcorrections: false
+H003     - O_co2    Lennard-Jones p₀/kʙ:  42.22068 [K], p₁:  2.80200 [Å]
+                                  shift:  -0.02737 [K], tailcorrections: false
+C_co2    - C_co2    Lennard-Jones p₀/kʙ:  28.12900 [K], p₁:  2.75700 [Å]
+                                  shift:  -0.01655 [K], tailcorrections: false
+C_co2    - O_co2    Lennard-Jones p₀/kʙ:  47.58762 [K], p₁:  2.89500 [Å]
+                                  shift:  -0.03752 [K], tailcorrections: false
+O_co2    - O_co2    Lennard-Jones p₀/kʙ:  80.50700 [K], p₁:  3.03300 [Å]
+                                  shift:  -0.08393 [K], tailcorrections: false
+
+Ewald precision: 1e-06
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+Component definitions
+===============================================================================
+
+Framework 0 [UIO-66]
+
+    Box:      20.81000   0.00000   0.00000
+               0.00000  20.81000   0.00000
+               0.00000   0.00000  20.81000
+    Lengths:  20.81000  20.81000  20.81000
+    Angles:   90.00000  90.00000  90.00000
+    Perpendicular widths:   20.81000  20.81000  20.81000
+
+    number Of Atoms:                   440 [-]
+    mass:                       6640.11584 [amu]
+      0: Zr01   position  0.37960  0.50000  0.50000, charge  2.29000
+      1: O001   position  0.44180  0.55820  0.55820, charge -1.09000
+      2: O002   position  0.32450  0.50000  0.40700, charge -0.63600
+      3: C001   position  0.34660  0.50000  0.34660, charge  0.79500
+      4: C002   position  0.29930  0.50000  0.29930, charge -0.07900
+      5: C003   position  0.22990  0.50000  0.32200, charge -0.07900
+      6: H003   position  0.21950  0.50000  0.36550, charge  0.14800
+    use charge from: pseudo-atoms
+    net charge:                      0.01600 [e]
+    smallest charge:                -1.09000 [e]
+    largest charge:                  2.29000 [e]
+    number of bonds: 0
+
+Component 0 [CO2]
+
+    Type: Adsorbate
+
+    Critical temperature:  304.1282 [K]
+    Critical pressure:     7377300 [Pa]
+    Acentric factor:       0.22394 [-]
+
+    Mol-fraction:                 1 [-]
+    Swappable:                   true
+
+    Mass:                         43.9988 [-]
+    Fugacity:                     946017.480307046 [Pa]
+    Fugacity coefficient:         0.946017480307046 [-]
+    Bulk fluid density:           18.81753135173618 [-]
+    Compressibility:              0.9436862220328588 [-]
+    Excess molecules:             1.0909049348597857 [-]
+
+    Number Of Atoms:              3
+    CBMC starting bead:           0
+    Ideal gas Rosenbluth weight:  1.00000000
+      0: O_co2  position  0.00000 -0.00000  1.14900, charge -0.32560
+      1: C_co2  position  0.00000 -0.00000  0.00000, charge  0.65120
+      2: O_co2  position  0.00000 -0.00000 -1.14900, charge -0.32560
+    Diagonalized inertia-vector:      42.24484776 42.24484776 0.00000000
+    Translational degrees of freedom: 3
+    Rotational degrees of freedom:    2
+    Shape of the molecule is: 'Linear'
+    Net-charge:        0.00000000 [e]
+
+    Move probabilities:
+    Hybrid MC:                     0.000000 [-]
+    Parallel tempering:            0.000000 [-]
+    Widom (CB/CFCMC):              0.000000 [-]
+    Widom (CFCMC):                 0.000000 [-]
+    Widom:                         0.000000 [-]
+    Gibbs swap (CFCMC):            0.000000 [-]
+    Gibbs swap (CBMC):             0.000000 [-]
+    Gibbs volume:                  0.000000 [-]
+    Swap (CB/CFCMC):               0.000000 [-]
+    Swap (CFCMC):                  0.000000 [-]
+    Swap (CBMC):                   0.400000 [-]
+    Swap:                          0.000000 [-]
+    Identity change (CBMC):        0.000000 [-]
+    Partial reinsertion (CBMC):    0.000000 [-]
+    Reinsertion (CBMC):            0.200000 [-]
+    Volume change:                 0.000000 [-]
+    Random rotation:               0.000000 [-]
+    Rotation:                      0.200000 [-]
+    Random translation:            0.000000 [-]
+    Translation:                   0.200000 [-]
+
+    number of blocking-pockets: 0
+
+    molecule is modelled as 'rigid'
+
+
+
+
+
+Number of pseudo-atoms
+===============================================================================
+
+Component   0 (CO2)
+-------------------------------------------------------------------------------
+    index   0 (Zr01): 0 atoms
+    index   1 (O001): 0 atoms
+    index   2 (O002): 0 atoms
+    index   3 (C001): 0 atoms
+    index   4 (C002): 0 atoms
+    index   5 (C003): 0 atoms
+    index   6 (H003): 0 atoms
+    index   7 (C_co2): 0 atoms
+    index   8 (O_co2): 0 atoms
+
+Total number of pseudo-atoms:
+-------------------------------------------------------------------------------
+    index   0 (Zr01): 0 atoms
+    index   1 (O001): 0 atoms
+    index   2 (O002): 0 atoms
+    index   3 (C001): 0 atoms
+    index   4 (C002): 0 atoms
+    index   5 (C003): 0 atoms
+    index   6 (H003): 0 atoms
+    index   7 (C_co2): 0 atoms
+    index   8 (O_co2): 0 atoms
+
+
+
+
+Energy status Recomputed from scratch
+===============================================================================
+
+Total potential energy/kʙ       -4.573061e-16 [K]
+    external field VDW/kʙ        0.000000e+00 [K]
+    external field Real/kʙ       0.000000e+00 [K]
+    framework-molecule VDW/kʙ    0.000000e+00 [K]
+    framework-molecule Real/kʙ   0.000000e+00 [K]
+    molecule-molecule VDW/kʙ     0.000000e+00 [K]
+    molecule-molecule Real/kʙ    0.000000e+00 [K]
+    Van der Waals (Tail)/kʙ      0.000000e+00 [K]
+    Ewald Fourier/kʙ            -4.573061e-16 [K]
+    Ewald self/kʙ                0.000000e+00 [K]
+    Ewald exclusion/kʙ           0.000000e+00 [K]
+    bond/kʙ                      0.000000e+00 [K]
+    Urey-Bradley/kʙ              0.000000e+00 [K]
+    bend/kʙ                      0.000000e+00 [K]
+    inversion bend/kʙ            0.000000e+00 [K]
+    out-of-plane bend/kʙ         0.000000e+00 [K]
+    torsion/kʙ                   0.000000e+00 [K]
+    improper torsion/kʙ          0.000000e+00 [K]
+    bond-bond/kʙ                 0.000000e+00 [K]
+    bond-bend/kʙ                 0.000000e+00 [K]
+    bond-torsion/kʙ              0.000000e+00 [K]
+    bend-bend/kʙ                 0.000000e+00 [K]
+    bend-torsion/kʙ              0.000000e+00 [K]
+    intra VDW/kʙ                 0.000000e+00 [K]
+    intra Coulombic/kʙ           0.000000e+00 [K]
+    polarization/kʙ              0.000000e+00 [K]
+    dU/dlambda VDW/kʙ            0.000000e+00 [K]
+    dU/dlambda Real/kʙ           0.000000e+00 [K]
+    dU/dlambda Ewald/kʙ          0.000000e+00 [K]
+
+
+
+
+
+Initialization: Current cycle: 0 out of 10000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000
+Rectangular boundary conditions
+Perpendicular widths:   20.81000  20.81000  20.81000
+
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component   0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption:  6.000000e+00 molecules
+                          6.000000e+00 molecules/uc
+                          9.035987e-01 mol/kg-framework
+                          3.975726e+01 mg/g-framework
+    excess adsorption:    4.909095e+00 molecules
+                          4.909095e+00 molecules/uc
+                          7.393086e-01 mol/kg-framework
+                          3.252869e+01 mg/g-framework
+
+Total potential energy/kʙ       -1.309148e+04 [K]
+-------------------------------------------------------------------------------
+    external field VDW/kʙ        0.000000e+00 [K]
+    external field Real/kʙ       0.000000e+00 [K]
+    framework-molecule VDW/kʙ   -1.232242e+04 [K]
+    framework-molecule Real/kʙ  -6.983607e+02 [K]
+    molecule-molecule VDW/kʙ    -3.367876e+01 [K]
+    molecule-molecule Real/kʙ    8.832721e-01 [K]
+    Van der Waals (Tail)/kʙ      0.000000e+00 [K]
+    Ewald Fourier/kʙ             5.611364e+02 [K]
+    Ewald self/kʙ               -1.107296e+05 [K]
+    Ewald exclusion/kʙ           1.101305e+05 [K]
+    polarization/kʙ              0.000000e+00 [K]
+    dU/dlambda VDW/kʙ            0.000000e+00 [K]
+    dU/dlambda Real/kʙ           0.000000e+00 [K]
+    dU/dlambda Ewald/kʙ          0.000000e+00 [K]
+
+
+Initialization: Current cycle: 5000 out of 10000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000
+Rectangular boundary conditions
+Perpendicular widths:   20.81000  20.81000  20.81000
+
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component   0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption:  3.300000e+01 molecules
+                          3.300000e+01 molecules/uc
+                          4.969793e+00 mol/kg-framework
+                          2.186649e+02 mg/g-framework
+    excess adsorption:    3.190910e+01 molecules
+                          3.190910e+01 molecules/uc
+                          4.805503e+00 mol/kg-framework
+                          2.114364e+02 mg/g-framework
+
+Total potential energy/kʙ       -8.689654e+04 [K]
+-------------------------------------------------------------------------------
+    external field VDW/kʙ        0.000000e+00 [K]
+    external field Real/kʙ       0.000000e+00 [K]
+    framework-molecule VDW/kʙ   -7.222631e+04 [K]
+    framework-molecule Real/kʙ  -2.263163e+03 [K]
+    molecule-molecule VDW/kʙ    -9.932194e+03 [K]
+    molecule-molecule Real/kʙ   -1.654043e+03 [K]
+    Van der Waals (Tail)/kʙ      0.000000e+00 [K]
+    Ewald Fourier/kʙ             2.473931e+03 [K]
+    Ewald self/kʙ               -6.090126e+05 [K]
+    Ewald exclusion/kʙ           6.057178e+05 [K]
+    polarization/kʙ              0.000000e+00 [K]
+    dU/dlambda VDW/kʙ            0.000000e+00 [K]
+    dU/dlambda Real/kʙ           0.000000e+00 [K]
+    dU/dlambda Ewald/kʙ          0.000000e+00 [K]
+
+
+Current cycle: 0 out of 50000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.500000e+01 molecules (3.500000e+01 +/- 0.000000e+00)
+                         3.500000e+01 molec./uc (3.500000e+01 +/- 0.000000e+00)
+                         5.270992e+00 mol/kg    (5.270992e+00 +/- 0.000000e+00)
+                         2.319173e+02 mg/g      (2.319173e+02 +/- 0.000000e+00)
+    excess adsorption:   3.390910e+01 molecules (3.390910e+01 +/- 0.000000e+00)
+                         3.390910e+01 molec./uc (3.390910e+01 +/- 0.000000e+00)
+                         5.106702e+00 mol/kg    (5.106702e+00 +/- 0.000000e+00)
+                         2.246888e+02 mg/g      (2.246888e+02 +/- 0.000000e+00)
+
+Total potential energy/kʙ  -9.432506e+04 (-9.432506e+04 +/- 0.000000e+00) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -7.905638e+04 (-7.905638e+04 +/- 0.000000e+00) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.798374e+03 (-1.798374e+03 +/- 0.000000e+00) [K]
+    Coulombic Fourier/kʙ   -2.645608e+02 (-2.645608e+02 +/- 0.000000e+00) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -9.639522e+03 (-9.639522e+03 +/- 0.000000e+00) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -3.455640e+03 (-3.455640e+03 +/- 0.000000e+00) [K]
+    Coulombic Fourier/kʙ   -1.105835e+02 (-1.105835e+02 +/- 0.000000e+00) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+Current cycle: 5000 out of 50000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.100000e+01 molecules (3.546691e+01 +/- 0.000000e+00)
+                         3.100000e+01 molec./uc (3.546691e+01 +/- 0.000000e+00)
+                         4.668593e+00 mol/kg    (5.341308e+00 +/- 0.000000e+00)
+                         2.054125e+02 mg/g      (2.350112e+02 +/- 0.000000e+00)
+    excess adsorption:   2.990910e+01 molecules (3.437600e+01 +/- 0.000000e+00)
+                         2.990910e+01 molec./uc (3.437600e+01 +/- 0.000000e+00)
+                         4.504303e+00 mol/kg    (5.177018e+00 +/- 0.000000e+00)
+                         1.981839e+02 mg/g      (2.277826e+02 +/- 0.000000e+00)
+
+Total potential energy/kʙ  -8.268206e+04 (-9.431248e+04 +/- 0.000000e+00) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -6.882982e+04 (-7.900332e+04 +/- 0.000000e+00) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -2.838055e+03 (-1.785511e+03 +/- 0.000000e+00) [K]
+    Coulombic Fourier/kʙ   -3.839923e+02 (-5.928751e+02 +/- 0.000000e+00) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -8.602408e+03 (-1.079857e+04 +/- 0.000000e+00) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.645113e+03 (-1.972763e+03 +/- 0.000000e+00) [K]
+    Coulombic Fourier/kʙ   -3.826753e+02 (-1.594377e+02 +/- 0.000000e+00) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+Current cycle: 10000 out of 50000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.500000e+01 molecules (3.593301e+01 +/- 0.000000e+00)
+                         3.500000e+01 molec./uc (3.593301e+01 +/- 0.000000e+00)
+                         5.270992e+00 mol/kg    (5.411503e+00 +/- 0.000000e+00)
+                         2.319173e+02 mg/g      (2.380996e+02 +/- 0.000000e+00)
+    excess adsorption:   3.390910e+01 molecules (3.484210e+01 +/- 0.000000e+00)
+                         3.390910e+01 molec./uc (3.484210e+01 +/- 0.000000e+00)
+                         5.106702e+00 mol/kg    (5.247213e+00 +/- 0.000000e+00)
+                         2.246888e+02 mg/g      (2.308711e+02 +/- 0.000000e+00)
+
+Total potential energy/kʙ  -8.897467e+04 (-9.549587e+04 +/- 0.000000e+00) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -7.595827e+04 (-8.004428e+04 +/- 0.000000e+00) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.596680e+03 (-1.771455e+03 +/- 0.000000e+00) [K]
+    Coulombic Fourier/kʙ   -7.411525e+01 (-5.893467e+02 +/- 0.000000e+00) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -8.438233e+03 (-1.102865e+04 +/- 0.000000e+00) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -2.573927e+03 (-1.900641e+03 +/- 0.000000e+00) [K]
+    Coulombic Fourier/kʙ   -3.334478e+02 (-1.614928e+02 +/- 0.000000e+00) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+Current cycle: 15000 out of 50000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.200000e+01 molecules (3.583554e+01 +/- 0.000000e+00)
+                         3.200000e+01 molec./uc (3.583554e+01 +/- 0.000000e+00)
+                         4.819193e+00 mol/kg    (5.396825e+00 +/- 0.000000e+00)
+                         2.120387e+02 mg/g      (2.374538e+02 +/- 0.000000e+00)
+    excess adsorption:   3.090910e+01 molecules (3.474464e+01 +/- 0.000000e+00)
+                         3.090910e+01 molec./uc (3.474464e+01 +/- 0.000000e+00)
+                         4.654903e+00 mol/kg    (5.232535e+00 +/- 0.000000e+00)
+                         2.048101e+02 mg/g      (2.302253e+02 +/- 0.000000e+00)
+
+Total potential energy/kʙ  -8.504039e+04 (-9.529131e+04 +/- 0.000000e+00) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -7.240484e+04 (-7.982250e+04 +/- 0.000000e+00) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.868240e+03 (-1.824994e+03 +/- 0.000000e+00) [K]
+    Coulombic Fourier/kʙ   -1.023894e+03 (-6.296240e+02 +/- 0.000000e+00) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -8.835620e+03 (-1.094158e+04 +/- 0.000000e+00) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -7.791471e+02 (-1.918967e+03 +/- 0.000000e+00) [K]
+    Coulombic Fourier/kʙ   -1.286493e+02 (-1.536471e+02 +/- 0.000000e+00) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+Current cycle: 20000 out of 50000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.200000e+01 molecules (3.579316e+01 +/- 0.000000e+00)
+                         3.200000e+01 molec./uc (3.579316e+01 +/- 0.000000e+00)
+                         4.819193e+00 mol/kg    (5.390442e+00 +/- 0.000000e+00)
+                         2.120387e+02 mg/g      (2.371730e+02 +/- 0.000000e+00)
+    excess adsorption:   3.090910e+01 molecules (3.470226e+01 +/- 0.000000e+00)
+                         3.090910e+01 molec./uc (3.470226e+01 +/- 0.000000e+00)
+                         4.654903e+00 mol/kg    (5.226152e+00 +/- 0.000000e+00)
+                         2.048101e+02 mg/g      (2.299444e+02 +/- 0.000000e+00)
+
+Total potential energy/kʙ  -8.219711e+04 (-9.518002e+04 +/- 0.000000e+00) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -6.985410e+04 (-7.974679e+04 +/- 0.000000e+00) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.009521e+03 (-1.810534e+03 +/- 0.000000e+00) [K]
+    Coulombic Fourier/kʙ   -2.069306e+02 (-6.323985e+02 +/- 0.000000e+00) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -9.384177e+03 (-1.091286e+04 +/- 0.000000e+00) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.648864e+03 (-1.923367e+03 +/- 0.000000e+00) [K]
+    Coulombic Fourier/kʙ   -9.352245e+01 (-1.540691e+02 +/- 0.000000e+00) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+Current cycle: 25000 out of 50000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.800000e+01 molecules (3.588188e+01 +/- 7.455108e-01)
+                         3.800000e+01 molec./uc (3.588188e+01 +/- 7.455108e-01)
+                         5.722792e+00 mol/kg    (5.403804e+00 +/- 1.122738e-01)
+                         2.517960e+02 mg/g      (2.377609e+02 +/- 4.939911e+00)
+    excess adsorption:   3.690910e+01 molecules (3.479098e+01 +/- 7.455108e-01)
+                         3.690910e+01 molec./uc (3.479098e+01 +/- 7.455108e-01)
+                         5.558502e+00 mol/kg    (5.239514e+00 +/- 1.122738e-01)
+                         2.445674e+02 mg/g      (2.305323e+02 +/- 4.939911e+00)
+
+Total potential energy/kʙ  -1.011244e+05 (-9.554250e+04 +/- 2.762299e+03) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -8.437548e+04 (-7.996090e+04 +/- 1.721807e+03) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -2.620112e+03 (-1.849898e+03 +/- 3.058864e+02) [K]
+    Coulombic Fourier/kʙ   -6.541330e+02 (-6.303235e+02 +/- 1.075588e+02) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -1.131911e+04 (-1.099912e+04 +/- 6.999704e+02) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -2.169056e+03 (-1.940873e+03 +/- 1.418333e+02) [K]
+    Coulombic Fourier/kʙ    1.350301e+01 (-1.613853e+02 +/- 5.709743e+01) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+Current cycle: 30000 out of 50000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.400000e+01 molecules (3.585624e+01 +/- 4.403532e-01)
+                         3.400000e+01 molec./uc (3.585624e+01 +/- 4.403532e-01)
+                         5.120393e+00 mol/kg    (5.399942e+00 +/- 6.631710e-02)
+                         2.252911e+02 mg/g      (2.375910e+02 +/- 2.917873e+00)
+    excess adsorption:   3.290910e+01 molecules (3.476533e+01 +/- 4.403532e-01)
+                         3.290910e+01 molec./uc (3.476533e+01 +/- 4.403532e-01)
+                         4.956103e+00 mol/kg    (5.235652e+00 +/- 6.631710e-02)
+                         2.180626e+02 mg/g      (2.303624e+02 +/- 2.917873e+00)
+
+Total potential energy/kʙ  -8.516395e+04 (-9.550832e+04 +/- 1.604624e+03) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -7.187797e+04 (-7.997478e+04 +/- 1.219323e+03) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -2.387948e+03 (-1.830289e+03 +/- 1.278204e+02) [K]
+    Coulombic Fourier/kʙ   -7.416565e+02 (-6.288337e+02 +/- 1.074650e+02) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -8.974467e+03 (-1.099799e+04 +/- 4.682751e+02) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.174227e+03 (-1.920018e+03 +/- 6.011500e+01) [K]
+    Coulombic Fourier/kʙ   -7.687792e+00 (-1.564090e+02 +/- 2.061413e+01) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+Current cycle: 35000 out of 50000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.900000e+01 molecules (3.578292e+01 +/- 4.797302e-01)
+                         3.900000e+01 molec./uc (3.578292e+01 +/- 4.797302e-01)
+                         5.873392e+00 mol/kg    (5.388900e+00 +/- 7.224726e-02)
+                         2.584222e+02 mg/g      (2.371051e+02 +/- 3.178793e+00)
+    excess adsorption:   3.790910e+01 molecules (3.469202e+01 +/- 4.797302e-01)
+                         3.790910e+01 molec./uc (3.469202e+01 +/- 4.797302e-01)
+                         5.709101e+00 mol/kg    (5.224610e+00 +/- 7.224726e-02)
+                         2.511936e+02 mg/g      (2.298766e+02 +/- 3.178793e+00)
+
+Total potential energy/kʙ  -1.038673e+05 (-9.523474e+04 +/- 1.794469e+03) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -8.564465e+04 (-7.976478e+04 +/- 1.374668e+03) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -2.974796e+03 (-1.822493e+03 +/- 7.978518e+01) [K]
+    Coulombic Fourier/kʙ   -6.881591e+02 (-6.123161e+02 +/- 1.098268e+02) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -1.285858e+04 (-1.095137e+04 +/- 3.651028e+02) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -2.013556e+03 (-1.927470e+03 +/- 5.185511e+01) [K]
+    Coulombic Fourier/kʙ    3.124811e+02 (-1.563114e+02 +/- 1.081159e+01) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+Current cycle: 40000 out of 50000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.300000e+01 molecules (3.573438e+01 +/- 4.509444e-01)
+                         3.300000e+01 molec./uc (3.573438e+01 +/- 4.509444e-01)
+                         4.969793e+00 mol/kg    (5.381590e+00 +/- 6.791212e-02)
+                         2.186649e+02 mg/g      (2.367835e+02 +/- 2.988052e+00)
+    excess adsorption:   3.190910e+01 molecules (3.464348e+01 +/- 4.509444e-01)
+                         3.190910e+01 molec./uc (3.464348e+01 +/- 4.509444e-01)
+                         4.805503e+00 mol/kg    (5.217300e+00 +/- 6.791212e-02)
+                         2.114364e+02 mg/g      (2.295549e+02 +/- 2.988052e+00)
+
+Total potential energy/kʙ  -8.901955e+04 (-9.509019e+04 +/- 1.578168e+03) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -7.470599e+04 (-7.965696e+04 +/- 1.199440e+03) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.926976e+03 (-1.831854e+03 +/- 6.706148e+01) [K]
+    Coulombic Fourier/kʙ   -1.409036e+03 (-6.146702e+02 +/- 7.235585e+01) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -9.772872e+03 (-1.093155e+04 +/- 3.242884e+02) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.382246e+03 (-1.905652e+03 +/- 5.578524e+01) [K]
+    Coulombic Fourier/kʙ    1.775763e+02 (-1.494942e+02 +/- 2.440977e+01) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+Current cycle: 45000 out of 50000
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.800000e+01 molecules (3.567234e+01 +/- 4.403360e-01)
+                         3.800000e+01 molec./uc (3.567234e+01 +/- 4.403360e-01)
+                         5.722792e+00 mol/kg    (5.372247e+00 +/- 6.631451e-02)
+                         2.517960e+02 mg/g      (2.363724e+02 +/- 2.917759e+00)
+    excess adsorption:   3.690910e+01 molecules (3.458144e+01 +/- 4.403360e-01)
+                         3.690910e+01 molec./uc (3.458144e+01 +/- 4.403360e-01)
+                         5.558502e+00 mol/kg    (5.207957e+00 +/- 6.631451e-02)
+                         2.445674e+02 mg/g      (2.291438e+02 +/- 2.917759e+00)
+
+Total potential energy/kʙ  -1.000275e+05 (-9.489638e+04 +/- 1.460556e+03) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -8.219048e+04 (-7.953459e+04 +/- 1.027516e+03) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -2.227505e+03 (-1.812614e+03 +/- 1.081301e+02) [K]
+    Coulombic Fourier/kʙ   -7.765301e+02 (-6.158067e+02 +/- 4.936834e+01) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -1.291031e+04 (-1.089842e+04 +/- 2.778129e+02) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.644994e+03 (-1.886860e+03 +/- 1.037685e+02) [K]
+    Coulombic Fourier/kʙ   -2.776778e+02 (-1.480832e+02 +/- 1.817272e+01) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+
+===============================================================================
+                             Simulation finished!
+===============================================================================
+
+Final state after 50000 cycles
+===============================================================================
+
+Box:      20.81000   0.00000   0.00000  Average:  20.81000   0.00000   0.00000
+           0.00000  20.81000   0.00000             0.00000  20.81000   0.00000
+           0.00000   0.00000  20.81000             0.00000   0.00000  20.81000
+Lengths:  20.81000  20.81000  20.81000  Average:  20.81000  20.81000  20.81000
+Angles:   90.00000  90.00000  90.00000  Average:  90.00000  90.00000  90.00000
+Rectangular boundary conditions
+
+Net charge:   0.01600000
+Cutoff Coulomb:  10.40500 [Å]
+Ewald alpha: 0.3077428496806629
+Ewald k-vectors: 7 7 7
+
+
+component 0 (CO2) lambda:  0 occupancy:  1 (1.000000)
+    net charge:   0.00000000 [e]
+
+Amount of molecules per component:
+-------------------------------------------------------------------------------
+Component 0 (CO2)
+    absolute adsorption: 3.800000e+01 molecules (3.570138e+01 +/- 3.182596e-01)
+                         3.800000e+01 molec./uc (3.570138e+01 +/- 3.182596e-01)
+                         5.722792e+00 mol/kg    (5.376620e+00 +/- 4.792983e-02)
+                         2.517960e+02 mg/g      (2.365648e+02 +/- 2.108855e+00)
+    excess adsorption:   3.690910e+01 molecules (3.461048e+01 +/- 3.182596e-01)
+                         3.690910e+01 molec./uc (3.461048e+01 +/- 3.182596e-01)
+                         5.558502e+00 mol/kg    (5.212330e+00 +/- 4.792983e-02)
+                         2.445674e+02 mg/g      (2.293363e+02 +/- 2.108855e+00)
+
+Total potential energy/kʙ  -1.006150e+05 (-9.503257e+04 +/- 1.079027e+03) [K]
+-------------------------------------------------------------------------------
+ExternalField-molecule
+    Van der Waals/kʙ        0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Framework-molecule
+    Van der Waals/kʙ       -8.305430e+04 (-7.962897e+04 +/- 8.145863e+02) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -1.143668e+03 (-1.825923e+03 +/- 4.819333e+01) [K]
+    Coulombic Fourier/kʙ   -7.058614e+02 (-6.238827e+02 +/- 5.543678e+01) [K]
+Molecule-molecule
+    Van der Waals/kʙ       -1.155612e+04 (-1.092753e+04 +/- 2.194686e+02) [K]
+    Van der Waals (Tail)/kʙ 0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+    Coulombic Real/kʙ      -3.896210e+03 (-1.878902e+03 +/- 8.360384e+01) [K]
+    Coulombic Fourier/kʙ   -2.588057e+02 (-1.473528e+02 +/- 1.761163e+01) [K]
+    Molecule Intra/kʙ       0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+Polarization energy/kʙ      0.000000e+00 ( 0.000000e+00 +/- 0.000000e+00) [K]
+
+
+Energy statistics             |  Energy [K]   | Recomputed [K]|  Drift [K]    |
+===============================================================================
+Total potential energy/kʙ     | -1.006150e+05 | -1.006150e+05 | -2.405013e-09 |
+    external field VDW/kʙ     |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    external field Real/kʙ    |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    framework-molecule VDW/kʙ | -8.305430e+04 | -8.305430e+04 | -2.310256e-09 |
+    framework-molecule Real/kʙ| -1.143668e+03 | -1.143668e+03 |  1.415880e-09 |
+    molecule-molecule VDW/kʙ  | -1.155612e+04 | -1.155612e+04 | -1.387029e-09 |
+    molecule-molecule Real/kʙ | -3.896210e+03 | -3.896210e+03 | -7.164857e-11 |
+    Van der Waals (Tail)/kʙ   |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    Ewald Fourier/kʙ          |  2.829297e+03 |  2.829297e+03 |  8.805664e-11 |
+    Ewald self/kʙ             | -7.012872e+05 | -7.012872e+05 | -1.400155e-10 |
+    Ewald exclusion/kʙ        |  6.974933e+05 |  6.974933e+05 |  0.000000e+00 |
+    bond/kʙ                   |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    Urey-Bradley/kʙ           |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    bend/kʙ                   |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    inversion bend/kʙ         |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    out-of-plane bend/kʙ      |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    torsion/kʙ                |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    improper torsion/kʙ       |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    bond-bond/kʙ              |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    bond-bend/kʙ              |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    bond-torsion/kʙ           |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    bend-bend/kʙ              |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    bend-torsion/kʙ           |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    intra VDW/kʙ              |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    intra Coulombic/kʙ        |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    polarization/kʙ           |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    dU/dlambda VDW/kʙ         |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    dU/dlambda Real/kʙ        |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+    dU/dlambda Ewald/kʙ       |  0.000000e+00 |  0.000000e+00 |  0.000000e+00 |
+-------------------------------------------------------------------------------
+
+
+Monte-Carlo moves statistics
+===============================================================================
+
+Component 0 [CO2]
+    Reinsertion (CBMC)   all:              356473
+    Reinsertion (CBMC)   total:            356473
+    Reinsertion (CBMC)   constructed:      327791
+    Reinsertion (CBMC)   accepted:          16109
+    Reinsertion (CBMC)   fraction:       0.045190
+    Reinsertion (CBMC)   max-change:     0.000000
+
+    Translation          all:              356414
+    Translation          total:            118523     118910     118981
+    Translation          constructed:      118523     118910     118981
+    Translation          accepted:          57468      63472      63255
+    Translation          fraction:       0.484868   0.533782   0.531640
+    Translation          max-change:     0.913925   0.877506   0.879402
+
+    Rotation             all:              357323
+    Rotation             total:            118800     119360     119163
+    Rotation             constructed:      118800     119360     119163
+    Rotation             accepted:          64249      57061      57225
+    Rotation             fraction:       0.540816   0.478058   0.480225
+    Rotation             max-change:     0.942420   0.944723   0.947892
+
+    Swap (CBMC)          all:              714857
+    Swap (CBMC)          total:            357806     357051          0
+    Swap (CBMC)          constructed:      326907     357051          0
+    Swap (CBMC)          accepted:          49535      49533          0
+    Swap (CBMC)          fraction:       0.138441   0.138728   0.000000
+    Swap (CBMC)          max-change:     0.000000   0.000000   0.000000
+
+
+
+Production run counting of the MC moves summed over systems and components
+===============================================================================
+
+Reinsertion (CBMC)                   356473 (19.9697 [%])
+Translation                          356414 (19.9664 [%])
+Rotation                             357323 (20.0173 [%])
+Swap (CBMC)                          714857 (40.0465 [%])
+
+Production count MC-steps:          1785067 [-]
+               All summed:          1785067 [-]
+               difference:                0 [-]
+
+
+Production run CPU timings of the MC moves
+===============================================================================
+
+Component 0 CO2
+
+Swap (CBMC)                         168.577182 [s]
+    Deletion-Total                   87.720240 [s]
+    Ewald                             5.076515 [s]
+    Insertion-Total                  80.827329 [s]
+    NonEwald                        162.169545 [s]
+    Tail                              0.891826 [s]
+    Overhead                          0.439296 [s]
+
+Rotation                             22.596604 [s]
+    Ewald                             3.148375 [s]
+    ExternalField-Molecule            0.006727 [s]
+    Framework-Molecule               16.263381 [s]
+    Molecule-Molecule                 2.852971 [s]
+    Overhead                          0.325150 [s]
+
+Reinsertion (CBMC)                  138.176446 [s]
+    Ewald                             2.911067 [s]
+    NonEwald                        135.158994 [s]
+    Overhead                          0.106385 [s]
+
+Translation                          22.609504 [s]
+    Ewald                             3.141059 [s]
+    ExternalField-Molecule            0.006903 [s]
+    Framework-Molecule               16.258614 [s]
+    Molecule-Molecule                 2.874178 [s]
+    Overhead                          0.328750 [s]
+
+
+
+Property sampling                     0.507321 [s]
+Energy/pressure sampling:             6.755718 [s]
+
+
+Production run CPU timings of the MC moves summed over systems and components
+===============================================================================
+
+
+Translation                          22.609504 [s]
+    Ewald                             3.141059 [s]
+    ExternalField-Molecule            0.006903 [s]
+    Framework-Molecule               16.258614 [s]
+    Molecule-Molecule                 2.874178 [s]
+    Overhead                          0.328750 [s]
+
+Rotation                             22.596604 [s]
+    Ewald                             3.148375 [s]
+    ExternalField-Molecule            0.006727 [s]
+    Framework-Molecule               16.263381 [s]
+    Molecule-Molecule                 2.852971 [s]
+    Overhead                          0.325150 [s]
+
+Reinsertion (CBMC)                  138.176446 [s]
+    Ewald                             2.911067 [s]
+    NonEwald                        135.158994 [s]
+    Overhead                          0.106385 [s]
+
+Swap (CBMC)                         168.577182 [s]
+    Deletion-Total                   87.720240 [s]
+    Ewald                             5.076515 [s]
+    Insertion-Total                  80.827329 [s]
+    NonEwald                        162.169545 [s]
+    Tail                              0.891826 [s]
+    Overhead                          0.439296 [s]
+
+Property sampling:                    0.507321 [s]
+Energy/pressure sampling:             6.755718 [s]
+
+Production simulation time:         359.593692 [s]
+                All summed:         359.222775 [s]
+                  Overhead:           0.370917 [s]
+
+
+Initalization simulation time:       69.382416 [s]
+Equilibration simulation time:        0.000000 [s]
+Production simulation time:         359.593692 [s]
+Total simulation time:              428.976108 [s]
+
+
+Energy averages and statistics:
+===============================================================================
+
+Framework-molecule energy:
+-------------------------------------------------------------------------------
+
+    Framework-molecule energy/kʙ 0-0 [CO2]:
+    ---------------------------------------------------------------------------
+        Block[  0] -8.240986e+04
+        Block[  1] -8.198070e+04
+        Block[  2] -8.291858e+04
+        Block[  3] -8.110886e+04
+        Block[  4] -8.197590e+04
+        -----------------------------------------------------------------------
+        Average  -8.207878e+04 +/-  8.271881e+02 [K]
+
+
+
+Framework-molecule energy contributions per energy type:
+-------------------------------------------------------------------------------
+
+    Van der Waals energy/kʙ 0-0 [CO2]:
+    ---------------------------------------------------------------------------
+        Block[  0] -8.004836e+04
+        Block[  1] -7.945510e+04
+        Block[  2] -8.042898e+04
+        Block[  3] -7.870035e+04
+        Block[  4] -7.951208e+04
+        -----------------------------------------------------------------------
+        Average  -7.962897e+04 +/-  8.145863e+02 [K]
+
+    VDW Tail-Correction energy/kʙ 0-0 [CO2]:
+    ---------------------------------------------------------------------------
+        Block[  0]  0.000000e+00
+        Block[  1]  0.000000e+00
+        Block[  2]  0.000000e+00
+        Block[  3]  0.000000e+00
+        Block[  4]  0.000000e+00
+        -----------------------------------------------------------------------
+        Average   0.000000e+00 +/-  0.000000e+00 [K]
+
+    Coulomb Real energy/kʙ 0-0 [CO2]:
+    ---------------------------------------------------------------------------
+        Block[  0] -1.771630e+03
+        Block[  1] -1.850240e+03
+        Block[  2] -1.868438e+03
+        Block[  3] -1.837011e+03
+        Block[  4] -1.802294e+03
+        -----------------------------------------------------------------------
+        Average  -1.825923e+03 +/-  4.819333e+01 [K]
+
+    Coulomb Fourier energy/kʙ 0-0 [CO2]:
+    ---------------------------------------------------------------------------
+        Block[  0] -5.898620e+02
+        Block[  1] -6.753605e+02
+        Block[  2] -6.211660e+02
+        Block[  3] -5.714979e+02
+        Block[  4] -6.615272e+02
+        -----------------------------------------------------------------------
+        Average  -6.238827e+02 +/-  5.543678e+01 [K]
+
+
+
+Inter-molecular energy:
+-------------------------------------------------------------------------------
+
+    Inter-molecular energy/kʙ 0-0 [CO2-CO2]:
+    ---------------------------------------------------------------------------
+        Block[  0] -1.309253e+04
+        Block[  1] -1.288993e+04
+        Block[  2] -1.324371e+04
+        Block[  3] -1.272264e+04
+        Block[  4] -1.282013e+04
+        -----------------------------------------------------------------------
+        Average  -1.295379e+04 +/-  2.623840e+02 [K]
+
+
+
+Inter-molecular energy contributions per energy type:
+-------------------------------------------------------------------------------
+
+    Van der Waals energy/kʙ 0-0 [CO2-CO2]:
+    ---------------------------------------------------------------------------
+        Block[  0] -1.103124e+04
+        Block[  1] -1.079601e+04
+        Block[  2] -1.116874e+04
+        Block[  3] -1.073138e+04
+        Block[  4] -1.091029e+04
+        -----------------------------------------------------------------------
+        Average  -1.092753e+04 +/-  2.194686e+02 [K]
+
+    VDW Tail-Correction energy/kʙ 0-0 [CO2-CO2]:
+    ---------------------------------------------------------------------------
+        Block[  0]  0.000000e+00
+        Block[  1]  0.000000e+00
+        Block[  2]  0.000000e+00
+        Block[  3]  0.000000e+00
+        Block[  4]  0.000000e+00
+        -----------------------------------------------------------------------
+        Average   0.000000e+00 +/-  0.000000e+00 [K]
+
+    Coulomb Real energy/kʙ 0-0 [CO2-CO2]:
+    ---------------------------------------------------------------------------
+        Block[  0] -1.899967e+03
+        Block[  1] -1.947041e+03
+        Block[  2] -1.913792e+03
+        Block[  3] -1.862332e+03
+        Block[  4] -1.771377e+03
+        -----------------------------------------------------------------------
+        Average  -1.878902e+03 +/-  8.360384e+01 [K]
+
+    Coulomb Fourier energy/kʙ 0-0 [CO2-CO2]:
+    ---------------------------------------------------------------------------
+        Block[  0] -1.613208e+02
+        Block[  1] -1.468779e+02
+        Block[  2] -1.611770e+02
+        Block[  3] -1.289281e+02
+        Block[  4] -1.384602e+02
+        -----------------------------------------------------------------------
+        Average  -1.473528e+02 +/-  1.761163e+01 [K]
+
+Intra-molecular energies per energy type:
+-------------------------------------------------------------------------------
+
+
+Kinetic Energies:
+-------------------------------------------------------------------------------
+
+    Translational Kinetic energy/kʙ
+    ---------------------------------------------------------------------------
+        Block[  0]  0.000000e+00
+        Block[  1]  0.000000e+00
+        Block[  2]  0.000000e+00
+        Block[  3]  0.000000e+00
+        Block[  4]  0.000000e+00
+        -----------------------------------------------------------------------
+        Average   0.000000e+00 +/-  0.000000e+00 [K]
+
+    Rotational Kinetic energy/kʙ
+    ---------------------------------------------------------------------------
+        Block[  0]  0.000000e+00
+        Block[  1]  0.000000e+00
+        Block[  2]  0.000000e+00
+        Block[  3]  0.000000e+00
+        Block[  4]  0.000000e+00
+        -----------------------------------------------------------------------
+        Average   0.000000e+00 +/-  0.000000e+00 [K]
+
+    Nose Hoover energy/kʙ
+    ---------------------------------------------------------------------------
+        Block[  0]  0.000000e+00
+        Block[  1]  0.000000e+00
+        Block[  2]  0.000000e+00
+        Block[  3]  0.000000e+00
+        Block[  4]  0.000000e+00
+        -----------------------------------------------------------------------
+        Average   0.000000e+00 +/-  0.000000e+00 [K]
+
+Polarization energy/kʙ
+-------------------------------------------------------------------------------
+    Block[  0]  0.000000e+00
+    Block[  1]  0.000000e+00
+    Block[  2]  0.000000e+00
+    Block[  3]  0.000000e+00
+    Block[  4]  0.000000e+00
+    ---------------------------------------------------------------------------
+    Average   0.000000e+00 +/-  0.000000e+00 [K]
+
+Total energy/kʙ
+-------------------------------------------------------------------------------
+    Block[  0] -9.550239e+04
+    Block[  1] -9.487063e+04
+    Block[  2] -9.616229e+04
+    Block[  3] -9.383150e+04
+    Block[  4] -9.479603e+04
+    ---------------------------------------------------------------------------
+    Average  -9.503257e+04 +/-  1.079027e+03 [K]
+
+Enthalpy of adsorption
+===============================================================================
+
+Component 0 [CO2]
+-------------------------------------------------------------------------------
+    Block[  0] -3.063185e+03
+    Block[  1] -3.192970e+03
+    Block[  2] -3.134974e+03
+    Block[  3] -3.139291e+03
+    Block[  4] -3.097206e+03
+    ---------------------------------------------------------------------------
+    Enthalpy of adsorption: -3.125525e+03 +/-  6.055201e+01 [K]
+                            -2.598707e+01 +/-  5.034576e-01 [kJ/mol]
+    Note: need to subtract the ideal-gas energy.
+
+
+Loadings
+===============================================================================
+
+Component 0 (CO2)
+    Block[  0]  3.593310e+01
+    Block[  1]  3.565360e+01
+    Block[  2]  3.598220e+01
+    Block[  3]  3.536890e+01
+    Block[  4]  3.556910e+01
+    ---------------------------------------------------------------------------
+    Abs. loading average   3.570138e+01 +/-  3.182596e-01 [molecules/cell]
+    Abs. loading average   3.570138e+01 +/-  3.182596e-01 [molecules/uc]
+    Abs. loading average   5.376620e+00 +/-  4.792983e-02 [mol/kg-framework]
+    Abs. loading average   2.365648e+02 +/-  2.108855e+00 [mg/g-framework]
+
+    Block[  0]  3.484220e+01
+    Block[  1]  3.456270e+01
+    Block[  2]  3.489130e+01
+    Block[  3]  3.427800e+01
+    Block[  4]  3.447820e+01
+    ---------------------------------------------------------------------------
+    Excess loading average   3.461048e+01 +/-  3.182596e-01 [molecules/cell]
+    Excess loading average   3.461048e+01 +/-  3.182596e-01 [molecules/uc]
+    Excess loading average   5.212330e+00 +/-  4.792983e-02 [mol/kg-framework]
+    Excess loading average   2.293363e+02 +/-  2.108855e+00 [mg/g-framework]
+
+
+

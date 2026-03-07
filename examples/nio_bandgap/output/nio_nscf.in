@@ -1,0 +1,41 @@
+&CONTROL
+  calculation   = 'nscf'
+  prefix        = 'NiO'
+  outdir        = './outdir'
+  pseudo_dir    = './pseudo'
+  verbosity     = 'high'
+/
+
+&SYSTEM
+  ibrav         = 2
+  celldm(1)     = 7.892
+  nat           = 2
+  ntyp          = 2
+  ecutwfc       = 60.0
+  ecutrho       = 480.0
+  nspin         = 2
+  tot_magnetization = 2.0
+  occupations   = 'tetrahedra_opt'
+  starting_magnetization(1) = 0.5
+  starting_magnetization(2) = 0.0
+  nbnd          = 40
+/
+
+&ELECTRONS
+  conv_thr      = 1.0d-8
+  diagonalization = 'david'
+/
+
+ATOMIC_SPECIES
+  Ni  58.693  Ni.pbe-spn-kjpaw_psl.1.0.0.UPF
+  O   15.999  O.pbe-n-kjpaw_psl.1.0.0.UPF
+
+ATOMIC_POSITIONS {crystal}
+  Ni  0.0  0.0  0.0
+  O   0.5  0.5  0.5
+
+K_POINTS {automatic}
+  12 12 12  0 0 0
+
+HUBBARD (ortho-atomic)
+  U Ni-3d 6.0

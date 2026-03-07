@@ -1,0 +1,111 @@
+LAMMPS (7 Feb 2024 - Update 1)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+Reading data file ...
+  orthogonal box = (0 0 0) to (31 31 31)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  3036 atoms
+  scanning bonds ...
+  2 = max bonds/atom
+  scanning angles ...
+  1 = max angles/atom
+  reading bonds ...
+  2000 bonds
+  reading angles ...
+  1000 angles
+Finding 1-2 1-3 1-4 neighbors ...
+  special bond factors lj:    0        0        0       
+  special bond factors coul:  0        0        0       
+     2 = max # of 1-2 neighbors
+     1 = max # of 1-3 neighbors
+     1 = max # of 1-4 neighbors
+     2 = max # of special neighbors
+  special bonds CPU = 0.000 seconds
+  read_data CPU = 0.006 seconds
+Finding SHAKE clusters ...
+       0 = # of size 2 clusters
+       0 = # of size 3 clusters
+       0 = # of size 4 clusters
+    1000 = # of frozen angles
+  find clusters CPU = 0.000 seconds
+PPPM initialization ...
+  using 12-bit tables for long-range coulomb (src/kspace.cpp:342)
+  G vector (1/distance) = 0.30511746
+  grid = 27 27 27
+  stencil order = 5
+  estimated absolute RMS force accuracy = 0.0031474233
+  estimated relative force accuracy = 9.4783718e-06
+  using double precision FFTW3
+  3d grid and FFT values/proc = 39304 19683
+Generated 6 of 6 mixed pair_coeff terms from arithmetic mixing rule
+WARNING: Using fix shake with minimization.
+  Substituting constraints with harmonic restraint forces using kbond=1987 (src/RIGID/fix_shake.cpp:360)
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 12
+  ghost atom cutoff = 12
+  binsize = 6, bins = 6 6 6
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair lj/cut/coul/long, perpetual
+      attributes: half, newton on
+      pair build: half/bin/newton
+      stencil: half/bin/3d
+      bin: standard
+Setting up cg style minimization ...
+  Unit style    : real
+  Current step  : 0
+Per MPI rank memory allocation (min/avg/max) = 25.42 | 25.42 | 25.42 Mbytes
+   Step          Temp          E_pair         E_mol          TotEng         Press     
+         0   0              1.2712056e+09  0              1.2712056e+09  1.170368e+10 
+        14   0              18972.263      0              2.0206961e+08 -1.6154644e+08
+Loop time of 0.638894 on 1 procs for 14 steps with 3036 atoms
+
+100.0% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+      1271205611.86373   23137.7542574104   202069612.811521
+  Force two-norm initial, final = 3.8878543e+10 2346589.4
+  Force max component initial, final = 2.6198701e+10 319966.28
+  Final line search alpha, max atom move = 1.4910412e-16 4.770829e-11
+  Iterations, force evaluations = 14 61
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.54755    | 0.54755    | 0.54755    |   0.0 | 85.70
+Bond    | 1.7235e-05 | 1.7235e-05 | 1.7235e-05 |   0.0 |  0.00
+Kspace  | 0.074443   | 0.074443   | 0.074443   |   0.0 | 11.65
+Neigh   | 0.011711   | 0.011711   | 0.011711   |   0.0 |  1.83
+Comm    | 0.0019452  | 0.0019452  | 0.0019452  |   0.0 |  0.30
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0.0014543  | 0.0014543  | 0.0014543  |   0.0 |  0.23
+Other   |            | 0.001776   |            |       |  0.28
+
+Nlocal:           3036 ave        3036 max        3036 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:          13712 ave       13712 max       13712 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    1.12127e+06 ave 1.12127e+06 max 1.12127e+06 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 1121274
+Ave neighs/atom = 369.32609
+Ave special neighs/atom = 1.9762846
+Neighbor list builds = 1
+Dangerous builds = 0
+PPPM initialization ...
+  using 12-bit tables for long-range coulomb (src/kspace.cpp:342)
+  G vector (1/distance) = 0.30511746
+  grid = 27 27 27
+  stencil order =--------------------------------------------------------------------------
+MPI_ABORT was invoked on rank 0 in communicator MPI_COMM_WORLD
+with errorcode 1.
+
+NOTE: invoking MPI_ABORT causes Open MPI to kill all MPI processes.
+You may or may not see output from other processes, depending on
+exactly when Open MPI kills them.
+--------------------------------------------------------------------------

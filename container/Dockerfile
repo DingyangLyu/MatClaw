@@ -26,7 +26,7 @@ RUN wget -q https://gitlab.com/QEF/q-e/-/archive/qe-7.5/q-e-qe-7.5.tar.gz && \
     ./configure --enable-openmp --enable-parallel && \
     make -j$(nproc) all && \
     strip --strip-unneeded bin/* || true && \
-    find bin/ -type l -exec sh -c 'cp -L "$1" "$1.tmp" && mv "$1.tmp" "$1"' _ {} \;
+    mkdir -p /opt/qe/bin && cp -L bin/* /opt/qe/bin/
 
 # ==========================================
 # STAGE 2: Runtime (Ubuntu 24.04 for RASPA3 glibc compatibility)
@@ -88,7 +88,7 @@ RUN wget -q https://github.com/iRASPA/RASPA3/releases/download/v3.0.16/raspa_3.0
     rm -rf /var/lib/apt/lists/*
 
 # Copy Quantum ESPRESSO binaries from builder stage
-COPY --from=qe-builder /build/qe/bin /opt/qe/bin
+COPY --from=qe-builder /opt/qe/bin /opt/qe/bin
 RUN chmod +x /opt/qe/bin/*
 ENV PATH="/opt/qe/bin:$PATH"
 

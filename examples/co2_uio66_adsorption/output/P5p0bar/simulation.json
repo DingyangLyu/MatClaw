@@ -1,0 +1,33 @@
+{
+  "SimulationType": "MonteCarlo",
+  "NumberOfCycles": 50000,
+  "NumberOfInitializationCycles": 10000,
+  "PrintEvery": 5000,
+  "Systems": [
+    {
+      "Type": "Framework",
+      "Name": "UIO-66",
+      "NumberOfUnitCells": [
+        1,
+        1,
+        1
+      ],
+      "HeliumVoidFraction": 0.47,
+      "ChargeMethod": "Ewald",
+      "ExternalTemperature": 298.0,
+      "ExternalPressure": 500000.0
+    }
+  ],
+  "Components": [
+    {
+      "Name": "CO2",
+      "IdealGasRosenbluthWeight": 1.0,
+      "TranslationProbability": 0.5,
+      "RotationProbability": 0.5,
+      "ReinsertionProbability": 0.5,
+      "SwapProbability": 1.0,
+      "WidomProbability": 0.0,
+      "CreateNumberOfMolecules": 0
+    }
+  ]
+}

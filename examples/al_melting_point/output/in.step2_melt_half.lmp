@@ -1,0 +1,54 @@
+# Step 2: Melt the upper half to create two-phase system
+
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+
+read_data       solid_300K.dat
+
+mass            1 26.982
+
+pair_style      eam/alloy
+pair_coeff      * * /usr/share/lammps/potentials/Al_zhou.eam.alloy Al
+
+# Get box bounds
+variable        zlo equal zlo
+variable        zhi equal zhi
+variable        zmid equal (zlo+zhi)/2
+
+# Define lower (solid) and upper (liquid) regions
+region          lower block INF INF INF INF ${zlo} ${zmid}
+region          upper block INF INF INF INF ${zmid} ${zhi}
+group           lower_atoms region lower
+group           upper_atoms region upper
+
+# Fix lower half, heat upper half to melt it
+velocity        upper_atoms create 3000.0 54321 dist gaussian
+fix             freeze lower_atoms setforce 0.0 0.0 0.0
+fix             melt   upper_atoms nvt temp 3000 3000 0.05
+thermo          200
+thermo_style    custom step temp pe ke press
+run             5000
+unfix           freeze
+unfix           melt
+
+# Relax whole system at 2500K briefly to ensure upper is liquid
+fix             1 all nvt temp 2500 2500 0.1
+run             3000
+unfix           1
+
+# Cool quickly to 950K
+fix             2 all nvt temp 2500 950 0.05
+run             3000
+unfix           2
+
+# Short NVT at 950K to stabilize two-phase interface
+fix             3 all nvt temp 950 950 0.1
+run             2000
+unfix           3
+
+write_data      twophase_950K.dat
+write_restart   twophase_950K.restart
+
+print "Two-phase system created"
