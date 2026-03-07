@@ -13,9 +13,9 @@ We welcome contributions! Whether it's a new computation skill, a bug fix, or a 
 | Add a channel skill | Medium | Integrate a new messaging platform |
 | Core improvements | Hard | Agent runner, container, orchestrator |
 
-## Source Code Changes
+## Review Process
 
-Source code contributions are welcome — bug fixes, security fixes, new features, and improvements to the core platform are all accepted.
+All contributions are welcome. Skill contributions are merged quickly once tests pass. Core source code changes go through a more thorough review.
 
 ---
 
