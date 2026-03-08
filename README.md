@@ -273,8 +273,8 @@ Benchmark tasks adapted from [QUASAR](https://github.com/fengxuyy/QUASAR). All e
 ### 1. Build the container
 
 ```bash
-git clone https://gitee.com/baiyuan1/mat-claw.git
-cd mat-claw
+git clone https://github.com/DingyangLyu/MatClaw.git
+cd MatClaw
 ./container/build.sh
 ```
 
@@ -490,7 +490,7 @@ If you use MatClaw in your research, please cite:
   author = {Dingyang Lyu and Baole Wei and Hongwei Du and Yongheng Li and Feng Yu},
   email  = {s-ldy25@bza.edu.cn, weibaole@zgci.ac.cn, duhongwei@zgci.ac.cn},
   year   = {2026},
-  url    = {https://gitee.com/baiyuan1/mat-claw}
+  url    = {https://github.com/DingyangLyu/MatClaw}
 }
 ```
 
