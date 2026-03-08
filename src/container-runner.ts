@@ -26,6 +26,7 @@ import {
 } from './container-runtime.js';
 import { validateAdditionalMounts } from './mount-security.js';
 import { RegisteredGroup } from './types.js';
+import { agentEvents } from './web/events.js';
 
 // Sentinel markers for robust output parsing (must match agent-runner)
 const OUTPUT_START_MARKER = '---MATCLAW_OUTPUT_START---';
@@ -168,6 +169,26 @@ function buildVolumeMounts(
     });
   }
 
+  // VASP remote configuration (for vasp-remote script in container)
+  const vaspConfigDir = path.join(homeDir, '.vasp-remote');
+  if (fs.existsSync(vaspConfigDir)) {
+    mounts.push({
+      hostPath: vaspConfigDir,
+      containerPath: '/home/node/.vasp-remote',
+      readonly: true,
+    });
+  }
+
+  // SSH keys for VASP remote cluster access
+  const sshDir = path.join(homeDir, '.ssh');
+  if (fs.existsSync(vaspConfigDir) && fs.existsSync(sshDir)) {
+    mounts.push({
+      hostPath: sshDir,
+      containerPath: '/home/node/.ssh',
+      readonly: true,
+    });
+  }
+
   // Per-group IPC namespace: each group gets its own IPC directory
   // This prevents cross-group privilege escalation via IPC
   const groupIpcDir = resolveGroupIpcPath(group.folder);
@@ -303,6 +324,11 @@ export async function runContainerAgent(
   const logsDir = path.join(groupDir, 'logs');
   fs.mkdirSync(logsDir, { recursive: true });
 
+  // Real-time streaming log: appended as stdout/stderr arrives
+  // Use `tail -f` on this file to watch agent activity live
+  const liveLogPath = path.join(logsDir, 'container-live.log');
+  const liveStream = fs.createWriteStream(liveLogPath, { flags: 'w' });
+
   return new Promise((resolve) => {
     const container = spawn(CONTAINER_RUNTIME_BIN, containerArgs, {
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -314,6 +340,22 @@ export async function runContainerAgent(
     let stderr = '';
     let stdoutTruncated = false;
     let stderrTruncated = false;
+
+    // Write live log header
+    liveStream.write(`=== MatClaw Agent Live Log ===\n`);
+    liveStream.write(`Started: ${new Date().toISOString()}\n`);
+    liveStream.write(`Group: ${group.name}\n`);
+    liveStream.write(`Container: ${containerName}\n`);
+    liveStream.write(`${'='.repeat(60)}\n\n`);
+
+    // Emit dashboard event: agent started
+    agentEvents.emit('agent', {
+      type: 'agent:start',
+      group: group.name,
+      groupFolder: group.folder,
+      timestamp: new Date().toISOString(),
+      data: { containerName, prompt: input.prompt },
+    });
 
     // Pass secrets via stdin (never written to disk or mounted as files)
     input.secrets = readSecrets();
@@ -329,6 +371,18 @@ export async function runContainerAgent(
 
     container.stdout.on('data', (data) => {
       const chunk = data.toString();
+
+      // Write to live log in real-time
+      liveStream.write(chunk);
+
+      // Emit dashboard event: stdout chunk
+      agentEvents.emit('agent', {
+        type: 'agent:stdout',
+        group: group.name,
+        groupFolder: group.folder,
+        timestamp: new Date().toISOString(),
+        data: { chunk },
+      });
 
       // Always accumulate for logging
       if (!stdoutTruncated) {
@@ -366,6 +420,14 @@ export async function runContainerAgent(
             hadStreamingOutput = true;
             // Activity detected — reset the hard timeout
             resetTimeout();
+            // Emit dashboard event: parsed agent output
+            agentEvents.emit('agent', {
+              type: 'agent:output',
+              group: group.name,
+              groupFolder: group.folder,
+              timestamp: new Date().toISOString(),
+              data: { result: parsed.result, status: parsed.status },
+            });
             // Call onOutput for all markers (including null results)
             // so idle timers start even for "silent" query completions.
             outputChain = outputChain.then(() => onOutput(parsed));
@@ -381,10 +443,24 @@ export async function runContainerAgent(
 
     container.stderr.on('data', (data) => {
       const chunk = data.toString();
+
+      // Write stderr to live log with prefix
       const lines = chunk.trim().split('\n');
       for (const line of lines) {
-        if (line) logger.debug({ container: group.folder }, line);
+        if (line) {
+          liveStream.write(`[stderr] ${line}\n`);
+          logger.debug({ container: group.folder }, line);
+        }
       }
+
+      // Emit dashboard event: stderr chunk
+      agentEvents.emit('agent', {
+        type: 'agent:stderr',
+        group: group.name,
+        groupFolder: group.folder,
+        timestamp: new Date().toISOString(),
+        data: { chunk },
+      });
       // Don't reset timeout on stderr — SDK writes debug logs continuously.
       // Timeout only resets on actual output (OUTPUT_MARKER in stdout).
       if (stderrTruncated) return;
@@ -436,6 +512,23 @@ export async function runContainerAgent(
     container.on('close', (code) => {
       clearTimeout(timeout);
       const duration = Date.now() - startTime;
+
+      // Close the live log stream
+      liveStream.write(`\n${'='.repeat(60)}\n`);
+      liveStream.write(`Finished: ${new Date().toISOString()}\n`);
+      liveStream.write(
+        `Duration: ${Math.round(duration / 1000)}s | Exit Code: ${code}\n`,
+      );
+      liveStream.end();
+
+      // Emit dashboard event: agent finished
+      agentEvents.emit('agent', {
+        type: 'agent:end',
+        group: group.name,
+        groupFolder: group.folder,
+        timestamp: new Date().toISOString(),
+        data: { duration, exitCode: code },
+      });
 
       if (timedOut) {
         const ts = new Date().toISOString().replace(/[:.]/g, '-');

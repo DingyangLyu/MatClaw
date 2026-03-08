@@ -28,6 +28,7 @@ import {
   writeGroupsSnapshot,
   writeTasksSnapshot,
 } from './container-runner.js';
+import { startDashboard } from './web/server.js';
 import {
   cleanupOrphans,
   ensureContainerRuntimeRunning,
@@ -580,6 +581,9 @@ async function main(): Promise<void> {
     logger.fatal({ err }, 'Message loop crashed unexpectedly');
     process.exit(1);
   });
+
+  // Start monitoring dashboard
+  startDashboard();
 }
 
 // Guard: only run when executed directly, not when imported by tests

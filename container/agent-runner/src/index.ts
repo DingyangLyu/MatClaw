@@ -464,8 +464,40 @@ async function runQuery(
     const msgType = message.type === 'system' ? `system/${(message as { subtype?: string }).subtype}` : message.type;
     log(`[msg #${messageCount}] type=${msgType}`);
 
-    if (message.type === 'assistant' && 'uuid' in message) {
-      lastAssistantUuid = (message as { uuid: string }).uuid;
+    // ── Detailed logging for dashboard monitoring ──
+
+    if (message.type === 'assistant') {
+      if ('uuid' in message) {
+        lastAssistantUuid = (message as { uuid: string }).uuid;
+      }
+      // Log assistant message content (text + tool calls)
+      const msg = message as { message?: { content?: Array<{ type: string; text?: string; name?: string; input?: unknown; id?: string }> } };
+      if (msg.message?.content) {
+        for (const block of msg.message.content) {
+          if (block.type === 'text' && block.text) {
+            log(`[Assistant] ${block.text.slice(0, 2000)}`);
+          } else if (block.type === 'tool_use') {
+            const inputStr = JSON.stringify(block.input || {});
+            log(`[ToolCall] ${block.name} (id: ${block.id})`);
+            log(`[ToolInput] ${inputStr.slice(0, 3000)}`);
+          }
+        }
+      }
+    }
+
+    if (message.type === 'user') {
+      // Tool results come as user messages with tool_result content
+      const msg = message as { message?: { content?: Array<{ type: string; tool_use_id?: string; content?: unknown }> } };
+      if (msg.message?.content) {
+        for (const block of msg.message.content) {
+          if (block.type === 'tool_result') {
+            const resultStr = typeof block.content === 'string'
+              ? block.content
+              : JSON.stringify(block.content || '');
+            log(`[ToolResult] (id: ${block.tool_use_id}) ${resultStr.slice(0, 3000)}`);
+          }
+        }
+      }
     }
 
     if (message.type === 'system' && message.subtype === 'init') {
@@ -481,7 +513,7 @@ async function runQuery(
     if (message.type === 'result') {
       resultCount++;
       const textResult = 'result' in message ? (message as { result?: string }).result : null;
-      log(`Result #${resultCount}: subtype=${message.subtype}${textResult ? ` text=${textResult.slice(0, 200)}` : ''}`);
+      log(`[Result #${resultCount}] subtype=${message.subtype}${textResult ? ` text=${textResult.slice(0, 500)}` : ''}`);
       writeOutput({
         status: 'success',
         result: textResult || null,
