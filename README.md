@@ -19,7 +19,7 @@
   <img src="https://img.shields.io/badge/LAMMPS-2021-7C3AED" alt="LAMMPS">&nbsp;
   <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">&nbsp;
   <img src="https://img.shields.io/badge/VASP-external-F59E0B" alt="VASP (external)">&nbsp;
-  <img src="https://img.shields.io/badge/Skills-213-E11D48" alt="213 Skills">
+  <img src="https://img.shields.io/badge/Skills-221-E11D48" alt="221 Skills">
 </p>
 
 ---
@@ -50,7 +50,7 @@ MatClaw is an **AI agent that autonomously performs materials science computatio
 **Key Features:**
 
 - **Autonomous computation** — Understands your task, writes code, executes it, analyzes output, retries on errors
-- **213 built-in computation skills** — 44 skill groups covering the full spectrum of computational materials science: electronic structure, phonons, mechanical properties, defects, optical/magnetic/topological properties, catalysis, batteries, phase diagrams, transport, spectroscopy, Monte Carlo, molecular dynamics, and more. Each skill contains complete runnable scripts, parameter guides, and method selection decision trees. See [Materials Compute Skills Reference](docs/materials-compute-skills.md) for the full inventory.
+- **221 built-in computation skills** — 44 skill groups covering the full spectrum of computational materials science: electronic structure, phonons, mechanical properties, defects, optical/magnetic/topological properties, catalysis, batteries, phase diagrams, transport, spectroscopy, Monte Carlo, molecular dynamics, and more. Each skill contains complete runnable scripts, parameter guides, and method selection decision trees. See [Materials Compute Skills Reference](docs/materials-compute-skills.md) for the full inventory.
 - **VASP support** — Connect your own VASP installation via SSH (HPC cluster) or local mount. The agent generates inputs, submits jobs, and parses results automatically. See [VASP Integration](docs/vasp-integration.md).
 - **All-in-one container** — QE 7.5, LAMMPS, RASPA3, MACE, pymatgen, ASE, PyTorch pre-installed and ready
 - **Secure isolation** — Every computation runs in a disposable Docker container with filesystem isolation
@@ -437,7 +437,7 @@ matclaw/
 ├── container/
 │   ├── Dockerfile              # Multi-stage build (QE builder + runtime)
 │   ├── agent-runner/           # Claude Agent SDK runner (inside container)
-│   └── skills/                 # 213 computation skills (44 groups)
+│   └── skills/                 # 221 computation skills (44 groups)
 │       ├── materials-compute/  # Root: computation engine docs
 │       ├── electronic-structure/  # Band structure, DOS, SCF
 │       ├── thermal-properties/    # Phonons, QHA, MD, thermal transport
@@ -467,7 +467,7 @@ matclaw/
 | [DingTalk Setup](docs/dingtalk-setup.md) | DingTalk channel configuration guide |
 | [Gmail Setup](docs/gmail-setup.md) | Gmail channel configuration guide |
 | [SDK Deep Dive](docs/SDK_DEEP_DIVE.md) | Claude Agent SDK internals |
-| [Materials Compute Skills](docs/materials-compute-skills.md) | Full inventory of 213 built-in computation skills |
+| [Materials Compute Skills](docs/materials-compute-skills.md) | Full inventory of 221 built-in computation skills |
 | [VASP Integration](docs/vasp-integration.md) | Connect your VASP installation (SSH or local) |
 | [Creating Skills](docs/creating-skills.md) | How to create a new skill (template included) |
 | [Skills Architecture](docs/nanorepo-architecture.md) | How the skill system works (internals) |
