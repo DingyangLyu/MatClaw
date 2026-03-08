@@ -115,7 +115,8 @@ function writeOutput(output: ContainerOutput): void {
 }
 
 function log(message: string): void {
-  console.error(`[agent-runner] ${message}`);
+  const ts = new Date().toISOString().slice(11, 23); // HH:mm:ss.SSS
+  console.error(`[${ts}] ${message}`);
 }
 
 function getSessionSummary(sessionId: string, transcriptPath: string): string | null {
@@ -471,10 +472,12 @@ async function runQuery(
         lastAssistantUuid = (message as { uuid: string }).uuid;
       }
       // Log assistant message content (text + tool calls)
-      const msg = message as { message?: { content?: Array<{ type: string; text?: string; name?: string; input?: unknown; id?: string }> } };
+      const msg = message as { message?: { content?: Array<{ type: string; text?: string; thinking?: string; name?: string; input?: unknown; id?: string }> } };
       if (msg.message?.content) {
         for (const block of msg.message.content) {
-          if (block.type === 'text' && block.text) {
+          if (block.type === 'thinking' && block.thinking) {
+            log(`[Thinking] ${block.thinking.slice(0, 2000)}`);
+          } else if (block.type === 'text' && block.text) {
             log(`[Assistant] ${block.text.slice(0, 2000)}`);
           } else if (block.type === 'tool_use') {
             const inputStr = JSON.stringify(block.input || {});

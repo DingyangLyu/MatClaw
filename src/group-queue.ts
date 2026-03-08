@@ -55,6 +55,10 @@ export class GroupQueue {
     return state;
   }
 
+  getState(groupJid: string): GroupState | undefined {
+    return this.groups.get(groupJid);
+  }
+
   setProcessMessagesFn(fn: (groupJid: string) => Promise<boolean>): void {
     this.processMessagesFn = fn;
   }

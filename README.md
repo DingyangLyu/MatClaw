@@ -27,6 +27,7 @@
 ## Contents
 
 - [What is MatClaw?](#what-is-matclaw)
+- [Chat Commands](#chat-commands)
 - [Built-in Computation Skills](#built-in-computation-skills)
 - [Basic Usage](#basic-usage)
 - [Examples](#examples)
@@ -55,7 +56,28 @@ MatClaw is an **AI agent that autonomously performs materials science computatio
 - **Secure isolation** — Every computation runs in a disposable Docker container with filesystem isolation
 - **Flexible LLM backend** — Works with Anthropic Claude, DeepSeek, or any Anthropic-compatible API
 - **Multi-channel access** — Chat via Feishu, DingTalk, Gmail, WhatsApp, Telegram, Discord, Slack
+- **Chat commands** — `/watch`, `/status`, `/stop`, `/sessions`, `/new`, `/resume`, `/compact` — manage sessions, monitor progress, and control the agent directly from chat
+- **Real-time dashboard** — Web UI at `localhost:3210` with live agent activity, parsed transcripts, and container logs
 - **Extensible** — Conda/pip available inside container; agent can install additional packages on-the-fly
+
+## Chat Commands
+
+Control the agent directly from any messaging channel — no terminal or dashboard required.
+
+| Command | Description |
+|---------|-------------|
+| `/watch` | See what the agent is doing right now (recent tool calls, reads, bash commands) |
+| `/status` | Agent status — running/idle, current session, container name, queued tasks |
+| `/stop` | Force stop a running agent |
+| `/sessions` | List all conversation sessions (ID, timestamp, size, active marker) |
+| `/new` | Start a fresh conversation with no prior memory |
+| `/resume [id]` | Restore previous session, or switch to any session by ID prefix |
+| `/compact [focus]` | Compress agent memory. Optionally specify what to keep (e.g. `/compact keep only VASP config`) |
+| `/help` | Show all available commands |
+
+**Session management** — Every conversation is a resumable session. Use `/new` to start clean, `/sessions` to browse history, and `/resume` to jump back to any previous context. The agent picks up exactly where it left off.
+
+**Real-time monitoring** — Send `/watch` at any time to see the agent's recent activity without waiting for it to finish. For a full graphical view, open the built-in dashboard at `http://localhost:3210`.
 
 ## Built-in Computation Skills
 
