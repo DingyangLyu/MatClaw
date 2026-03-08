@@ -243,9 +243,7 @@ export function startDashboard() {
       const file = url.searchParams.get('file');
       if (!group || !file) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(
-          JSON.stringify({ error: 'Missing group or file parameter' }),
-        );
+        res.end(JSON.stringify({ error: 'Missing group or file parameter' }));
         return;
       }
       const content = getTranscriptLog(group, file);
@@ -265,9 +263,7 @@ export function startDashboard() {
       const file = url.searchParams.get('file');
       if (!group || !file) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(
-          JSON.stringify({ error: 'Missing group or file parameter' }),
-        );
+        res.end(JSON.stringify({ error: 'Missing group or file parameter' }));
         return;
       }
       const entries = getTranscriptEntries(group, file);
@@ -283,7 +279,11 @@ export function startDashboard() {
 
     // ── Static: Logo ──
     if (url.pathname === '/assets/logo.png') {
-      const logoPath = path.join(process.cwd(), 'assets', 'matclaw-icon-square.png');
+      const logoPath = path.join(
+        process.cwd(),
+        'assets',
+        'matclaw-icon-square.png',
+      );
       if (fs.existsSync(logoPath)) {
         res.writeHead(200, {
           'Content-Type': 'image/png',

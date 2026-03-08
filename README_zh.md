@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a>&nbsp; · &nbsp;
+  <a href="README.md"><img src="https://img.shields.io/badge/English-README-blue" alt="English"></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>&nbsp;
   <img src="https://img.shields.io/badge/Docker-24.04-2496ED?logo=docker&logoColor=white" alt="Docker">&nbsp;
   <img src="https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs&logoColor=white" alt="Node.js 20+">&nbsp;
@@ -81,9 +81,9 @@ MatClaw 是一个**能自主执行材料科学计算的 AI Agent**。你用自�
 
 ## 内置计算技能库
 
-MatClaw 内置 **213 个 SKILL.md 文件，涵盖 44 个技能组**，全面覆盖计算材料科学各领域。每个技能包含完整可运行脚本、参数指南、方法选择决策树和常见问题排查表——使 Agent 能够自主执行任何主流材料计算工作流。
+MatClaw 内置 **221 个 SKILL.md 文件，涵盖 44 个技能组**，全面覆盖计算材料科学各领域。每个技能包含完整可运行脚本、参数指南、方法选择决策树和常见问题排查表——使 Agent 能够自主执行任何主流材料计算工作流。
 
-**44 组 / 169 个子技能 / 213 个 SKILL.md 文件**
+**44 组 / 177 个子技能 / 221 个 SKILL.md 文件**
 
 | # | 技能组 | 子技能数 | 包含子技能 |
 |---|--------|:--------:|-----------|
@@ -95,16 +95,16 @@ MatClaw 内置 **213 个 SKILL.md 文件，涵盖 44 个技能组**，全面覆�
 | 6 | **battery-electrode** | 2 | intercalation-voltage, ion-diffusion |
 | 7 | **biomolecular-md** | 1 | openmm-simulation |
 | 8 | **bonding-analysis** | 10 | bader2pqr, bader-charge, charge-density, charge-density-difference, charge-format-conversion, elf-analysis, lobster-cohp, orbital-projection, planar-charge, stm-simulation |
-| 9 | **catalysis-electrochem** | 5 | band-center, imaginary-freq-correction, neb-analysis, reaction-kinetics, thermal-corrections |
+| 9 | **catalysis-electrochem** | 6 | band-center, imaginary-freq-correction, implicit-solvation, neb-analysis, reaction-kinetics, thermal-corrections |
 | 10 | **catalyst-screening** | 3 | d-band-center, overpotential, scaling-relations |
 | 11 | **code-interfaces** | 5 | boltztrap-interface, ifc-analysis, phonopy-interface, vasp-qe-converter, wannier90-interface |
-| 12 | **defects-reactions** | 12 | adsorption-energy, configuration-coordinate, defect-thermodynamics, interstitial-defect, migration-barrier, neb-transition-state, point-defect, reaction-pathway, substitution-defect, surface-adsorption, surface-energy, vacancy-formation |
+| 12 | **defects-reactions** | 13 | activation-relaxation-technique, adsorption-energy, configuration-coordinate, defect-thermodynamics, interstitial-defect, migration-barrier, neb-transition-state, point-defect, reaction-pathway, substitution-defect, surface-adsorption, surface-energy, vacancy-formation |
 | 13 | **dft-corrections** | 3 | hubbard-u, spin-orbit-coupling, vdw-correction |
 | 14 | **electronic-structure** | 8 | band-structure, convergence-testing, density-of-states, inverse-participation-ratio, projected-dos, scf-relax, spatially-resolved-dos, vasp-bands |
 | 15 | **electron-phonon** | 4 | deformation-potential, electronic-transport, elph-coupling, superconductivity |
 | 16 | **fermi-surface** | 3 | 2d-fermi-surface, 3d-fermi-surface, projected-fermi-surface |
 | 17 | **ferroelectric** | 5 | born-effective-charge, dielectric-tensor, ferroelectric-switching, piezoelectric, polarization |
-| 18 | **high-throughput** | 7 | batch-calculations, batch-screening, materials-filtering, matpes-dual-static, phase-stability, property-prediction, screening-workflow |
+| 18 | **high-throughput** | 8 | batch-calculations, batch-screening, convergence-automation, materials-filtering, matpes-dual-static, phase-stability, property-prediction, screening-workflow |
 | 19 | **interface** | 2 | grain-boundary, heterostructure |
 | 20 | **kpath-utilities** | 5 | 1d-kpath, 2d-kpath, bulk-kpath, cp2k-kpath, phonopy-kpath |
 | 21 | **magnetic-properties** | 3 | magnetic-anisotropy, magnetic-ordering, spin-polarized |
@@ -116,16 +116,16 @@ MatClaw 内置 **213 个 SKILL.md 文件，涵盖 44 个技能组**，全面覆�
 | 27 | **monte-carlo** | 5 | adsorption-isotherm, gas-adsorption, gas-separation, gcmc-simulation, pore-analysis |
 | 28 | **optical-properties** | 6 | absorption-spectrum, dielectric-function, joint-dos, optical-conductivity, slme, transition-dipole |
 | 29 | **phase-diagram** | 2 | convex-hull, pourbaix-diagram |
-| 30 | **phase-transition** | 4 | amorphous-structure, mpmorph-melting, order-parameter, phase-diagram |
+| 30 | **phase-transition** | 6 | amorphous-structure, melting-point-coexistence, metadynamics, mpmorph-melting, order-parameter, phase-diagram |
 | 31 | **piezoelectric** | 1 | piezoelectric-tensor |
 | 32 | **potential-analysis** | 3 | macroscopic-average, planar-average, work-function |
 | 33 | **semiconductor-kit** | 4 | angular-effective-mass, band-gap, effective-mass, fermi-velocity |
 | 34 | **spectroscopy** | 2 | raman-ir, xas-xanes |
 | 35 | **spin-texture** | 2 | 2d-spin-texture, 3d-spin-texture |
 | 36 | **structure-models** | 8 | alloy-builder, defect-builder, heterostructure, moire-superlattice, nanowire-nanotube, quantum-dot, supercell-builder, surface-builder |
-| 37 | **structure-tools** | 7 | format-conversion, input-generation, pdf-analysis, structure-editing, structure-matching, symmetry-analysis, xrd-pattern |
+| 37 | **structure-tools** | 8 | advanced-optimization, format-conversion, input-generation, pdf-analysis, structure-editing, structure-matching, symmetry-analysis, xrd-pattern |
 | 38 | **surface-energy** | 2 | surface-energy-calc, wulff-construction |
-| 39 | **thermal-properties** | 11 | anharmonicity, bond-distribution, gruneisen-qha, md-trajectory-tools, molecular-dynamics, msd-diffusion, phonon, phonon-from-outcar, rdf-analysis, thermal-conductivity, vacf-vdos |
+| 39 | **thermal-properties** | 13 | anharmonicity, bond-distribution, free-energy-calculation, gruneisen-qha, md-trajectory-tools, molecular-dynamics, msd-diffusion, phonon, phonon-from-outcar, quasi-harmonic-debye, rdf-analysis, thermal-conductivity, vacf-vdos |
 | 40 | **thermoconductivity** | 1 | lattice-thermal-conductivity |
 | 41 | **topological** | 2 | berry-curvature, z2-invariant |
 | 42 | **transport-properties** | 2 | boltzmann-transport, kpoints-transport |
@@ -417,6 +417,7 @@ MatClaw 基于 [NanoClaw](https://github.com/qwibitai/nanoclaw) 构建，并依�
 内置计算技能的设计与验证参考了以下工作流框架：
 
 - [atomate2](https://github.com/materialsproject/atomate2) — Materials Project 计算工作流（VASP、QE、力场等）
+- [pyiron_atomistics](https://github.com/pyiron/pyiron_atomistics) — 集成材料科学工作流平台（Murnaghan EOS、QHA、SQS、Debye 模型、ART、亚稳动力学等）
 - [VASPKIT](https://vaspkit.com/) — VASP 前/后处理工具包
 - [AiiDA](https://github.com/aiidateam/aiida-core) — 计算科学自动化基础设施与数据库
 - [aiida-quantumespresso](https://github.com/aiidateam/aiida-quantumespresso) — AiiDA 的 Quantum ESPRESSO 工作流插件

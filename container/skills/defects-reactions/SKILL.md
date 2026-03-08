@@ -1,6 +1,6 @@
 ---
 name: defects-reactions
-description: Defects and Reactions (12 sub-skills: adsorption-energy, configuration-coordinate, defect-thermodynamics, interstitial-defect, migration-barrier, neb-transition-state, point-defect, reaction-pathway, 
+description: Defects and Reactions (13 sub-skills: activation-relaxation-technique, adsorption-energy, configuration-coordinate, defect-thermodynamics, interstitial-defect, migration-barrier, neb-transition-state, point-defect, reaction-pathway,
 ---
 
 # Defects and Reactions
@@ -18,6 +18,7 @@ Both approaches follow workflows inspired by atomate2's defect, NEB, and adsorpt
 
 | Sub-Skill | Directory | Description |
 |---|---|---|
+| Activation Relaxation Technique | `activation-relaxation-technique/` | ART nouveau saddle point searching: discover transition states and activation energies without knowing the final state, systematic event catalogs for KMC |
 | Point Defects | `point-defect/` | Vacancy and interstitial creation, supercell convergence, formation energy with chemical potential references, finite-size corrections for charged defects |
 | NEB Transition States | `neb-transition-state/` | Nudged Elastic Band calculations for migration barriers and transition states using ASE+MACE or QE neb.x |
 | Surface Adsorption | `surface-adsorption/` | Slab generation, adsorption site identification, adsorption energy calculations, work function |
@@ -38,6 +39,10 @@ Charged defect formation energy / transition levels?
 Migration barrier / reaction pathway?
   Quick estimate --> ASE + MACE NEB (neb-transition-state/)
   Accurate barrier --> QE NEB (neb-transition-state/)
+
+Explore unknown transitions / don't know the final state?
+  --> ART nouveau (activation-relaxation-technique/)
+  Build KMC event catalog --> ART with systematic sampling (activation-relaxation-technique/)
 
 Adsorption energy / surface chemistry?
   Quick screening --> ASE + MACE (surface-adsorption/)

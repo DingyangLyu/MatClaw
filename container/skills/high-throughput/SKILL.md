@@ -1,6 +1,6 @@
 ---
 name: high-throughput
-description: High-Throughput Computational Workflows (7 sub-skills: batch-calculations, batch-screening, materials-filtering, matpes-dual-static, phase-stability, property-prediction, screening-workflow)
+description: High-Throughput Computational Workflows (8 sub-skills: batch-calculations, batch-screening, convergence-automation, materials-filtering, matpes-dual-static, phase-stability, property-prediction, screening-workflow)
 ---
 
 # High-Throughput Computational Workflows
@@ -15,6 +15,7 @@ description: High-Throughput Computational Workflows (7 sub-skills: batch-calcul
 | Property Prediction | [property-prediction/SKILL.md](property-prediction/SKILL.md) | Rapid MACE-based property prediction pipeline: lattice constants, bulk modulus, DOS-based band gap proxy, surface energy, vacancy formation energy, comparison with databases, correlation plots |
 | Batch Screening | [batch-screening/SKILL.md](batch-screening/SKILL.md) | High-throughput screening workflow: fetch candidates from Materials Project, rapid MACE screening, filter/rank, detailed QE for top hits |
 | Materials Filtering | [materials-filtering/SKILL.md](materials-filtering/SKILL.md) | Query and filter the Materials Project database: chemical system search, property ranges, stability criteria, export structures and data |
+| Convergence Automation | [convergence-automation/SKILL.md](convergence-automation/SKILL.md) | Automated DFT convergence testing: sweep ecutwfc and k-grids, find optimal parameters via energy-per-atom threshold (1 meV/atom), combined cutoff-then-kgrid workflow, batch mode for multiple materials, convergence plots and JSON reports. Inspired by pyiron_atomistics ConvEncutParallel/ConvKpointParallel. |
 | MatPES Dual Static | [matpes-dual-static/SKILL.md](matpes-dual-static/SKILL.md) | Dual-functional PBE + r2SCAN static calculations: run PBE first, reuse wavefunction for efficient r2SCAN, optional PBE+U, collect energies at two levels of theory for ML training data or cross-validation |
 
 ## General Pattern
@@ -47,6 +48,9 @@ Just query/filter the Materials Project database?
 
 Need both PBE and r2SCAN energies efficiently (ML training data, cross-validation)?
   --> matpes-dual-static/ (PBE wavefunction warm-starts r2SCAN, optional PBE+U)
+
+Determine optimal ecutwfc / k-grid for a new material or pseudopotential?
+  --> convergence-automation/ (automated sweeps, threshold-based selection, batch mode)
 ```
 
 ## Prerequisites

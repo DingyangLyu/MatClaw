@@ -1,6 +1,6 @@
 ---
 name: structure-tools
-description: Structure Tools Skills (7 sub-skills: format-conversion, input-generation, pdf-analysis, structure-editing, structure-matching, symmetry-analysis, xrd-pattern)
+description: Structure Tools Skills (8 sub-skills: advanced-optimization, format-conversion, input-generation, pdf-analysis, structure-editing, structure-matching, symmetry-analysis, xrd-pattern)
 ---
 
 # Structure Tools Skills
@@ -11,6 +11,7 @@ Tools for crystal structure preparation, manipulation, symmetry analysis, format
 
 | Skill | Description |
 |-------|-------------|
+| [advanced-optimization](advanced-optimization/SKILL.md) | Advanced structure optimization: quasi-Newton methods (BFGS, SR1, PSB), scipy minimizers (CG, L-BFGS-B, TNC), simultaneous cell+position optimization with Voigt strain, staged optimization for disordered/amorphous materials. |
 | [input-generation](input-generation/SKILL.md) | Generate DFT input files for QE and VASP from CIF/POSCAR/Materials Project. Covers INCAR, KPOINTS, POTCAR, POSCAR generation (VASPKIT 101-109 equivalent), and QE pw.x input generation with automatic pseudopotential selection. |
 | [structure-editing](structure-editing/SKILL.md) | Build supercells, fix/move/delete/substitute atoms, redefine lattice vectors, convert between fractional and Cartesian coordinates, sort atoms by element/coordinate. Covers VASPKIT 400-415 equivalent. |
 | [symmetry-analysis](symmetry-analysis/SKILL.md) | Find space group, point group, primitive/conventional cell, Wyckoff positions, equivalent atoms, symmetry of relaxed structures, molecular point group. Uses spglib and pymatgen. Covers VASPKIT 601-609 equivalent. |
@@ -23,6 +24,9 @@ Tools for crystal structure preparation, manipulation, symmetry analysis, format
 
 ```
 What do you need to do with a crystal structure?
+
+Advanced structure relaxation (custom optimizers, difficult convergence)?
+  --> advanced-optimization/SKILL.md
 
 Generate DFT input files?
   --> input-generation/SKILL.md

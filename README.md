@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="README_zh.md">中文</a>&nbsp; · &nbsp;
+  <a href="README_zh.md"><img src="https://img.shields.io/badge/中文-README-blue" alt="中文"></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>&nbsp;
   <img src="https://img.shields.io/badge/Docker-24.04-2496ED?logo=docker&logoColor=white" alt="Docker">&nbsp;
   <img src="https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs&logoColor=white" alt="Node.js 20+">&nbsp;
@@ -81,9 +81,9 @@ Control the agent directly from any messaging channel — no terminal or dashboa
 
 ## Built-in Computation Skills
 
-MatClaw ships with **213 SKILL.md files across 44 skill groups**, covering the full spectrum of computational materials science. Each skill contains complete runnable scripts, parameter guides, method selection decision trees, and troubleshooting tables — enabling the agent to autonomously execute any mainstream materials computation workflow.
+MatClaw ships with **221 SKILL.md files across 44 skill groups**, covering the full spectrum of computational materials science. Each skill contains complete runnable scripts, parameter guides, method selection decision trees, and troubleshooting tables — enabling the agent to autonomously execute any mainstream materials computation workflow.
 
-**44 groups / 169 sub-skills / 213 SKILL.md files**
+**44 groups / 177 sub-skills / 221 SKILL.md files**
 
 | # | Skill Group | Sub-Skills | Contents |
 |---|-------------|:----------:|----------|
@@ -95,16 +95,16 @@ MatClaw ships with **213 SKILL.md files across 44 skill groups**, covering the f
 | 6 | **battery-electrode** | 2 | intercalation-voltage, ion-diffusion |
 | 7 | **biomolecular-md** | 1 | openmm-simulation |
 | 8 | **bonding-analysis** | 10 | bader2pqr, bader-charge, charge-density, charge-density-difference, charge-format-conversion, elf-analysis, lobster-cohp, orbital-projection, planar-charge, stm-simulation |
-| 9 | **catalysis-electrochem** | 5 | band-center, imaginary-freq-correction, neb-analysis, reaction-kinetics, thermal-corrections |
+| 9 | **catalysis-electrochem** | 6 | band-center, imaginary-freq-correction, implicit-solvation, neb-analysis, reaction-kinetics, thermal-corrections |
 | 10 | **catalyst-screening** | 3 | d-band-center, overpotential, scaling-relations |
 | 11 | **code-interfaces** | 5 | boltztrap-interface, ifc-analysis, phonopy-interface, vasp-qe-converter, wannier90-interface |
-| 12 | **defects-reactions** | 12 | adsorption-energy, configuration-coordinate, defect-thermodynamics, interstitial-defect, migration-barrier, neb-transition-state, point-defect, reaction-pathway, substitution-defect, surface-adsorption, surface-energy, vacancy-formation |
+| 12 | **defects-reactions** | 13 | activation-relaxation-technique, adsorption-energy, configuration-coordinate, defect-thermodynamics, interstitial-defect, migration-barrier, neb-transition-state, point-defect, reaction-pathway, substitution-defect, surface-adsorption, surface-energy, vacancy-formation |
 | 13 | **dft-corrections** | 3 | hubbard-u, spin-orbit-coupling, vdw-correction |
 | 14 | **electronic-structure** | 8 | band-structure, convergence-testing, density-of-states, inverse-participation-ratio, projected-dos, scf-relax, spatially-resolved-dos, vasp-bands |
 | 15 | **electron-phonon** | 4 | deformation-potential, electronic-transport, elph-coupling, superconductivity |
 | 16 | **fermi-surface** | 3 | 2d-fermi-surface, 3d-fermi-surface, projected-fermi-surface |
 | 17 | **ferroelectric** | 5 | born-effective-charge, dielectric-tensor, ferroelectric-switching, piezoelectric, polarization |
-| 18 | **high-throughput** | 7 | batch-calculations, batch-screening, materials-filtering, matpes-dual-static, phase-stability, property-prediction, screening-workflow |
+| 18 | **high-throughput** | 8 | batch-calculations, batch-screening, convergence-automation, materials-filtering, matpes-dual-static, phase-stability, property-prediction, screening-workflow |
 | 19 | **interface** | 2 | grain-boundary, heterostructure |
 | 20 | **kpath-utilities** | 5 | 1d-kpath, 2d-kpath, bulk-kpath, cp2k-kpath, phonopy-kpath |
 | 21 | **magnetic-properties** | 3 | magnetic-anisotropy, magnetic-ordering, spin-polarized |
@@ -116,16 +116,16 @@ MatClaw ships with **213 SKILL.md files across 44 skill groups**, covering the f
 | 27 | **monte-carlo** | 5 | adsorption-isotherm, gas-adsorption, gas-separation, gcmc-simulation, pore-analysis |
 | 28 | **optical-properties** | 6 | absorption-spectrum, dielectric-function, joint-dos, optical-conductivity, slme, transition-dipole |
 | 29 | **phase-diagram** | 2 | convex-hull, pourbaix-diagram |
-| 30 | **phase-transition** | 4 | amorphous-structure, mpmorph-melting, order-parameter, phase-diagram |
+| 30 | **phase-transition** | 6 | amorphous-structure, melting-point-coexistence, metadynamics, mpmorph-melting, order-parameter, phase-diagram |
 | 31 | **piezoelectric** | 1 | piezoelectric-tensor |
 | 32 | **potential-analysis** | 3 | macroscopic-average, planar-average, work-function |
 | 33 | **semiconductor-kit** | 4 | angular-effective-mass, band-gap, effective-mass, fermi-velocity |
 | 34 | **spectroscopy** | 2 | raman-ir, xas-xanes |
 | 35 | **spin-texture** | 2 | 2d-spin-texture, 3d-spin-texture |
 | 36 | **structure-models** | 8 | alloy-builder, defect-builder, heterostructure, moire-superlattice, nanowire-nanotube, quantum-dot, supercell-builder, surface-builder |
-| 37 | **structure-tools** | 7 | format-conversion, input-generation, pdf-analysis, structure-editing, structure-matching, symmetry-analysis, xrd-pattern |
+| 37 | **structure-tools** | 8 | advanced-optimization, format-conversion, input-generation, pdf-analysis, structure-editing, structure-matching, symmetry-analysis, xrd-pattern |
 | 38 | **surface-energy** | 2 | surface-energy-calc, wulff-construction |
-| 39 | **thermal-properties** | 11 | anharmonicity, bond-distribution, gruneisen-qha, md-trajectory-tools, molecular-dynamics, msd-diffusion, phonon, phonon-from-outcar, rdf-analysis, thermal-conductivity, vacf-vdos |
+| 39 | **thermal-properties** | 13 | anharmonicity, bond-distribution, free-energy-calculation, gruneisen-qha, md-trajectory-tools, molecular-dynamics, msd-diffusion, phonon, phonon-from-outcar, quasi-harmonic-debye, rdf-analysis, thermal-conductivity, vacf-vdos |
 | 40 | **thermoconductivity** | 1 | lattice-thermal-conductivity |
 | 41 | **topological** | 2 | berry-curvature, z2-invariant |
 | 42 | **transport-properties** | 2 | boltzmann-transport, kpoints-transport |
@@ -417,6 +417,7 @@ MatClaw is built on [NanoClaw](https://github.com/qwibitai/nanoclaw) and relies 
 The built-in computation skills were designed and verified against the following workflow frameworks:
 
 - [atomate2](https://github.com/materialsproject/atomate2) — Materials Project's computational workflows (VASP, QE, force fields, and more)
+- [pyiron_atomistics](https://github.com/pyiron/pyiron_atomistics) — Integrated materials science workflow platform (Murnaghan EOS, QHA, SQS, Debye model, ART, metadynamics, and more)
 - [VASPKIT](https://vaspkit.com/) — VASP pre-/post-processing toolkit
 - [AiiDA](https://github.com/aiidateam/aiida-core) — Automated Interactive Infrastructure and Database for Computational Science
 - [aiida-quantumespresso](https://github.com/aiidateam/aiida-quantumespresso) — AiiDA plugin for Quantum ESPRESSO workflows

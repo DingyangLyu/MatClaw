@@ -40,7 +40,7 @@ export const DATA_DIR = path.resolve(PROJECT_ROOT, 'data');
 export const CONTAINER_IMAGE =
   process.env.CONTAINER_IMAGE || 'matclaw-agent:latest';
 export const CONTAINER_TIMEOUT = parseInt(
-  process.env.CONTAINER_TIMEOUT || '3600000',
+  process.env.CONTAINER_TIMEOUT || '604800000', // 7 days — materials computations need long runtimes
   10,
 );
 export const CONTAINER_MAX_OUTPUT_SIZE = parseInt(
@@ -48,7 +48,7 @@ export const CONTAINER_MAX_OUTPUT_SIZE = parseInt(
   10,
 ); // 10MB default
 export const IPC_POLL_INTERVAL = 1000;
-export const IDLE_TIMEOUT = parseInt(process.env.IDLE_TIMEOUT || '1800000', 10); // 30min default — how long to keep container alive after last result
+export const IDLE_TIMEOUT = parseInt(process.env.IDLE_TIMEOUT || '604800000', 10); // 7 days — materials computations need long runtimes
 export const MAX_CONCURRENT_CONTAINERS = Math.max(
   1,
   parseInt(process.env.MAX_CONCURRENT_CONTAINERS || '5', 10) || 5,

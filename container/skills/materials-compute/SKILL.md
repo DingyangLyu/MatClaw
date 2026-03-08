@@ -1,6 +1,6 @@
 ---
 name: materials-compute
-description: "Materials computation environment reference and skill index. READ THIS FIRST when performing any materials science calculation — contains the master index of all 213 skills across 44 groups."
+description: "Materials computation environment reference and skill index. READ THIS FIRST when performing any materials science calculation — contains the master index of all 221 skills across 44 groups."
 ---
 
 # Materials Computation Environment
@@ -137,7 +137,7 @@ Skills are located at `~/.claude/skills/<group>/<sub-skill>/SKILL.md`.
 
 | Skill Group | Sub-skills | Use For |
 |---|---|---|
-| `structure-tools` | input-generation, structure-editing, symmetry-analysis, format-conversion, structure-matching, xrd-pattern, pdf-analysis | VASP/QE input files, editing structures, symmetry finding, format conversion (CIF/POSCAR/XYZ) |
+| `structure-tools` | input-generation, structure-editing, symmetry-analysis, format-conversion, structure-matching, xrd-pattern, pdf-analysis, advanced-optimization | VASP/QE input files, editing structures, symmetry finding, format conversion, advanced structure optimization |
 | `structure-models` | supercell-builder, surface-builder, alloy-builder, defect-builder, heterostructure, nanowire-nanotube, quantum-dot, moire-superlattice | Build supercells, surfaces, alloys, defects, heterostructures, nanowires, quantum dots, moire patterns |
 | `kpath-utilities` | bulk-kpath, 2d-kpath, 1d-kpath, phonopy-kpath, cp2k-kpath | K-point paths for band structure in any code |
 
@@ -155,7 +155,7 @@ Skills are located at `~/.claude/skills/<group>/<sub-skill>/SKILL.md`.
 | Skill Group | Sub-skills | Use For |
 |---|---|---|
 | `mechanical-properties` | elastic-constants, stress-strain-method, energy-strain-method, equation-of-state, angular-mechanics | Elastic tensor, bulk/shear modulus, EOS, angular-dependent mechanics |
-| `thermal-properties` | phonon, phonon-from-outcar, molecular-dynamics, msd-diffusion, rdf-analysis, vacf-vdos, md-trajectory-tools, bond-distribution, gruneisen-qha, thermal-conductivity, anharmonicity | Phonons, MD analysis, MSD, RDF, VDOS, bond length/angle distributions, QHA, thermal conductivity |
+| `thermal-properties` | phonon, phonon-from-outcar, molecular-dynamics, msd-diffusion, rdf-analysis, vacf-vdos, md-trajectory-tools, bond-distribution, gruneisen-qha, thermal-conductivity, anharmonicity, free-energy-calculation, quasi-harmonic-debye | Phonons, MD analysis, MSD, RDF, VDOS, bond distributions, QHA, thermal conductivity, free energy, Debye model |
 | `thermoconductivity` | lattice-thermal-conductivity | Lattice thermal conductivity (BTE) |
 
 ### Bonding & Charge Analysis
@@ -187,9 +187,9 @@ Skills are located at `~/.claude/skills/<group>/<sub-skill>/SKILL.md`.
 
 | Skill Group | Sub-skills | Use For |
 |---|---|---|
-| `catalysis-electrochem` | thermal-corrections, neb-analysis, band-center, reaction-kinetics, imaginary-freq-correction | Adsorbate thermodynamics, NEB, d-band center, Arrhenius kinetics, imaginary freq fix |
+| `catalysis-electrochem` | thermal-corrections, neb-analysis, band-center, reaction-kinetics, imaginary-freq-correction, implicit-solvation | Adsorbate thermodynamics, NEB, d-band center, Arrhenius kinetics, imaginary freq fix, solvation effects |
 | `catalyst-screening` | d-band-center, scaling-relations, overpotential | D-band theory, adsorption scaling, OER/HER overpotential |
-| `defects-reactions` | vacancy-formation, substitution-defect, interstitial-defect, point-defect, defect-thermodynamics, migration-barrier, neb-transition-state, reaction-pathway, adsorption-energy, surface-adsorption, surface-energy, configuration-coordinate | Point defects, formation energies, NEB barriers, adsorption, surface energy, CC diagrams |
+| `defects-reactions` | vacancy-formation, substitution-defect, interstitial-defect, point-defect, defect-thermodynamics, migration-barrier, neb-transition-state, reaction-pathway, adsorption-energy, surface-adsorption, surface-energy, configuration-coordinate, activation-relaxation-technique | Point defects, formation energies, NEB barriers, adsorption, surface energy, CC diagrams, ART saddle point search |
 | `surface-energy` | surface-energy-calc, wulff-construction | Surface energy convergence, Wulff shape |
 
 ### 2D Materials & Semiconductors
@@ -205,7 +205,7 @@ Skills are located at `~/.claude/skills/<group>/<sub-skill>/SKILL.md`.
 |---|---|---|
 | `monte-carlo` | gcmc-simulation, adsorption-isotherm, gas-adsorption, gas-separation, pore-analysis | GCMC with RASPA3, isotherms, selectivity, pore size distribution |
 | `phase-diagram` | convex-hull, pourbaix-diagram | Thermodynamic convex hull, Pourbaix diagrams |
-| `phase-transition` | phase-diagram, mpmorph-melting, order-parameter, amorphous-structure | Phase boundaries, melting point, order parameters, amorphous structures |
+| `phase-transition` | phase-diagram, mpmorph-melting, order-parameter, amorphous-structure, melting-point-coexistence, metadynamics | Phase boundaries, melting point, order parameters, amorphous structures, coexistence method, metadynamics FES |
 | `alloy-disorder` | cluster-expansion, sqs-generation | Cluster expansion, special quasirandom structures |
 
 ### Code Interfaces & MLIP
@@ -224,7 +224,7 @@ Skills are located at `~/.claude/skills/<group>/<sub-skill>/SKILL.md`.
 | `topological` | z2-invariant, berry-curvature | Z2 topological invariant, Berry curvature |
 | `spectroscopy` | raman-ir, xas-xanes | Raman/IR spectra, XAS/XANES simulation |
 | `dft-corrections` | hubbard-u, spin-orbit-coupling, vdw-correction | When and how to apply DFT corrections |
-| `high-throughput` | screening-workflow, batch-calculations, batch-screening, materials-filtering, phase-stability, property-prediction, matpes-dual-static | High-throughput screening and batch computation |
+| `high-throughput` | screening-workflow, batch-calculations, batch-screening, materials-filtering, phase-stability, property-prediction, matpes-dual-static, convergence-automation | High-throughput screening, batch computation, automated convergence testing |
 | `materials-databases` | materials-project, 2d-semiconductors | Query Materials Project, 2D materials databases |
 | `interface` | heterostructure, grain-boundary | Heterostructure and grain boundary construction |
 | `biomolecular-md` | openmm-simulation | Biomolecular MD with OpenMM |

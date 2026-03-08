@@ -6,7 +6,14 @@ import fs from 'fs';
 
 export interface LogEntry {
   time: string; // HH:mm:ss.SSS
-  type: 'user' | 'assistant' | 'tool-call' | 'tool-result' | 'thinking' | 'system' | 'result';
+  type:
+    | 'user'
+    | 'assistant'
+    | 'tool-call'
+    | 'tool-result'
+    | 'thinking'
+    | 'system'
+    | 'result';
   content: string;
   meta?: string; // tool name, tool id, etc.
 }
@@ -17,21 +24,25 @@ interface TranscriptLine {
   timestamp?: string;
   message?: {
     role: string;
-    content: string | Array<{
-      type: string;
-      text?: string;
-      thinking?: string;
-      name?: string;
-      id?: string;
-      input?: unknown;
-      tool_use_id?: string;
-      content?: string | unknown;
-    }>;
+    content:
+      | string
+      | Array<{
+          type: string;
+          text?: string;
+          thinking?: string;
+          name?: string;
+          id?: string;
+          input?: unknown;
+          tool_use_id?: string;
+          content?: string | unknown;
+        }>;
   };
-  toolUseResult?: {
-    stdout?: string;
-    stderr?: string;
-  } | Array<{ type: string; text?: string }>;
+  toolUseResult?:
+    | {
+        stdout?: string;
+        stderr?: string;
+      }
+    | Array<{ type: string; text?: string }>;
   result?: string;
   session_id?: string;
 }
@@ -52,7 +63,7 @@ function truncate(s: string, max: number): string {
 
 export function parseTranscript(jsonlContent: string): LogEntry[] {
   const entries: LogEntry[] = [];
-  const lines = jsonlContent.split('\n').filter(l => l.trim());
+  const lines = jsonlContent.split('\n').filter((l) => l.trim());
 
   for (const line of lines) {
     let obj: TranscriptLine;
@@ -67,14 +78,30 @@ export function parseTranscript(jsonlContent: string): LogEntry[] {
     // System messages
     if (obj.type === 'system') {
       if (obj.subtype === 'init') {
-        entries.push({ time, type: 'system', content: `Session initialized: ${obj.session_id || ''}` });
+        entries.push({
+          time,
+          type: 'system',
+          content: `Session initialized: ${obj.session_id || ''}`,
+        });
       } else if (obj.subtype === 'task_started') {
         entries.push({ time, type: 'system', content: `Task started` });
       } else if (obj.subtype === 'task_notification') {
-        const tn = obj as unknown as { task_id: string; status: string; summary: string };
-        entries.push({ time, type: 'system', content: `Task ${tn.task_id}: ${tn.status} - ${tn.summary}` });
+        const tn = obj as unknown as {
+          task_id: string;
+          status: string;
+          summary: string;
+        };
+        entries.push({
+          time,
+          type: 'system',
+          content: `Task ${tn.task_id}: ${tn.status} - ${tn.summary}`,
+        });
       } else {
-        entries.push({ time, type: 'system', content: `${obj.subtype || 'system event'}` });
+        entries.push({
+          time,
+          type: 'system',
+          content: `${obj.subtype || 'system event'}`,
+        });
       }
       continue;
     }
@@ -86,13 +113,18 @@ export function parseTranscript(jsonlContent: string): LogEntry[] {
 
     // Rate limit events
     if (obj.type === 'rate_limit_event') {
-      entries.push({ time, type: 'system', content: 'Rate limit hit, waiting...' });
+      entries.push({
+        time,
+        type: 'system',
+        content: 'Rate limit hit, waiting...',
+      });
       continue;
     }
 
     // Result messages
     if (obj.type === 'result') {
-      const resultText = obj.result || (obj as unknown as { result?: string }).result || '';
+      const resultText =
+        obj.result || (obj as unknown as { result?: string }).result || '';
       entries.push({
         time,
         type: 'result',
@@ -121,7 +153,7 @@ export function parseTranscript(jsonlContent: string): LogEntry[] {
               resultText = block.content;
             } else if (Array.isArray(block.content)) {
               resultText = (block.content as Array<{ text?: string }>)
-                .map(c => c.text || '')
+                .map((c) => c.text || '')
                 .join('');
             } else {
               resultText = JSON.stringify(block.content || '');
@@ -133,7 +165,11 @@ export function parseTranscript(jsonlContent: string): LogEntry[] {
               meta: block.tool_use_id || undefined,
             });
           } else if (block.type === 'text' && block.text) {
-            entries.push({ time, type: 'user', content: truncate(block.text, 1000) });
+            entries.push({
+              time,
+              type: 'user',
+              content: truncate(block.text, 1000),
+            });
           }
         }
       }
@@ -143,7 +179,11 @@ export function parseTranscript(jsonlContent: string): LogEntry[] {
     // Assistant messages
     if (obj.type === 'assistant') {
       if (typeof content === 'string') {
-        entries.push({ time, type: 'assistant', content: truncate(content, 2000) });
+        entries.push({
+          time,
+          type: 'assistant',
+          content: truncate(content, 2000),
+        });
         continue;
       }
 

@@ -2,7 +2,7 @@
 
 MatClaw's container agent ships with a comprehensive library of computational materials science skills. Each skill is a `SKILL.md` file containing method selection guides, complete runnable Python/Bash scripts, key parameter tables, result interpretation guidance, and common issue troubleshooting.
 
-**Total: 44 skill groups / 169 sub-skills / 213 SKILL.md files**
+**Total: 44 skill groups / 177 sub-skills / 221 SKILL.md files**
 
 ## Computation Environment
 
@@ -81,6 +81,8 @@ Beyond-GGA methods for strong correlation, spin-orbit, topology, and quasipartic
 
 ### 4. Mechanical Properties (5 sub-skills)
 
+Note: `equation-of-state` has been enhanced with multi-phase EOS comparison, Debye model integration, and LAMMPS support.
+
 Elastic constants, bulk/shear/Young's modulus, and equation of state.
 
 | Sub-Skill | Description |
@@ -91,15 +93,17 @@ Elastic constants, bulk/shear/Young's modulus, and equation of state.
 | `equation-of-state` | E(V) fitting (Birch-Murnaghan, Vinet) for bulk modulus and equilibrium volume |
 | `angular-mechanics` | Directional Young's modulus and Poisson ratio visualization |
 
-### 5. Thermal Properties (11 sub-skills)
+### 5. Thermal Properties (13 sub-skills)
 
-Phonons, molecular dynamics, thermodynamic functions, and thermal transport.
+Phonons, molecular dynamics, thermodynamic functions, free energy, and thermal transport.
 
 | Sub-Skill | Description |
 |-----------|-------------|
 | `phonon` | Phonon dispersion and DOS via finite displacement (phonopy + QE/MACE) |
 | `phonon-from-outcar` | Extract phonon frequencies from VASP OUTCAR (Gamma-point) |
-| `gruneisen-qha` | Quasi-harmonic approximation: Gruneisen parameters, thermal expansion, C_p(T), F(T) |
+| `gruneisen-qha` | Quasi-harmonic approximation: Gruneisen parameters, thermal expansion, C_p(T), F(T). Enhanced with Debye model comparison and QE force support. |
+| `free-energy-calculation` | Helmholtz/Gibbs free energy via thermodynamic integration (Frenkel-Ladd for solids, UF model for liquids, reversible scaling for F(T)), phase stability and melting points |
+| `quasi-harmonic-debye` | Debye model thermodynamics from E(V) data: Debye temperature, heat capacity, thermal expansion, Gruneisen parameter — no phonon calculations required |
 | `anharmonicity` | Anharmonicity quantification via σ^A score (one-shot rattled supercells) |
 | `molecular-dynamics` | NVT/NPT molecular dynamics with ASE+MACE or LAMMPS |
 | `md-trajectory-tools` | Trajectory I/O, frame extraction, format conversion |
@@ -115,12 +119,13 @@ Phonons, molecular dynamics, thermodynamic functions, and thermal transport.
 |-----------|-------------|
 | `lattice-thermal-conductivity` | Phonon Boltzmann transport for lattice κ (ShengBTE / phono3py) |
 
-### 7. Defects and Reactions (12 sub-skills)
+### 7. Defects and Reactions (13 sub-skills)
 
-Point defects, migration barriers, transition states, surface chemistry, and non-radiative recombination.
+Point defects, migration barriers, transition states, surface chemistry, saddle point search, and non-radiative recombination.
 
 | Sub-Skill | Description |
 |-----------|-------------|
+| `activation-relaxation-technique` | ART nouveau saddle point searching: discover transition states and activation energies without knowing the final state, systematic event catalogs for KMC |
 | `vacancy-formation` | Vacancy formation energy with supercell convergence |
 | `interstitial-defect` | Interstitial formation energy (split, tetrahedral, octahedral configurations) |
 | `substitution-defect` | Substitutional impurity formation energy and site preference |
@@ -221,9 +226,9 @@ Chemical bonding characterization: charge partitioning, electron localization, a
 | `planar-charge` | Planar-averaged charge density along a direction |
 | `stm-simulation` | Simulated STM images (Tersoff-Hamann approximation) |
 
-### 16. Catalysis & Electrochemistry (5 sub-skills)
+### 16. Catalysis & Electrochemistry (6 sub-skills)
 
-Thermodynamic corrections, reaction kinetics, and descriptor-based activity analysis.
+Thermodynamic corrections, reaction kinetics, descriptor-based activity analysis, and solvation effects.
 
 | Sub-Skill | Description |
 |-----------|-------------|
@@ -232,6 +237,7 @@ Thermodynamic corrections, reaction kinetics, and descriptor-based activity anal
 | `neb-analysis` | Post-processing of NEB results: barrier, reaction coordinate, MEP plots |
 | `band-center` | d-band center and p-band center descriptors for catalytic activity |
 | `imaginary-freq-correction` | Handle imaginary frequencies in transition state vibrational analysis |
+| `implicit-solvation` | Implicit solvation models (VASPsol, QE+Environ, Born/GBSA): solvation free energies, pKa, electrochemical reaction energetics with solvent effects |
 
 ### 17. Catalyst Screening (3 sub-skills)
 
@@ -270,13 +276,15 @@ Thermodynamic and electrochemical stability analysis.
 | `convex-hull` | Convex hull construction for phase stability (formation energy above hull) |
 | `pourbaix-diagram` | Electrochemical phase diagram as function of pH and potential |
 
-### 21. Phase Transition (4 sub-skills)
+### 21. Phase Transition (6 sub-skills)
 
-Melting, amorphization, and solid-solid phase transitions.
+Melting, amorphization, solid-solid phase transitions, coexistence methods, and free energy surface exploration.
 
 | Sub-Skill | Description |
 |-----------|-------------|
-| `mpmorph-melting` | Melting point determination via coexistence MD (MPMorph protocol) |
+| `mpmorph-melting` | Melting point determination via heating curves and Lindemann criterion (MPMorph protocol) |
+| `melting-point-coexistence` | Melting point via solid-liquid coexistence method (two-phase simulation); more accurate than heating curves |
+| `metadynamics` | Free energy surface exploration via well-tempered metadynamics; bias on collective variables (distance, coordination, volume, Q6); ASE+MACE or LAMMPS+PLUMED |
 | `amorphous-structure` | Melt-quench amorphous structure generation |
 | `order-parameter` | Order parameters for phase transition characterization |
 | `phase-diagram` | Temperature-pressure phase boundaries from free energy comparison |
@@ -364,7 +372,7 @@ Chemical disorder modeling in alloys and solid solutions.
 
 | Sub-Skill | Description |
 |-----------|-------------|
-| `sqs-generation` | Special quasi-random structures for random alloy approximation |
+| `sqs-generation` | Special quasi-random structures for random alloy approximation. Enhanced with Warren-Cowley SRO analysis, multi-sublattice SQS, multi-concentration sweeps, sqsgenerator backend, and LAMMPS large-cell support. |
 | `cluster-expansion` | Cluster expansion fitting for alloy energetics and phase diagrams |
 
 ### 31. Interface (2 sub-skills)
@@ -391,12 +399,13 @@ Advanced structural model construction for simulation.
 | `nanowire-nanotube` | 1D nanowire and nanotube model generation |
 | `quantum-dot` | 0D quantum dot / nanoparticle cluster construction |
 
-### 33. Structure Tools (7 sub-skills)
+### 33. Structure Tools (8 sub-skills)
 
-Foundational structure manipulation, symmetry, and format handling.
+Foundational structure manipulation, symmetry, format handling, and advanced optimization.
 
 | Sub-Skill | Description |
 |-----------|-------------|
+| `advanced-optimization` | Advanced structure relaxation: quasi-Newton methods (BFGS, SR1, PSB), scipy minimizers, simultaneous cell+position optimization, staged workflows for disordered/amorphous materials |
 | `format-conversion` | Convert between CIF, POSCAR, XSF, XYZ, QE input, etc. |
 | `input-generation` | Generate complete QE/VASP input files from a crystal structure |
 | `symmetry-analysis` | Space group detection, Wyckoff positions, symmetry operations |
@@ -460,14 +469,15 @@ Query external databases for structures and properties.
 | `materials-project` | Materials Project API queries for structures, energies, band gaps, phase diagrams |
 | `2d-semiconductors` | Computational 2D materials database access |
 
-### 39. High-Throughput (7 sub-skills)
+### 39. High-Throughput (8 sub-skills)
 
-Automated screening and batch computation workflows.
+Automated screening, batch computation, and convergence testing workflows.
 
 | Sub-Skill | Description |
 |-----------|-------------|
 | `batch-calculations` | Run calculations over multiple structures in batch |
 | `batch-screening` | Screen material candidates by computed properties |
+| `convergence-automation` | Automated DFT convergence testing: sweep ecutwfc and k-grids, find optimal parameters via energy threshold, batch mode for multiple materials |
 | `materials-filtering` | Filter structures by composition, symmetry, property criteria |
 | `screening-workflow` | End-to-end screening pipeline design |
 | `phase-stability` | Automated thermodynamic stability assessment |
@@ -519,27 +529,27 @@ The skill library covers the following computational materials science domains:
 |--------|-------------|------------|
 | Electronic structure & bands | electronic-structure, band-advanced, advanced-electronic, semiconductor-kit, fermi-surface, wavefunction-analysis | 28 |
 | Mechanical properties | mechanical-properties | 5 |
-| Thermal & phonon properties | thermal-properties, thermoconductivity | 12 |
-| Defects & reactions | defects-reactions | 12 |
+| Thermal & phonon properties | thermal-properties, thermoconductivity | 14 |
+| Defects & reactions | defects-reactions | 13 |
 | Optical properties | optical-properties | 6 |
 | Magnetic properties | magnetic-properties, spin-texture | 5 |
 | Topological properties | topological | 2 |
 | Ferroelectric & piezoelectric | ferroelectric, piezoelectric | 6 |
 | Transport properties | transport-properties, electron-phonon | 6 |
-| Catalysis & electrochemistry | catalysis-electrochem, catalyst-screening | 8 |
+| Catalysis & electrochemistry | catalysis-electrochem, catalyst-screening | 9 |
 | Battery & electrode | battery-electrode | 2 |
 | Surface & interface | surface-energy, interface, potential-analysis | 7 |
-| Phase stability & transitions | phase-diagram, phase-transition | 6 |
+| Phase stability & transitions | phase-diagram, phase-transition | 8 |
 | Bonding & charge analysis | bonding-analysis | 10 |
 | Spectroscopy | spectroscopy | 2 |
 | Wannier functions | wannier-functions | 1 |
 | 2D materials | 2d-materials | 4 |
 | Alloy & disorder | alloy-disorder | 2 |
-| Structure modeling & tools | structure-models, structure-tools, kpath-utilities | 20 |
+| Structure modeling & tools | structure-models, structure-tools, kpath-utilities | 21 |
 | Code interfaces | code-interfaces, dft-corrections | 8 |
 | Monte Carlo | monte-carlo | 5 |
 | Databases | materials-databases | 2 |
-| High-throughput screening | high-throughput | 7 |
+| High-throughput screening | high-throughput | 8 |
 | Machine learning potentials | mlip-guide | 4 |
 | Biomolecular simulation | biomolecular-md | 1 |
 | Molecular quantum chemistry | molecular-qchem | 1 |

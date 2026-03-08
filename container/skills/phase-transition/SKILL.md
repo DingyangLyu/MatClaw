@@ -1,11 +1,11 @@
 ---
 name: phase-transition
-description: Phase Transitions (4 sub-skills: amorphous-structure, mpmorph-melting, order-parameter, phase-diagram)
+description: Phase Transitions (6 sub-skills: amorphous-structure, melting-point-coexistence, metadynamics, mpmorph-melting, order-parameter, phase-diagram)
 ---
 
 # Phase Transitions
 
-Melting point determination, amorphous structure generation, and solid-solid phase transition analysis using molecular dynamics and energy-based methods.
+Melting point determination, amorphous structure generation, free energy surface exploration via metadynamics, and solid-solid phase transition analysis using molecular dynamics and energy-based methods.
 
 ## Sub-Skills
 
@@ -13,6 +13,8 @@ Melting point determination, amorphous structure generation, and solid-solid pha
 |---|---|---|
 | MPMorph Melting | `mpmorph-melting/` | Melting point determination via heating curves, Lindemann criterion, two-phase coexistence, and liquid structure analysis (ASE+MACE or LAMMPS) |
 | Amorphous Structure | `amorphous-structure/` | Amorphous/glassy structure generation via melt-quench MD; structural analysis (RDF, coordination, bond angles, structure factor); glass transition temperature |
+| Melting Point Coexistence | `melting-point-coexistence/` | Melting point via solid-liquid coexistence method (two-phase simulation); more accurate than heating curves; MACE or LAMMPS |
+| Metadynamics | `metadynamics/` | Free energy surface exploration via well-tempered metadynamics; bias potential on collective variables (distance, coordination number, volume, Steinhardt Q6); ASE+MACE or LAMMPS+PLUMED; FES reconstruction and convergence analysis |
 
 ## Method Decision Guide
 
@@ -20,7 +22,8 @@ Melting point determination, amorphous structure generation, and solid-solid pha
 What phase transition property do you need?
 
 Melting point / melting temperature?
-  --> mpmorph-melting/  (heating curve or two-phase coexistence)
+  --> mpmorph-melting/  (heating curve or Lindemann criterion)
+  --> melting-point-coexistence/  (solid-liquid coexistence, more accurate)
 
 Liquid structure (RDF, diffusion, viscosity)?
   --> mpmorph-melting/  (high-temperature MD above Tm)
@@ -33,6 +36,12 @@ Glass transition temperature (Tg)?
 
 Structural analysis of disordered phase (RDF, coordination, bond angles)?
   --> amorphous-structure/  (post-processing tools)
+
+Free energy surface / barrier for rare events (phase transition, diffusion, reaction)?
+  --> metadynamics/  (well-tempered metadynamics with ASE+MACE or LAMMPS+PLUMED)
+
+Free energy landscape along structural order parameters (Q4, Q6)?
+  --> metadynamics/  (Steinhardt CV with PLUMED)
 
 Quick screening vs. publication accuracy?
   Quick --> ASE + MACE (both sub-skills support this)

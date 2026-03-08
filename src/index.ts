@@ -177,10 +177,17 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   const lastMsg = missedMessages[missedMessages.length - 1].content.trim();
 
   if (/^\/watch\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] = missedMessages[missedMessages.length - 1].timestamp;
+    lastAgentTimestamp[chatJid] =
+      missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     // Read tail of container-live.log and extract recent activity
-    const liveLogPath = path.join(DATA_DIR, 'groups', group.folder, 'logs', 'container-live.log');
+    const liveLogPath = path.join(
+      DATA_DIR,
+      'groups',
+      group.folder,
+      'logs',
+      'container-live.log',
+    );
     if (!fs.existsSync(liveLogPath)) {
       if (channel) await channel.sendMessage(chatJid, 'No agent activity yet.');
       return true;
@@ -197,7 +204,9 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
       if (content.startsWith('[ToolCall]')) {
         activities.push(content.replace('[ToolCall] ', ''));
       } else if (content.startsWith('[Assistant]')) {
-        activities.push('Assistant: ' + content.replace('[Assistant] ', '').slice(0, 100));
+        activities.push(
+          'Assistant: ' + content.replace('[Assistant] ', '').slice(0, 100),
+        );
       } else if (content.startsWith('[Thinking]')) {
         activities.push('Thinking...');
       } else if (content.startsWith('[Result')) {
@@ -208,35 +217,41 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     const status = state?.active ? 'Running' : 'Idle';
     const recent = activities.slice(-10);
     if (channel) {
-      const msg = recent.length > 0
-        ? `Agent: ${status}\n\nRecent activity:\n${recent.join('\n')}`
-        : `Agent: ${status}\n\nNo recent tool activity.`;
+      const msg =
+        recent.length > 0
+          ? `Agent: ${status}\n\nRecent activity:\n${recent.join('\n')}`
+          : `Agent: ${status}\n\nNo recent tool activity.`;
       await channel.sendMessage(chatJid, msg);
     }
     return true;
   }
 
   if (/^\/help\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] = missedMessages[missedMessages.length - 1].timestamp;
+    lastAgentTimestamp[chatJid] =
+      missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     if (channel) {
-      await channel.sendMessage(chatJid, [
-        'Commands:',
-        '/watch — see what agent is doing right now',
-        '/status — agent status (running/idle, session, queue)',
-        '/stop — force stop running agent',
-        '/sessions — list all sessions',
-        '/new — start fresh conversation',
-        '/resume [id] — restore previous or specific session',
-        '/compact [focus] — compress agent memory',
-        '/help — this message',
-      ].join('\n'));
+      await channel.sendMessage(
+        chatJid,
+        [
+          'Commands:',
+          '/watch — see what agent is doing right now',
+          '/status — agent status (running/idle, session, queue)',
+          '/stop — force stop running agent',
+          '/sessions — list all sessions',
+          '/new — start fresh conversation',
+          '/resume [id] — restore previous or specific session',
+          '/compact [focus] — compress agent memory',
+          '/help — this message',
+        ].join('\n'),
+      );
     }
     return true;
   }
 
   if (/^\/stop\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] = missedMessages[missedMessages.length - 1].timestamp;
+    lastAgentTimestamp[chatJid] =
+      missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     const state = queue.getState(chatJid);
     if (state?.active && state.process) {
@@ -254,13 +269,16 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   }
 
   if (/^\/status\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] = missedMessages[missedMessages.length - 1].timestamp;
+    lastAgentTimestamp[chatJid] =
+      missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     const state = queue.getState(chatJid);
     const sid = sessions[group.folder];
     const parts: string[] = [];
     parts.push(`Group: ${group.name} (${group.folder})`);
-    parts.push(`Agent: ${state?.active ? 'running' : 'idle'}${state?.containerName ? ` (${state.containerName})` : ''}`);
+    parts.push(
+      `Agent: ${state?.active ? 'running' : 'idle'}${state?.containerName ? ` (${state.containerName})` : ''}`,
+    );
     parts.push(`Session: ${sid ? sid.slice(0, 8) + '...' : 'none'}`);
     if (state?.pendingTasks.length) {
       parts.push(`Queued tasks: ${state.pendingTasks.length}`);
@@ -273,13 +291,21 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
 
   if (/^\/sessions\b/i.test(lastMsg)) {
     // List available sessions for this group
-    const transcriptDir = path.join(DATA_DIR, 'sessions', group.folder, '.claude', 'projects', '-workspace-group');
+    const transcriptDir = path.join(
+      DATA_DIR,
+      'sessions',
+      group.folder,
+      '.claude',
+      'projects',
+      '-workspace-group',
+    );
     let lines: string[] = [];
     const currentId = sessions[group.folder];
     if (fs.existsSync(transcriptDir)) {
-      const files = fs.readdirSync(transcriptDir)
-        .filter(f => f.endsWith('.jsonl'))
-        .map(f => {
+      const files = fs
+        .readdirSync(transcriptDir)
+        .filter((f) => f.endsWith('.jsonl'))
+        .map((f) => {
           const stat = fs.statSync(path.join(transcriptDir, f));
           const id = f.replace('.jsonl', '');
           return { id, size: stat.size, modified: stat.mtime };
@@ -292,12 +318,14 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
         lines.push(`${s.id.slice(0, 8)}  ${time}  ${kb}KB${marker}`);
       }
     }
-    lastAgentTimestamp[chatJid] = missedMessages[missedMessages.length - 1].timestamp;
+    lastAgentTimestamp[chatJid] =
+      missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     if (channel) {
-      const msg = lines.length > 0
-        ? `Sessions:\n${lines.join('\n')}\n\nUse /resume <id prefix> to switch.`
-        : 'No sessions found.';
+      const msg =
+        lines.length > 0
+          ? `Sessions:\n${lines.join('\n')}\n\nUse /resume <id prefix> to switch.`
+          : 'No sessions found.';
       await channel.sendMessage(chatJid, msg);
     }
     return true;
@@ -310,11 +338,15 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     }
     delete sessions[group.folder];
     deleteSession(group.folder);
-    lastAgentTimestamp[chatJid] = missedMessages[missedMessages.length - 1].timestamp;
+    lastAgentTimestamp[chatJid] =
+      missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     logger.info({ group: group.name }, 'Session reset via /new command');
     if (channel) {
-      await channel.sendMessage(chatJid, 'Session cleared. Next message starts a fresh conversation. Use /resume to restore the previous session.');
+      await channel.sendMessage(
+        chatJid,
+        'Session cleared. Next message starts a fresh conversation. Use /resume to restore the previous session.',
+      );
     }
     return true;
   }
@@ -325,18 +357,30 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
 
     if (arg) {
       // Find session by ID prefix
-      const transcriptDir = path.join(DATA_DIR, 'sessions', group.folder, '.claude', 'projects', '-workspace-group');
+      const transcriptDir = path.join(
+        DATA_DIR,
+        'sessions',
+        group.folder,
+        '.claude',
+        'projects',
+        '-workspace-group',
+      );
       if (fs.existsSync(transcriptDir)) {
-        const match = fs.readdirSync(transcriptDir)
-          .filter(f => f.endsWith('.jsonl') && f.startsWith(arg))
-          .map(f => f.replace('.jsonl', ''));
+        const match = fs
+          .readdirSync(transcriptDir)
+          .filter((f) => f.endsWith('.jsonl') && f.startsWith(arg))
+          .map((f) => f.replace('.jsonl', ''));
         if (match.length === 1) {
           targetId = match[0];
         } else if (match.length > 1) {
-          lastAgentTimestamp[chatJid] = missedMessages[missedMessages.length - 1].timestamp;
+          lastAgentTimestamp[chatJid] =
+            missedMessages[missedMessages.length - 1].timestamp;
           saveState();
           if (channel) {
-            await channel.sendMessage(chatJid, `Ambiguous prefix "${arg}", matches: ${match.map(m => m.slice(0, 8)).join(', ')}. Be more specific.`);
+            await channel.sendMessage(
+              chatJid,
+              `Ambiguous prefix "${arg}", matches: ${match.map((m) => m.slice(0, 8)).join(', ')}. Be more specific.`,
+            );
           }
           return true;
         }
@@ -352,17 +396,28 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
       }
       sessions[group.folder] = targetId;
       setSession(group.folder, targetId);
-      lastAgentTimestamp[chatJid] = missedMessages[missedMessages.length - 1].timestamp;
+      lastAgentTimestamp[chatJid] =
+        missedMessages[missedMessages.length - 1].timestamp;
       saveState();
-      logger.info({ group: group.name, sessionId: targetId }, 'Session restored via /resume');
+      logger.info(
+        { group: group.name, sessionId: targetId },
+        'Session restored via /resume',
+      );
       if (channel) {
-        await channel.sendMessage(chatJid, `Session restored (${targetId.slice(0, 8)}...). Agent will continue with that session's history.`);
+        await channel.sendMessage(
+          chatJid,
+          `Session restored (${targetId.slice(0, 8)}...). Agent will continue with that session's history.`,
+        );
       }
     } else {
-      lastAgentTimestamp[chatJid] = missedMessages[missedMessages.length - 1].timestamp;
+      lastAgentTimestamp[chatJid] =
+        missedMessages[missedMessages.length - 1].timestamp;
       saveState();
       if (channel) {
-        await channel.sendMessage(chatJid, 'No session found. Use /sessions to list available sessions.');
+        await channel.sendMessage(
+          chatJid,
+          'No session found. Use /sessions to list available sessions.',
+        );
       }
     }
     return true;
@@ -375,7 +430,8 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     if (focus) {
       compactPrompt = `[SYSTEM] Compress and reorganize your current memory. Focus on: ${focus}. Discard everything not related to this focus. Summarize what you kept.`;
     } else {
-      compactPrompt = '[SYSTEM] Summarize your current memory and context into a concise form. Forget unnecessary details, keep only the key facts, decisions, and ongoing tasks. After summarizing, confirm what you remember.';
+      compactPrompt =
+        '[SYSTEM] Summarize your current memory and context into a concise form. Forget unnecessary details, keep only the key facts, decisions, and ongoing tasks. After summarizing, confirm what you remember.';
     }
     missedMessages[missedMessages.length - 1] = {
       ...missedMessages[missedMessages.length - 1],
