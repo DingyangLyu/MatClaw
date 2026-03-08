@@ -19,6 +19,7 @@
   <img src="https://img.shields.io/badge/LAMMPS-2021-7C3AED" alt="LAMMPS">&nbsp;
   <img src="https://img.shields.io/badge/RASPA3-3.0.16-0D9488" alt="RASPA3">&nbsp;
   <img src="https://img.shields.io/badge/VASP-external-F59E0B" alt="VASP (external)">&nbsp;
+  <img src="https://img.shields.io/badge/CUDA-12.8-76B900?logo=nvidia&logoColor=white" alt="CUDA 12.8">&nbsp;
   <img src="https://img.shields.io/badge/Skills-221-E11D48" alt="221 Skills">
 </p>
 
@@ -52,6 +53,8 @@ MatClaw is an **AI agent that autonomously performs materials science computatio
 - **Autonomous computation** — Understands your task, writes code, executes it, analyzes output, retries on errors
 - **221 built-in computation skills** — 44 skill groups covering the full spectrum of computational materials science: electronic structure, phonons, mechanical properties, defects, optical/magnetic/topological properties, catalysis, batteries, phase diagrams, transport, spectroscopy, Monte Carlo, molecular dynamics, and more. Each skill contains complete runnable scripts, parameter guides, and method selection decision trees. See [Materials Compute Skills Reference](docs/materials-compute-skills.md) for the full inventory.
 - **VASP support** — Connect your own VASP installation via SSH (HPC cluster) or local mount. The agent generates inputs, submits jobs, and parses results automatically. See [VASP Integration](docs/vasp-integration.md).
+- **GPU acceleration** — Optional CUDA-enabled container (`./container/build.sh --cuda`) for GPU-accelerated MACE, CHGNet, SevenNet, and MatGL. Auto-detects GPU at runtime with graceful CPU fallback.
+- **Multiple MLIP models** — MACE-MP-0 (pre-installed), CHGNet, SevenNet, MatGL — all pre-installed and ready for rapid screening and molecular dynamics
 - **All-in-one container** — QE 7.5, LAMMPS, RASPA3, MACE, pymatgen, ASE, PyTorch pre-installed and ready
 - **Secure isolation** — Every computation runs in a disposable Docker container with filesystem isolation
 - **Flexible LLM backend** — Works with Anthropic Claude, DeepSeek, or any Anthropic-compatible API
@@ -474,10 +477,10 @@ matclaw/
 
 ## Roadmap
 
-- [ ] GPU support (CUDA-enabled container for PyTorch/MACE)
-- [ ] More MLIP models (CHGNet, SevenNet, ALIGNN)
+- [x] GPU support (CUDA 12.8 container for PyTorch/MACE — `./container/build.sh --cuda`)
+- [x] More MLIP models (CHGNet, SevenNet, MatGL pre-installed)
+- [x] Materials Project integration (set `MP_API_KEY` in `.env` — query structures, phase diagrams, properties)
 - [ ] Workflow automation (multi-step calculation pipelines)
-- [ ] Materials Project integration (query + compute workflows)
 - [ ] Jupyter notebook generation for reproducibility
 
 ## Citation

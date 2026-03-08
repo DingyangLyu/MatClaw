@@ -1,6 +1,16 @@
 # MatClaw Agent Container
 # Runs Claude Agent SDK in isolated Linux VM with browser automation
 # and materials science computation tools (QE, LAMMPS, RASPA3, MACE, etc.)
+#
+# Build variants:
+#   CPU (default):  docker build -t matclaw-agent:latest .
+#   CUDA (GPU):     docker build --build-arg BASE_IMAGE=nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04 \
+#                                --build-arg PYTORCH_INDEX=https://download.pytorch.org/whl/cu128 \
+#                                -t matclaw-agent:cuda .
+#   Or use:         ./build.sh --cuda
+
+# Runtime base image (overridden for GPU variants)
+ARG BASE_IMAGE=ubuntu:24.04
 
 # ==========================================
 # STAGE 1: Build Quantum ESPRESSO from source
@@ -30,10 +40,19 @@ RUN wget -q https://gitlab.com/QEF/q-e/-/archive/qe-7.5/q-e-qe-7.5.tar.gz && \
 
 # ==========================================
 # STAGE 2: Runtime (Ubuntu 24.04 for RASPA3 glibc compatibility)
+# For GPU: nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04 (also Ubuntu 24.04 based)
 # ==========================================
-FROM ubuntu:24.04
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+# Re-declare ARG after FROM (Docker scoping rule)
+ARG PYTORCH_INDEX=https://download.pytorch.org/whl/cpu
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+# NVIDIA container runtime configuration (no-op without GPU)
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
 # Install Node.js 22 from NodeSource
 RUN apt-get update && apt-get install -y ca-certificates curl gnupg && \
@@ -101,13 +120,15 @@ ENV PATH="/opt/conda/bin:$PATH"
 RUN conda init bash
 
 # Pre-install common materials science Python packages in base environment
+# PYTORCH_INDEX selects CPU or CUDA wheels at build time
 RUN pip install --no-cache-dir \
-    torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+    torch torchvision torchaudio --index-url ${PYTORCH_INDEX}
 RUN pip install --no-cache-dir \
     numpy scipy matplotlib pandas seaborn \
     pymatgen ase mp-api spglib \
     mace-torch \
-    e3nn
+    e3nn \
+    chgnet sevenn matgl
 
 # MPI environment (allow running as root in container)
 ENV OMPI_ALLOW_RUN_AS_ROOT=1

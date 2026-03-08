@@ -8,6 +8,7 @@ import os from 'os';
 import path from 'path';
 
 import {
+  CONTAINER_GPU,
   CONTAINER_IMAGE,
   CONTAINER_MAX_OUTPUT_SIZE,
   CONTAINER_TIMEOUT,
@@ -250,6 +251,7 @@ function readSecrets(): Record<string, string> {
     'CLAUDE_CODE_OAUTH_TOKEN',
     'ANTHROPIC_API_KEY',
     'ANTHROPIC_BASE_URL',
+    'MP_API_KEY',
   ]);
 }
 
@@ -258,6 +260,11 @@ function buildContainerArgs(
   containerName: string,
 ): string[] {
   const args: string[] = ['run', '-i', '--rm', '--name', containerName];
+
+  // Pass GPU access to container if configured
+  if (CONTAINER_GPU) {
+    args.push('--gpus', 'all');
+  }
 
   // Pass host timezone so container's local time matches the user's
   args.push('-e', `TZ=${TIMEZONE}`);
