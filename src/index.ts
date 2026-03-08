@@ -616,6 +616,234 @@ async function runAgent(
   }
 }
 
+/**
+ * Handle control commands (/stop, /new, /watch, /status, /help, /sessions)
+ * that should work even while the agent container is running.
+ * Returns true if the message was a control command and was handled.
+ */
+async function handleControlCommand(
+  chatJid: string,
+  group: RegisteredGroup,
+  channel: Channel,
+  messages: NewMessage[],
+): Promise<boolean> {
+  const lastMsg = messages[messages.length - 1].content.trim();
+
+  if (/^\/stop\b/i.test(lastMsg)) {
+    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    saveState();
+    const state = queue.getState(chatJid);
+    if (state?.active && state.process) {
+      state.process.kill('SIGTERM');
+      logger.info({ group: group.name }, 'Agent stopped via /stop command');
+      await channel.sendMessage(chatJid, 'Agent stopped.');
+    } else {
+      await channel.sendMessage(chatJid, 'No agent running.');
+    }
+    return true;
+  }
+
+  if (/^\/new\b/i.test(lastMsg)) {
+    // Stop running container first
+    const state = queue.getState(chatJid);
+    if (state?.active && state.process) {
+      state.process.kill('SIGTERM');
+      logger.info({ group: group.name }, 'Agent stopped for /new command');
+    }
+    if (sessions[group.folder]) {
+      previousSessions[group.folder] = sessions[group.folder];
+    }
+    delete sessions[group.folder];
+    deleteSession(group.folder);
+    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    saveState();
+    logger.info({ group: group.name }, 'Session reset via /new command');
+    await channel.sendMessage(
+      chatJid,
+      'Session cleared. Next message starts a fresh conversation. Use /resume to restore the previous session.',
+    );
+    return true;
+  }
+
+  if (/^\/watch\b/i.test(lastMsg)) {
+    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    saveState();
+    const liveLogPath = path.join(
+      DATA_DIR,
+      'groups',
+      group.folder,
+      'logs',
+      'container-live.log',
+    );
+    if (!fs.existsSync(liveLogPath)) {
+      await channel.sendMessage(chatJid, 'No agent activity yet.');
+      return true;
+    }
+    const raw = fs.readFileSync(liveLogPath, 'utf-8');
+    const allLines = raw.split('\n');
+    const tail = allLines.slice(-200);
+    const activities: string[] = [];
+    for (const line of tail) {
+      const m = line.match(/\[stderr\]\s*\[[\d:.]+\]\s*(.+)/);
+      if (!m) continue;
+      const content = m[1];
+      if (content.startsWith('[ToolCall]')) {
+        activities.push(content.replace('[ToolCall] ', ''));
+      } else if (content.startsWith('[Assistant]')) {
+        activities.push(
+          'Assistant: ' + content.replace('[Assistant] ', '').slice(0, 100),
+        );
+      } else if (content.startsWith('[Thinking]')) {
+        activities.push('Thinking...');
+      } else if (content.startsWith('[Result')) {
+        activities.push(content.slice(0, 120));
+      }
+    }
+    const state = queue.getState(chatJid);
+    const status = state?.active ? 'Running' : 'Idle';
+    const recent = activities.slice(-10);
+    const msg =
+      recent.length > 0
+        ? `Agent: ${status}\n\nRecent activity:\n${recent.join('\n')}`
+        : `Agent: ${status}\n\nNo recent tool activity.`;
+    await channel.sendMessage(chatJid, msg);
+    return true;
+  }
+
+  if (/^\/status\b/i.test(lastMsg)) {
+    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    saveState();
+    const state = queue.getState(chatJid);
+    const sid = sessions[group.folder];
+    const parts: string[] = [];
+    parts.push(`Group: ${group.name} (${group.folder})`);
+    parts.push(
+      `Agent: ${state?.active ? 'running' : 'idle'}${state?.containerName ? ` (${state.containerName})` : ''}`,
+    );
+    parts.push(`Session: ${sid ? sid.slice(0, 8) + '...' : 'none'}`);
+    if (state?.pendingTasks.length) {
+      parts.push(`Queued tasks: ${state.pendingTasks.length}`);
+    }
+    await channel.sendMessage(chatJid, parts.join('\n'));
+    return true;
+  }
+
+  if (/^\/help\b/i.test(lastMsg)) {
+    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    saveState();
+    await channel.sendMessage(
+      chatJid,
+      [
+        'Commands:',
+        '/watch — see what agent is doing right now',
+        '/status — agent status (running/idle, session, queue)',
+        '/stop — force stop running agent',
+        '/sessions — list all sessions',
+        '/new — start fresh conversation',
+        '/resume [id] — restore previous or specific session',
+        '/compact [focus] — compress agent memory',
+        '/help — this message',
+      ].join('\n'),
+    );
+    return true;
+  }
+
+  if (/^\/sessions\b/i.test(lastMsg)) {
+    const transcriptDir = path.join(
+      DATA_DIR,
+      'sessions',
+      group.folder,
+      '.claude',
+      'projects',
+      '-workspace-group',
+    );
+    const lines: string[] = [];
+    const currentId = sessions[group.folder];
+    if (fs.existsSync(transcriptDir)) {
+      const files = fs
+        .readdirSync(transcriptDir)
+        .filter((f) => f.endsWith('.jsonl'))
+        .map((f) => {
+          const stat = fs.statSync(path.join(transcriptDir, f));
+          const id = f.replace('.jsonl', '');
+          return { id, size: stat.size, modified: stat.mtime };
+        })
+        .sort((a, b) => b.modified.getTime() - a.modified.getTime());
+      for (const s of files) {
+        const kb = Math.round(s.size / 1024);
+        const time = s.modified.toISOString().slice(0, 16).replace('T', ' ');
+        const marker = s.id === currentId ? ' [active]' : '';
+        lines.push(`${s.id.slice(0, 8)}  ${time}  ${kb}KB${marker}`);
+      }
+    }
+    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    saveState();
+    const msg =
+      lines.length > 0
+        ? `Sessions:\n${lines.join('\n')}\n\nUse /resume <id prefix> to switch.`
+        : 'No sessions found.';
+    await channel.sendMessage(chatJid, msg);
+    return true;
+  }
+
+  if (/^\/resume\b/i.test(lastMsg)) {
+    // /resume requires stopping the running container first
+    const state = queue.getState(chatJid);
+    if (state?.active && state.process) {
+      state.process.kill('SIGTERM');
+      logger.info({ group: group.name }, 'Agent stopped for /resume command');
+    }
+
+    const arg = lastMsg.replace(/^\/resume\s*/i, '').trim();
+    let targetId: string | undefined;
+
+    if (arg) {
+      const transcriptDir = path.join(
+        DATA_DIR,
+        'sessions',
+        group.folder,
+        '.claude',
+        'projects',
+        '-workspace-group',
+      );
+      if (fs.existsSync(transcriptDir)) {
+        const match = fs
+          .readdirSync(transcriptDir)
+          .filter((f) => f.endsWith('.jsonl'))
+          .find((f) => f.startsWith(arg));
+        if (match) targetId = match.replace('.jsonl', '');
+      }
+    } else {
+      targetId = previousSessions[group.folder];
+    }
+
+    if (targetId) {
+      sessions[group.folder] = targetId;
+      setSession(group.folder, targetId);
+      lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+      saveState();
+      logger.info(
+        { group: group.name, sessionId: targetId },
+        'Session restored via /resume',
+      );
+      await channel.sendMessage(
+        chatJid,
+        `Session restored (${targetId.slice(0, 8)}...). Agent will continue with that session's history.`,
+      );
+    } else {
+      lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+      saveState();
+      await channel.sendMessage(
+        chatJid,
+        'No session found. Use /sessions to list available sessions.',
+      );
+    }
+    return true;
+  }
+
+  return false;
+}
+
 async function startMessageLoop(): Promise<void> {
   if (messageLoopRunning) {
     logger.debug('Message loop already running, skipping duplicate start');
@@ -661,6 +889,16 @@ async function startMessageLoop(): Promise<void> {
             logger.warn({ chatJid }, 'No channel owns JID, skipping messages');
             continue;
           }
+
+          // Intercept control commands before piping to running container.
+          // Commands like /stop, /new, /watch work even while agent is active.
+          const handled = await handleControlCommand(
+            chatJid,
+            group,
+            channel,
+            groupMessages,
+          );
+          if (handled) continue;
 
           const isMainGroup = group.isMain === true;
           const needsTrigger = !isMainGroup && group.requiresTrigger !== false;

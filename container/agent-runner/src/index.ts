@@ -57,6 +57,7 @@ interface SDKUserMessage {
 
 const IPC_INPUT_DIR = '/workspace/ipc/input';
 const IPC_INPUT_CLOSE_SENTINEL = path.join(IPC_INPUT_DIR, '_close');
+const IPC_SECRETS_PATH = '/workspace/ipc/_secrets.json';
 const IPC_POLL_MS = 500;
 
 /**
@@ -350,6 +351,30 @@ function waitForIpcMessage(): Promise<string | null> {
 }
 
 /**
+ * Refresh SDK environment from the host's IPC secrets file.
+ * The host writes _secrets.json with fresh OAuth tokens whenever it
+ * sends a message to the container, preventing 401 errors from expired tokens.
+ */
+function refreshSdkEnv(sdkEnv: Record<string, string | undefined>): void {
+  try {
+    if (!fs.existsSync(IPC_SECRETS_PATH)) return;
+    const secrets = JSON.parse(fs.readFileSync(IPC_SECRETS_PATH, 'utf-8'));
+    let updated = false;
+    for (const [key, value] of Object.entries(secrets)) {
+      if (typeof value === 'string' && sdkEnv[key] !== value) {
+        sdkEnv[key] = value;
+        updated = true;
+      }
+    }
+    if (updated) {
+      log('Refreshed SDK secrets from IPC');
+    }
+  } catch {
+    // Non-fatal: continue with existing secrets
+  }
+}
+
+/**
  * Run a single query and stream results via writeOutput.
  * Uses MessageStream (AsyncIterable) to keep isSingleUserTurn=false,
  * allowing agent teams subagents to run to completion.
@@ -378,6 +403,8 @@ async function runQuery(
       ipcPolling = false;
       return;
     }
+    // Refresh secrets on every poll cycle so mid-query API calls use fresh tokens
+    refreshSdkEnv(sdkEnv);
     const messages = drainIpcInput();
     for (const text of messages) {
       log(`Piping IPC message into active query (${text.length} chars)`);
@@ -579,6 +606,8 @@ async function main(): Promise<void> {
   let resumeAt: string | undefined;
   try {
     while (true) {
+      // Refresh secrets before each query so we use the latest OAuth token
+      refreshSdkEnv(sdkEnv);
       log(`Starting query (session: ${sessionId || 'new'}, resumeAt: ${resumeAt || 'latest'})...`);
 
       const queryResult = await runQuery(prompt, sessionId, mcpServerPath, containerInput, sdkEnv, resumeAt);

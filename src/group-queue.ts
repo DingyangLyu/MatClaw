@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { DATA_DIR, MAX_CONCURRENT_CONTAINERS } from './config.js';
+import { readEnvFile } from './env.js';
 import { logger } from './logger.js';
 
 interface QueuedTask {
@@ -158,6 +159,31 @@ export class GroupQueue {
   }
 
   /**
+   * Write fresh secrets (OAuth token, API key) to the container's IPC directory.
+   * The container polls for this file and updates its SDK environment,
+   * preventing 401 errors when OAuth tokens expire during long-running sessions.
+   */
+  private writeSecrets(groupFolder: string): void {
+    const secrets = readEnvFile([
+      'CLAUDE_CODE_OAUTH_TOKEN',
+      'ANTHROPIC_API_KEY',
+      'ANTHROPIC_BASE_URL',
+    ]);
+    if (Object.keys(secrets).length === 0) return;
+
+    const ipcDir = path.join(DATA_DIR, 'ipc', groupFolder);
+    try {
+      fs.mkdirSync(ipcDir, { recursive: true });
+      const filePath = path.join(ipcDir, '_secrets.json');
+      const tempPath = `${filePath}.tmp`;
+      fs.writeFileSync(tempPath, JSON.stringify(secrets));
+      fs.renameSync(tempPath, filePath);
+    } catch {
+      // Non-fatal: container will use existing secrets
+    }
+  }
+
+  /**
    * Send a follow-up message to the active container via IPC file.
    * Returns true if the message was written, false if no active container.
    */
@@ -166,6 +192,9 @@ export class GroupQueue {
     if (!state.active || !state.groupFolder || state.isTaskContainer)
       return false;
     state.idleWaiting = false; // Agent is about to receive work, no longer idle
+
+    // Refresh secrets so the container picks up any renewed OAuth tokens
+    this.writeSecrets(state.groupFolder);
 
     const inputDir = path.join(DATA_DIR, 'ipc', state.groupFolder, 'input');
     try {
