@@ -1,0 +1,413 @@
+#!/usr/bin/env bash
+# vasp-remote: Execute VASP calculations locally or on remote HPC clusters
+#
+# Usage:
+#   vasp-remote run [--nprocs N] [--queue Q] [--walltime HH:MM:SS]
+#   vasp-remote submit [--nprocs N] [--queue Q] [--walltime HH:MM:SS]
+#   vasp-remote status <job_id>
+#   vasp-remote fetch <job_id>
+#   vasp-remote config
+#
+# Reads config from $VASP_REMOTE_CONFIG (default: ~/.vasp-remote/config.json)
+# Expects VASP input files (INCAR, POSCAR, KPOINTS, POTCAR) in current directory.
+
+set -euo pipefail
+
+CONFIG_FILE="${VASP_REMOTE_CONFIG:-$HOME/.vasp-remote/config.json}"
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+die() { echo "ERROR: $*" >&2; exit 1; }
+
+check_config() {
+  [[ -f "$CONFIG_FILE" ]] || die "Config not found: $CONFIG_FILE
+Run /add-vasp to configure VASP integration."
+}
+
+read_config() {
+  python3 -c "
+import json, sys
+with open('$CONFIG_FILE') as f:
+    cfg = json.load(f)
+val = cfg
+for key in sys.argv[1].split('.'):
+    val = val.get(key, '')
+    if val == '': break
+print(val if val else '')
+" "$1"
+}
+
+check_inputs() {
+  local missing=()
+  for f in INCAR POSCAR KPOINTS POTCAR; do
+    [[ -f "$f" ]] || missing+=("$f")
+  done
+  if [[ ${#missing[@]} -gt 0 ]]; then
+    die "Missing VASP input files: ${missing[*]}"
+  fi
+}
+
+# ── Local mode ───────────────────────────────────────────────────────────────
+
+run_local() {
+  local nprocs="${1:-$(read_config local.nprocs)}"
+  local vasp_bin
+  vasp_bin="$(read_config local.vasp_bin)"
+  [[ -n "$vasp_bin" ]] || die "local.vasp_bin not set in config"
+  [[ -x "$vasp_bin" ]] || die "VASP binary not found or not executable: $vasp_bin"
+
+  nprocs="${nprocs:-4}"
+  echo "Running VASP locally: mpirun -np $nprocs $vasp_bin"
+  mpirun -np "$nprocs" "$vasp_bin" 2>&1 | tee vasp.log
+  echo "VASP completed. Output files in $(pwd)"
+}
+
+# ── SSH mode ─────────────────────────────────────────────────────────────────
+
+ssh_cmd() {
+  local host user key
+  host="$(read_config ssh.host)"
+  user="$(read_config ssh.user)"
+  key="$(read_config ssh.key)"
+
+  local ssh_opts=(-o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
+  [[ -n "$key" ]] && ssh_opts+=(-i "$key")
+
+  ssh "${ssh_opts[@]}" "${user}@${host}" "$@"
+}
+
+scp_to() {
+  local host user key
+  host="$(read_config ssh.host)"
+  user="$(read_config ssh.user)"
+  key="$(read_config ssh.key)"
+
+  local scp_opts=(-o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
+  [[ -n "$key" ]] && scp_opts+=(-i "$key")
+
+  scp "${scp_opts[@]}" "$1" "${user}@${host}:$2"
+}
+
+scp_from() {
+  local host user key
+  host="$(read_config ssh.host)"
+  user="$(read_config ssh.user)"
+  key="$(read_config ssh.key)"
+
+  local scp_opts=(-o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -r)
+  [[ -n "$key" ]] && scp_opts+=(-i "$key")
+
+  scp "${scp_opts[@]}" "${user}@${host}:$1" "$2"
+}
+
+generate_job_script() {
+  local scheduler nprocs queue walltime vasp_bin job_name work_dir
+  scheduler="$(read_config ssh.scheduler)"
+  nprocs="${1:-$(read_config ssh.nprocs)}"
+  queue="${2:-$(read_config ssh.queue)}"
+  walltime="${3:-$(read_config ssh.walltime)}"
+  vasp_bin="$(read_config ssh.vasp_bin)"
+  nprocs="${nprocs:-16}"
+  walltime="${walltime:-24:00:00}"
+  job_name="matclaw-vasp"
+  work_dir="$4"
+
+  # Optional modules to load before running VASP
+  local modules
+  modules="$(read_config ssh.modules)"
+
+  case "$scheduler" in
+    slurm)
+      cat <<SLURM
+#!/bin/bash
+#SBATCH --job-name=${job_name}
+#SBATCH --ntasks=${nprocs}
+#SBATCH --time=${walltime}
+${queue:+#SBATCH --partition=${queue}}
+#SBATCH --output=vasp.log
+#SBATCH --error=vasp.err
+
+cd ${work_dir}
+${modules:+module load ${modules}}
+mpirun -np ${nprocs} ${vasp_bin}
+SLURM
+      ;;
+    pbs)
+      cat <<PBS
+#!/bin/bash
+#PBS -N ${job_name}
+#PBS -l nodes=1:ppn=${nprocs}
+#PBS -l walltime=${walltime}
+${queue:+#PBS -q ${queue}}
+#PBS -o vasp.log
+#PBS -e vasp.err
+
+cd ${work_dir}
+${modules:+module load ${modules}}
+mpirun -np ${nprocs} ${vasp_bin}
+PBS
+      ;;
+    *)
+      die "Unknown scheduler: $scheduler (supported: slurm, pbs)"
+      ;;
+  esac
+}
+
+ssh_submit() {
+  local nprocs="$1" queue="$2" walltime="$3"
+  local work_dir_base remote_work_dir
+  work_dir_base="$(read_config ssh.work_dir)"
+  [[ -n "$work_dir_base" ]] || die "ssh.work_dir not set in config"
+
+  # Create unique job directory on remote
+  local job_id="vasp-$(date +%Y%m%d-%H%M%S)-$$"
+  remote_work_dir="${work_dir_base}/${job_id}"
+
+  ssh_cmd "mkdir -p ${remote_work_dir}"
+
+  # Upload input files
+  echo "Uploading VASP input files to ${remote_work_dir}..."
+  for f in INCAR POSCAR KPOINTS POTCAR; do
+    scp_to "$f" "${remote_work_dir}/$f"
+  done
+  # Upload any extra files (WAVECAR, CHGCAR, etc.) if they exist
+  for f in WAVECAR CHGCAR WAVEDER; do
+    [[ -f "$f" ]] && scp_to "$f" "${remote_work_dir}/$f"
+  done
+
+  # Generate and upload job script
+  generate_job_script "$nprocs" "$queue" "$walltime" "$remote_work_dir" > /tmp/job_submit.sh
+  scp_to /tmp/job_submit.sh "${remote_work_dir}/job_submit.sh"
+
+  # Submit
+  local scheduler submit_output scheduler_job_id
+  scheduler="$(read_config ssh.scheduler)"
+  echo "Submitting job on remote cluster..."
+  case "$scheduler" in
+    slurm)
+      submit_output="$(ssh_cmd "cd ${remote_work_dir} && sbatch job_submit.sh")"
+      scheduler_job_id="$(echo "$submit_output" | grep -oP '\d+$')"
+      ;;
+    pbs)
+      submit_output="$(ssh_cmd "cd ${remote_work_dir} && qsub job_submit.sh")"
+      scheduler_job_id="$(echo "$submit_output" | head -1 | tr -d '[:space:]')"
+      ;;
+  esac
+
+  echo "Job submitted: scheduler_id=${scheduler_job_id}"
+  echo "Job directory: ${remote_work_dir}"
+
+  # Save job info locally
+  mkdir -p .vasp-jobs
+  cat > ".vasp-jobs/${job_id}.json" <<EOF
+{
+  "job_id": "${job_id}",
+  "scheduler_job_id": "${scheduler_job_id}",
+  "scheduler": "${scheduler}",
+  "remote_dir": "${remote_work_dir}",
+  "submitted": "$(date -Iseconds)",
+  "status": "submitted"
+}
+EOF
+
+  echo "$job_id"
+}
+
+ssh_status() {
+  local job_id="$1"
+  local job_file=".vasp-jobs/${job_id}.json"
+  [[ -f "$job_file" ]] || die "Job not found: $job_id"
+
+  local scheduler scheduler_job_id
+  scheduler="$(python3 -c "import json; print(json.load(open('$job_file'))['scheduler'])")"
+  scheduler_job_id="$(python3 -c "import json; print(json.load(open('$job_file'))['scheduler_job_id'])")"
+
+  case "$scheduler" in
+    slurm)
+      local state
+      state="$(ssh_cmd "sacct -j ${scheduler_job_id} --format=State --noheader -P 2>/dev/null | head -1 | tr -d '[:space:]'" 2>/dev/null || true)"
+      if [[ -z "$state" ]]; then
+        # sacct might not work, try squeue
+        state="$(ssh_cmd "squeue -j ${scheduler_job_id} --format=%T --noheader 2>/dev/null | head -1 | tr -d '[:space:]'" 2>/dev/null || true)"
+        [[ -z "$state" ]] && state="COMPLETED"
+      fi
+      echo "$state"
+      ;;
+    pbs)
+      local state
+      state="$(ssh_cmd "qstat -f ${scheduler_job_id} 2>/dev/null | grep job_state | awk '{print \$3}'" 2>/dev/null || true)"
+      case "$state" in
+        Q) echo "QUEUED" ;;
+        R) echo "RUNNING" ;;
+        C|E) echo "COMPLETED" ;;
+        *) echo "COMPLETED" ;;
+      esac
+      ;;
+  esac
+}
+
+ssh_fetch() {
+  local job_id="$1"
+  local job_file=".vasp-jobs/${job_id}.json"
+  [[ -f "$job_file" ]] || die "Job not found: $job_id"
+
+  local remote_dir
+  remote_dir="$(python3 -c "import json; print(json.load(open('$job_file'))['remote_dir'])")"
+
+  echo "Fetching results from ${remote_dir}..."
+  # Fetch key output files
+  for f in vasprun.xml OUTCAR OSZICAR CONTCAR EIGENVAL DOSCAR PROCAR WAVECAR CHGCAR vasp.log vasp.err; do
+    scp_from "${remote_dir}/${f}" "./" 2>/dev/null || true
+  done
+  echo "Results downloaded to $(pwd)"
+}
+
+ssh_run() {
+  local nprocs="$1" queue="$2" walltime="$3"
+
+  # Submit
+  local job_id
+  job_id="$(ssh_submit "$nprocs" "$queue" "$walltime")"
+
+  # Poll until complete
+  echo "Waiting for job ${job_id} to complete..."
+  local status poll_interval=15
+  while true; do
+    status="$(ssh_status "$job_id")"
+    case "$status" in
+      COMPLETED|FAILED|CANCELLED|TIMEOUT)
+        echo "Job ${job_id}: ${status}"
+        break
+        ;;
+      *)
+        echo "  Status: ${status} (checking again in ${poll_interval}s)"
+        sleep "$poll_interval"
+        # Increase interval gradually (max 60s)
+        (( poll_interval < 60 )) && (( poll_interval += 5 ))
+        ;;
+    esac
+  done
+
+  # Fetch results
+  if [[ "$status" == "COMPLETED" ]]; then
+    ssh_fetch "$job_id"
+  else
+    die "Job $status. Check logs: vasp-remote fetch $job_id"
+  fi
+}
+
+# ── Config display ───────────────────────────────────────────────────────────
+
+show_config() {
+  check_config
+  echo "VASP Remote Configuration: $CONFIG_FILE"
+  echo "---"
+  python3 -c "
+import json
+with open('$CONFIG_FILE') as f:
+    cfg = json.load(f)
+mode = cfg.get('mode', 'not set')
+print(f'Mode: {mode}')
+if mode == 'ssh':
+    s = cfg.get('ssh', {})
+    print(f'  Host: {s.get(\"user\", \"?\")}@{s.get(\"host\", \"?\")}')
+    print(f'  VASP binary: {s.get(\"vasp_bin\", \"?\")}')
+    print(f'  Scheduler: {s.get(\"scheduler\", \"?\")}')
+    print(f'  Work dir: {s.get(\"work_dir\", \"?\")}')
+    print(f'  Processors: {s.get(\"nprocs\", 16)}')
+    print(f'  Queue: {s.get(\"queue\", \"default\")}')
+elif mode == 'local':
+    l = cfg.get('local', {})
+    print(f'  VASP binary: {l.get(\"vasp_bin\", \"?\")}')
+    print(f'  Processors: {l.get(\"nprocs\", 4)}')
+"
+}
+
+# ── Main ─────────────────────────────────────────────────────────────────────
+
+usage() {
+  cat <<EOF
+vasp-remote: Execute VASP calculations locally or on remote HPC clusters
+
+Usage:
+  vasp-remote run [--nprocs N] [--queue Q] [--walltime HH:MM:SS]
+      Run VASP and wait for results (blocking).
+
+  vasp-remote submit [--nprocs N] [--queue Q] [--walltime HH:MM:SS]
+      Submit job and return immediately (SSH mode only).
+
+  vasp-remote status <job_id>
+      Check job status (SSH mode only).
+
+  vasp-remote fetch <job_id>
+      Download results from cluster (SSH mode only).
+
+  vasp-remote config
+      Show current configuration.
+
+Options:
+  --nprocs N          Number of MPI processes (overrides config)
+  --queue Q           Queue/partition name (overrides config)
+  --walltime HH:MM:SS  Walltime limit (overrides config)
+
+Environment:
+  VASP_REMOTE_CONFIG  Path to config file (default: ~/.vasp-remote/config.json)
+EOF
+}
+
+main() {
+  local cmd="${1:-}"
+  shift || true
+
+  # Parse options
+  local nprocs="" queue="" walltime=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --nprocs)  nprocs="$2"; shift 2 ;;
+      --queue)   queue="$2"; shift 2 ;;
+      --walltime) walltime="$2"; shift 2 ;;
+      *)         break ;;
+    esac
+  done
+
+  case "$cmd" in
+    run)
+      check_config
+      check_inputs
+      local mode
+      mode="$(read_config mode)"
+      case "$mode" in
+        local) run_local "$nprocs" ;;
+        ssh)   ssh_run "$nprocs" "$queue" "$walltime" ;;
+        *)     die "Unknown mode: $mode" ;;
+      esac
+      ;;
+    submit)
+      check_config
+      check_inputs
+      [[ "$(read_config mode)" == "ssh" ]] || die "submit only works in SSH mode"
+      ssh_submit "$nprocs" "$queue" "$walltime"
+      ;;
+    status)
+      check_config
+      [[ -n "${1:-}" ]] || die "Usage: vasp-remote status <job_id>"
+      ssh_status "$1"
+      ;;
+    fetch)
+      check_config
+      [[ -n "${1:-}" ]] || die "Usage: vasp-remote fetch <job_id>"
+      ssh_fetch "$1"
+      ;;
+    config)
+      show_config
+      ;;
+    -h|--help|help|"")
+      usage
+      ;;
+    *)
+      die "Unknown command: $cmd (try: vasp-remote --help)"
+      ;;
+  esac
+}
+
+main "$@"

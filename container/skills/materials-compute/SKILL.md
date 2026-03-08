@@ -111,6 +111,14 @@ energy = atoms.get_potential_energy()
 forces = atoms.get_forces()
 ```
 
+### VASP (via vasp-remote)
+If the user has configured VASP access (run `/add-vasp`), use `vasp-remote` to execute VASP calculations:
+1. Generate INCAR, POSCAR, KPOINTS, POTCAR in the current directory
+2. Run: `vasp-remote run` (submits to cluster or runs locally, waits for results)
+3. Parse `vasprun.xml` with pymatgen
+
+Check if VASP is available: `vasp-remote config 2>/dev/null`. If not configured, fall back to Method A (MACE) or Method B (QE).
+
 ### Monte Carlo (RASPA3)
 1. Prepare framework structure (CIF)
 2. Configure simulation input (guest molecules, temperature, pressure)

@@ -76,6 +76,7 @@ RUN apt-get update && apt-get install -y \
     libhdf5-103-1t64 \
     lammps \
     openkim-models \
+    openssh-client \
     python3 python3-pip python-is-python3 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -115,6 +116,10 @@ ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 # Set Chromium path for agent-browser
 ENV AGENT_BROWSER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Install vasp-remote script (VASP execution via SSH or local)
+COPY scripts/vasp-remote /usr/local/bin/vasp-remote
+RUN chmod +x /usr/local/bin/vasp-remote
 
 # Install agent-browser and claude-code globally
 RUN npm install -g agent-browser @anthropic-ai/claude-code
