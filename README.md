@@ -10,7 +10,7 @@
   <a href="README_zh.md"><img src="https://img.shields.io/badge/中文-README-blue" alt="中文"></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="Apache 2.0"></a>&nbsp;
   <a href="https://github.com/bjzgcai"><img src="https://img.shields.io/badge/Linked%20to-bjzgcai%20Org-blue?logo=github" alt="bjzgcai Org"></a>&nbsp;
-  <img src="https://img.shields.io/badge/Docker-24.04-2496ED?logo=docker&logoColor=white" alt="Docker">&nbsp;
+  <a href="https://github.com/DingyangLyu/MatClaw/pkgs/container/matclaw-agent"><img src="https://img.shields.io/badge/Docker-ghcr.io-2496ED?logo=docker&logoColor=white" alt="GHCR"></a>&nbsp;
   <img src="https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs&logoColor=white" alt="Node.js 20+">&nbsp;
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11">
 </p>
@@ -274,16 +274,33 @@ Benchmark tasks adapted from [QUASAR](https://github.com/fengxuyy/QUASAR). All e
 - [Docker](https://docs.docker.com/get-docker/)
 - An Anthropic-compatible API key (Claude, DeepSeek, etc.)
 
-### 1. Build the container
+### 1. Get the container
+
+**Option A — Pull pre-built image (recommended):**
+
+```bash
+docker pull ghcr.io/dingyangLyu/matclaw-agent:latest
+docker tag ghcr.io/dingyangLyu/matclaw-agent:latest matclaw-agent:latest
+```
+
+For GPU support:
+
+```bash
+docker pull ghcr.io/dingyangLyu/matclaw-agent:cuda
+docker tag ghcr.io/dingyangLyu/matclaw-agent:cuda matclaw-agent:cuda
+```
+
+**Option B — Build from source:**
 
 ```bash
 git clone https://github.com/DingyangLyu/MatClaw.git
 cd MatClaw
-./container/build.sh
+./container/build.sh          # CPU
+./container/build.sh --cuda   # GPU (requires NVIDIA Container Toolkit)
 ```
 
 > [!NOTE]
-> The first build takes ~10 minutes (compiles QE 7.5 from source). Subsequent builds use Docker cache.
+> Building from source takes ~10 minutes (compiles QE 7.5). Pulling the pre-built image is much faster.
 
 ### 2. Run a computation
 

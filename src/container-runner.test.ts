@@ -9,6 +9,8 @@ const OUTPUT_END_MARKER = '---MATCLAW_OUTPUT_END---';
 // Mock config
 vi.mock('./config.js', () => ({
   CONTAINER_IMAGE: 'matclaw-agent:latest',
+  CONTAINER_IMAGE_REMOTE: 'ghcr.io/dingyangLyu/matclaw-agent:latest',
+  CONTAINER_GPU: false,
   CONTAINER_MAX_OUTPUT_SIZE: 10485760,
   CONTAINER_TIMEOUT: 1800000, // 30min
   DATA_DIR: '/tmp/matclaw-test-data',

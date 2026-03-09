@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+// Mock config
+vi.mock('./config.js', () => ({
+  CONTAINER_IMAGE: 'matclaw-agent:latest',
+  CONTAINER_IMAGE_REMOTE: 'ghcr.io/dingyangLyu/matclaw-agent:latest',
+}));
+
 // Mock logger
 vi.mock('./logger.js', () => ({
   logger: {
@@ -21,6 +27,7 @@ import {
   readonlyMountArgs,
   stopContainer,
   ensureContainerRuntimeRunning,
+  ensureImageAvailable,
   cleanupOrphans,
 } from './container-runtime.js';
 import { logger } from './logger.js';
@@ -73,6 +80,68 @@ describe('ensureContainerRuntimeRunning', () => {
       'Container runtime is required but failed to start',
     );
     expect(logger.error).toHaveBeenCalled();
+  });
+});
+
+// --- ensureImageAvailable ---
+
+describe('ensureImageAvailable', () => {
+  it('does nothing when image exists locally', () => {
+    mockExecSync.mockReturnValueOnce(''); // docker image inspect succeeds
+
+    ensureImageAvailable();
+
+    expect(mockExecSync).toHaveBeenCalledTimes(1);
+    expect(logger.debug).toHaveBeenCalledWith(
+      { image: 'matclaw-agent:latest' },
+      'Container image found locally',
+    );
+  });
+
+  it('pulls from GHCR when local image is missing', () => {
+    // docker image inspect fails
+    mockExecSync.mockImplementationOnce(() => {
+      throw new Error('No such image');
+    });
+    // docker pull succeeds
+    mockExecSync.mockReturnValueOnce('');
+    // docker tag succeeds
+    mockExecSync.mockReturnValueOnce('');
+
+    ensureImageAvailable();
+
+    expect(mockExecSync).toHaveBeenCalledTimes(3);
+    expect(mockExecSync).toHaveBeenNthCalledWith(
+      2,
+      `${CONTAINER_RUNTIME_BIN} pull ghcr.io/dingyangLyu/matclaw-agent:latest`,
+      expect.objectContaining({ timeout: 600000 }),
+    );
+    expect(mockExecSync).toHaveBeenNthCalledWith(
+      3,
+      `${CONTAINER_RUNTIME_BIN} tag ghcr.io/dingyangLyu/matclaw-agent:latest matclaw-agent:latest`,
+      expect.objectContaining({ timeout: 10000 }),
+    );
+    expect(logger.info).toHaveBeenCalledWith(
+      'Container image pulled and tagged successfully',
+    );
+  });
+
+  it('warns when pull fails', () => {
+    // docker image inspect fails
+    mockExecSync.mockImplementationOnce(() => {
+      throw new Error('No such image');
+    });
+    // docker pull fails
+    mockExecSync.mockImplementationOnce(() => {
+      throw new Error('network error');
+    });
+
+    ensureImageAvailable(); // should not throw
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ err: expect.any(Error) }),
+      'Failed to pull image from GHCR. Build locally with: ./container/build.sh',
+    );
   });
 });
 

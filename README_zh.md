@@ -10,7 +10,7 @@
   <a href="README.md"><img src="https://img.shields.io/badge/English-README-blue" alt="English"></a>&nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="Apache 2.0"></a>&nbsp;
   <a href="https://github.com/bjzgcai"><img src="https://img.shields.io/badge/Linked%20to-bjzgcai%20Org-blue?logo=github" alt="bjzgcai Org"></a>&nbsp;
-  <img src="https://img.shields.io/badge/Docker-24.04-2496ED?logo=docker&logoColor=white" alt="Docker">&nbsp;
+  <a href="https://github.com/DingyangLyu/MatClaw/pkgs/container/matclaw-agent"><img src="https://img.shields.io/badge/Docker-ghcr.io-2496ED?logo=docker&logoColor=white" alt="GHCR"></a>&nbsp;
   <img src="https://img.shields.io/badge/Node.js-20+-339933?logo=nodedotjs&logoColor=white" alt="Node.js 20+">&nbsp;
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11">
 </p>
@@ -274,16 +274,33 @@ Benchmark 任务改编自 [QUASAR](https://github.com/fengxuyy/QUASAR)。全部�
 - [Docker](https://docs.docker.com/get-docker/)
 - Anthropic 兼容的 API 密钥（Claude、DeepSeek 等）
 
-### 1. 构建容器
+### 1. 获取容器
+
+**方式 A — 拉取预构建镜像（推荐）：**
+
+```bash
+docker pull ghcr.io/dingyangLyu/matclaw-agent:latest
+docker tag ghcr.io/dingyangLyu/matclaw-agent:latest matclaw-agent:latest
+```
+
+GPU 版本：
+
+```bash
+docker pull ghcr.io/dingyangLyu/matclaw-agent:cuda
+docker tag ghcr.io/dingyangLyu/matclaw-agent:cuda matclaw-agent:cuda
+```
+
+**方式 B — 从源码构建：**
 
 ```bash
 git clone https://github.com/DingyangLyu/MatClaw.git
 cd MatClaw
-./container/build.sh
+./container/build.sh          # CPU 版
+./container/build.sh --cuda   # GPU 版（需安装 NVIDIA Container Toolkit）
 ```
 
 > [!NOTE]
-> 首次构建约需 10 分钟（从源码编译 QE 7.5），后续构建使用 Docker 缓存。
+> 从源码构建约需 10 分钟（编译 QE 7.5）。拉取预构建镜像更快。
 
 ### 2. 运行计算
 

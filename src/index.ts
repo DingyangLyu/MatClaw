@@ -33,6 +33,7 @@ import { startDashboard } from './web/server.js';
 import {
   cleanupOrphans,
   ensureContainerRuntimeRunning,
+  ensureImageAvailable,
 } from './container-runtime.js';
 import {
   getAllChats,
@@ -975,6 +976,7 @@ function recoverPendingMessages(): void {
 
 function ensureContainerSystemRunning(): void {
   ensureContainerRuntimeRunning();
+  ensureImageAvailable();
   cleanupOrphans();
 }
 

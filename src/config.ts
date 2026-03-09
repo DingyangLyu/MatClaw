@@ -39,6 +39,8 @@ export const DATA_DIR = path.resolve(PROJECT_ROOT, 'data');
 
 export const CONTAINER_IMAGE =
   process.env.CONTAINER_IMAGE || 'matclaw-agent:latest';
+export const CONTAINER_IMAGE_REMOTE =
+  'ghcr.io/dingyangLyu/matclaw-agent:latest';
 export const CONTAINER_GPU =
   (process.env.CONTAINER_GPU || '').toLowerCase() === 'true';
 export const CONTAINER_TIMEOUT = parseInt(
