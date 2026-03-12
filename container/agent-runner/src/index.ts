@@ -582,6 +582,17 @@ async function main(): Promise<void> {
     sdkEnv[key] = value;
   }
 
+  // Persist fresh secrets to IPC so refreshSdkEnv() doesn't overwrite with stale tokens
+  // from a previous session. The host writes _secrets.json on follow-up messages,
+  // but the file may still contain an old token from the last container run.
+  if (containerInput.secrets && Object.keys(containerInput.secrets).length > 0) {
+    try {
+      fs.writeFileSync(IPC_SECRETS_PATH, JSON.stringify(containerInput.secrets));
+    } catch {
+      // Non-fatal: refreshSdkEnv will still work with stdin secrets in sdkEnv
+    }
+  }
+
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const mcpServerPath = path.join(__dirname, 'ipc-mcp-stdio.js');
 

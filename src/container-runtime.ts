@@ -78,16 +78,14 @@ export function ensureImageAvailable(): void {
     { image: CONTAINER_IMAGE, remote: CONTAINER_IMAGE_REMOTE },
     'Local image not found, pulling from GHCR...',
   );
-  console.log(
-    `\n  Container image "${CONTAINER_IMAGE}" not found locally.`,
-  );
+  console.log(`\n  Container image "${CONTAINER_IMAGE}" not found locally.`);
   console.log(`  Pulling from ${CONTAINER_IMAGE_REMOTE} ...\n`);
 
   try {
-    execSync(
-      `${CONTAINER_RUNTIME_BIN} pull ${CONTAINER_IMAGE_REMOTE}`,
-      { stdio: 'inherit', timeout: 600000 },
-    );
+    execSync(`${CONTAINER_RUNTIME_BIN} pull ${CONTAINER_IMAGE_REMOTE}`, {
+      stdio: 'inherit',
+      timeout: 600000,
+    });
     execSync(
       `${CONTAINER_RUNTIME_BIN} tag ${CONTAINER_IMAGE_REMOTE} ${CONTAINER_IMAGE}`,
       { stdio: 'pipe', timeout: 10000 },
