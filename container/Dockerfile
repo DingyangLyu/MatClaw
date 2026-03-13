@@ -12,8 +12,16 @@
 # Runtime base image (overridden for GPU variants)
 ARG BASE_IMAGE=ubuntu:24.04
 
+# CUDA builder image for LAMMPS KOKKOS (needs nvcc); no-op for CPU builds
+ARG CUDA_BUILDER_IMAGE=ubuntu:24.04
+ARG ENABLE_CUDA=OFF
+# Kokkos architecture for LAMMPS GPU: AMPERE86 (RTX 30xx), ADA89 (RTX 40xx)
+ARG LAMMPS_KOKKOS_ARCH=AMPERE86
+
 # ==========================================
-# STAGE 1: Build Quantum ESPRESSO from source
+# STAGE 1: Build Quantum ESPRESSO from source (always CPU)
+# QE CUDA requires NVHPC compiler — not worth the complexity for container use.
+# For GPU-accelerated DFT, use vasp-remote to offload to HPC.
 # ==========================================
 FROM ubuntu:24.04 AS qe-builder
 
@@ -32,11 +40,64 @@ RUN apt-get update && \
 
 WORKDIR /build/qe
 RUN wget -q https://gitlab.com/QEF/q-e/-/archive/qe-7.5/q-e-qe-7.5.tar.gz && \
-    tar -zxf q-e-qe-7.5.tar.gz --strip-components=1 && \
+    tar -zxf q-e-qe-7.5.tar.gz --strip-components=1
+
+RUN mkdir -p /opt/qe/bin && \
     ./configure --enable-openmp --enable-parallel && \
     make -j$(nproc) all && \
     strip --strip-unneeded bin/* || true && \
-    mkdir -p /opt/qe/bin && cp -L bin/* /opt/qe/bin/
+    cp -L bin/* /opt/qe/bin/
+
+# ==========================================
+# STAGE 1b: Build LAMMPS with KOKKOS/CUDA (GPU only)
+# CPU builds use the apt lammps package instead
+# ==========================================
+FROM ${CUDA_BUILDER_IMAGE} AS lammps-builder
+
+ARG ENABLE_CUDA
+ARG LAMMPS_KOKKOS_ARCH
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Create target dirs; only do source build when CUDA is enabled
+RUN mkdir -p /opt/lammps/bin /opt/lammps/lib && \
+    if [ "$ENABLE_CUDA" != "ON" ]; then \
+      echo "Skipping LAMMPS source build (CPU: will use apt package)" && exit 0; \
+    fi && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+      wget ca-certificates build-essential cmake \
+      gfortran libopenmpi-dev libfftw3-dev libjpeg-dev libpng-dev \
+      python3-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    wget -q https://github.com/lammps/lammps/archive/refs/tags/stable_29Aug2024_update1.tar.gz \
+      -O /tmp/lammps.tar.gz && \
+    mkdir -p /build/lammps && cd /build/lammps && \
+    tar -zxf /tmp/lammps.tar.gz --strip-components=1 && \
+    echo "Building LAMMPS with KOKKOS/CUDA (arch: $LAMMPS_KOKKOS_ARCH)..." && \
+    cmake -B build -S cmake \
+      -DCMAKE_INSTALL_PREFIX=/opt/lammps \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_COMPILER=/build/lammps/lib/kokkos/bin/nvcc_wrapper \
+      -DBUILD_MPI=ON \
+      -DPKG_KOKKOS=ON \
+      -DKokkos_ENABLE_CUDA=ON \
+      -DKokkos_ARCH_${LAMMPS_KOKKOS_ARCH}=ON \
+      -DPKG_MANYBODY=ON \
+      -DPKG_KSPACE=ON \
+      -DPKG_MOLECULE=ON \
+      -DPKG_RIGID=ON \
+      -DPKG_REPLICA=ON \
+      -DPKG_MC=ON \
+      -DPKG_EXTRA-PAIR=ON \
+      -DPKG_EXTRA-COMPUTE=ON \
+      -DPKG_EXTRA-FIX=ON \
+      -DPKG_EXTRA-DUMP=ON \
+      -DPKG_ML-SNAP=ON \
+      -DPKG_ML-PACE=ON && \
+    cmake --build build -j$(nproc) && \
+    cmake --install build && \
+    rm -rf /build/lammps /tmp/lammps.tar.gz
 
 # ==========================================
 # STAGE 2: Runtime (Ubuntu 24.04 for RASPA3 glibc compatibility)
@@ -45,8 +106,9 @@ RUN wget -q https://gitlab.com/QEF/q-e/-/archive/qe-7.5/q-e-qe-7.5.tar.gz && \
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 
-# Re-declare ARG after FROM (Docker scoping rule)
+# Re-declare ARGs after FROM (Docker scoping rule)
 ARG PYTORCH_INDEX=https://download.pytorch.org/whl/cpu
+ARG ENABLE_CUDA=OFF
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -93,8 +155,6 @@ RUN apt-get update && apt-get install -y \
     libopenmpi3t64 \
     openmpi-bin \
     libhdf5-103-1t64 \
-    lammps \
-    openkim-models \
     openssh-client \
     python3 python3-pip python-is-python3 \
     && rm -rf /var/lib/apt/lists/*
@@ -111,6 +171,16 @@ RUN wget -q https://github.com/iRASPA/RASPA3/releases/download/v3.0.16/raspa_3.0
 COPY --from=qe-builder /opt/qe/bin /opt/qe/bin
 RUN chmod +x /opt/qe/bin/*
 ENV PATH="/opt/qe/bin:$PATH"
+
+# LAMMPS: source-built with KOKKOS/CUDA for GPU, apt package for CPU
+COPY --from=lammps-builder /opt/lammps /opt/lammps
+RUN if [ "$ENABLE_CUDA" = "ON" ]; then \
+      chmod +x /opt/lammps/bin/* 2>/dev/null || true; \
+    else \
+      apt-get update && apt-get install -y --no-install-recommends lammps openkim-models && \
+      rm -rf /var/lib/apt/lists/*; \
+    fi
+ENV PATH="/opt/lammps/bin:$PATH"
 
 # Install Miniconda
 RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
@@ -178,8 +248,13 @@ RUN userdel -r ubuntu 2>/dev/null || true && \
 RUN apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/* && \
     echo "node ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
+# Bundle computation skills into the image so standalone `docker run` works.
+# When running via the MatClaw orchestrator, the host mounts its own skills
+# (from container/skills/) over /home/node/.claude, overriding these defaults.
+COPY skills/ /home/node/.claude/skills/
+
 # Set ownership to node user (non-root) for writable directories
-RUN chown -R node:node /workspace && chmod 777 /home/node
+RUN chown -R node:node /workspace /home/node/.claude && chmod 777 /home/node
 
 # Switch to non-root user (required for --dangerously-skip-permissions)
 USER node
