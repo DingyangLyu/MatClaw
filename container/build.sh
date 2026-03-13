@@ -33,9 +33,16 @@ BUILD_ARGS=""
 
 if [ "$CUDA" = true ]; then
   TAG="${TAG:-cuda}"
+  # Runtime stage: CUDA runtime image + GPU PyTorch
   BUILD_ARGS="--build-arg BASE_IMAGE=nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04"
   BUILD_ARGS="$BUILD_ARGS --build-arg PYTORCH_INDEX=https://download.pytorch.org/whl/cu128"
+  # LAMMPS builder stage: CUDA devel image (has nvcc) + enable CUDA build
+  BUILD_ARGS="$BUILD_ARGS --build-arg CUDA_BUILDER_IMAGE=nvidia/cuda:12.8.1-devel-ubuntu24.04"
+  BUILD_ARGS="$BUILD_ARGS --build-arg ENABLE_CUDA=ON"
   echo "Building MatClaw agent container image (CUDA/GPU)..."
+  echo "  QE: CPU (CUDA Fortran requires NVHPC — use vasp-remote for GPU DFT)"
+  echo "  LAMMPS: KOKKOS/CUDA"
+  echo "  PyTorch/MACE/CHGNet: CUDA"
 else
   TAG="${TAG:-latest}"
   echo "Building MatClaw agent container image (CPU)..."
@@ -44,7 +51,13 @@ fi
 echo "Image: ${IMAGE_NAME}:${TAG}"
 echo ""
 
-${CONTAINER_RUNTIME} build ${BUILD_ARGS} -t "${IMAGE_NAME}:${TAG}" .
+# BUILD_NETWORK=host to use host networking (useful behind proxies)
+NETWORK_ARG=""
+if [ -n "$BUILD_NETWORK" ]; then
+  NETWORK_ARG="--network=${BUILD_NETWORK}"
+fi
+
+${CONTAINER_RUNTIME} build ${NETWORK_ARG} ${BUILD_ARGS} -t "${IMAGE_NAME}:${TAG}" .
 
 echo ""
 echo "Build complete!"

@@ -390,6 +390,25 @@ lines.append(f"    occupations  = 'smearing'")
 lines.append(f"    smearing     = 'cold'")
 lines.append(f"    degauss      = 0.01")
 
+# ── nbnd: MUST set explicitly for doped/substituted systems ──
+# Read z_valence from each UPF to compute total electrons
+import re as _re
+n_electrons = 0
+for el in species_list:
+    upf_path = os.path.join(PSEUDO_DIR, pseudo_map.get(el, f"{el}.UPF"))
+    if os.path.exists(upf_path):
+        with open(upf_path, 'r', errors='ignore') as _f:
+            header = _f.read(4000)
+        m = _re.search(r'z_valence\s*=\s*"?([\d.]+)', header)
+        zv = float(m.group(1)) if m else 0
+    else:
+        zv = 0
+    count = sum(1 for s in structure if str(s.specie) == el)
+    n_electrons += zv * count
+if n_electrons > 0:
+    nbnd = int(n_electrons / 2 * 1.2) + 4
+    lines.append(f"    nbnd         = {nbnd}")
+
 if SOC:
     lines.append(f"    noncolin     = .true.")
     lines.append(f"    lspinorb     = .true.")
@@ -1124,6 +1143,7 @@ with open(os.path.join(OUTPUT_DIR, "KPOINTS")) as f:
 | Smearing | `smearing`/`degauss` | `ISMEAR`/`SIGMA` | QE: 'cold'/0.01. VASP: 0/0.05 (insulator), 1/0.2 (metal). |
 | Ionic relaxation | `calculation='relax'` | `IBRION=2`, `NSW=200` | QE: 'relax' (ions) or 'vc-relax' (ions+cell). VASP: ISIF=2 (ions), ISIF=3 (ions+cell). |
 | Pseudopotentials | UPF files in pseudo_dir | POTCAR | QE: SSSP library. VASP: PAW_PBE recommended. |
+| Number of bands | `nbnd` | `NBANDS` | QE auto-sets to n_electrons/2 (+few). **For doped/substituted systems**, you MUST calculate `nbnd` manually: read `z_valence` from each UPF, sum total electrons, set `nbnd = int(n_electrons/2 * 1.2) + 4`. |
 
 ## Interpreting Results
 
@@ -1142,5 +1162,6 @@ with open(os.path.join(OUTPUT_DIR, "KPOINTS")) as f:
 | INCAR parameter conflict | METAGGA and GGA cannot be set simultaneously. Remove GGA when using SCAN/r2SCAN. |
 | Structure has wrong symmetry | Symmetrize first with `SpacegroupAnalyzer.get_refined_structure()`. Check `symprec`. |
 | Too many atoms for DFT | Use primitive cell (`get_primitive_standard_structure()`). Consider MACE for screening. |
+| QE `too few bands` for doped systems | Aliovalent doping changes total electron count (e.g., La³⁺→Na⁺ adds 2e). Read `z_valence` from each UPF header, sum for all atoms, set `nbnd = int(n_electrons/2 * 1.2) + 4`. |
 | QE input has ibrav != 0 | When using `ibrav=0`, provide CELL_PARAMETERS. pymatgen always uses `ibrav=0`. |
 | VASP POSCAR coordinate type | pymatgen writes direct (fractional) by default. Use `Poscar(structure, direct=False)` for Cartesian. |

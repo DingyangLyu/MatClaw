@@ -23,6 +23,18 @@ export function stopContainer(name: string): string {
   return `${CONTAINER_RUNTIME_BIN} stop ${name}`;
 }
 
+/** Kill a running container by name (fire-and-forget, ignores errors). */
+export function killContainer(name: string): void {
+  try {
+    execSync(`${CONTAINER_RUNTIME_BIN} kill ${name}`, {
+      stdio: 'pipe',
+      timeout: 10000,
+    });
+  } catch {
+    // Container may already be stopped — ignore
+  }
+}
+
 /** Ensure the container runtime is running, starting it if needed. */
 export function ensureContainerRuntimeRunning(): void {
   try {

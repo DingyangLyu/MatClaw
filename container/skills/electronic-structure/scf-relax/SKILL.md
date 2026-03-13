@@ -655,6 +655,7 @@ print("\nPlot saved: convergence_test.png")
 | `forc_conv_thr` | 1.0d-4 Ry/Bohr | Force convergence for relax/vc-relax |
 | `press_conv_thr` | 0.5 kbar | Pressure convergence for vc-relax |
 | `mixing_beta` | 0.3--0.7 | Charge mixing. Lower = more stable but slower. |
+| `nbnd` | auto or manual | Number of Kohn-Sham bands. QE auto-sets to n_electrons/2 (+ a few). **For doped/substituted systems, you MUST set this manually** — see Common Issues below. |
 
 ## Interpreting Results
 
@@ -674,3 +675,4 @@ print("\nPlot saved: convergence_test.png")
 | Negative frequencies after relax | Structure may be at a saddle point. Try breaking symmetry slightly and re-relaxing. |
 | Memory issues | Reduce `ecutwfc`, reduce k-points, or increase MPI ranks. Use `disk_io = 'low'`. |
 | Forces too large after "convergence" | The SCF converged but ionic relaxation did not. Run more BFGS steps or restart from the last geometry. |
+| `too few bands` error | Happens when aliovalent substitution changes the electron count (e.g., La³⁺ replacing Na⁺ adds 2 electrons). **Fix**: read each element's `z_valence` from its UPF header, sum across all atoms to get `n_electrons`, then set `nbnd = int(n_electrons / 2 * 1.2) + 4`. Always do this for doped/substituted supercells. |

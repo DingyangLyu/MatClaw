@@ -646,24 +646,35 @@ export async function runContainerAgent(
       logger.debug({ logFile, verbose: isVerbose }, 'Container log written');
 
       if (code !== 0) {
-        logger.error(
-          {
-            group: group.name,
-            code,
-            duration,
-            stderr,
-            stdout,
-            logFile,
-          },
-          'Container exited with error',
-        );
+        // 137 = SIGKILL (docker kill), 143 = SIGTERM — expected when /stop or /new is used
+        // 137 = SIGKILL (docker kill), 143 = SIGTERM — expected when /stop or /new is used
+        const isSignalKill = code === 137 || code === 143;
+        if (isSignalKill && hadStreamingOutput) {
+          logger.info(
+            { group: group.name, code, duration },
+            'Container killed after output was already captured — not an error',
+          );
+          // Fall through to success handling below
+        } else {
+          logger.error(
+            {
+              group: group.name,
+              code,
+              duration,
+              stderr,
+              stdout,
+              logFile,
+            },
+            'Container exited with error',
+          );
 
-        resolve({
-          status: 'error',
-          result: null,
-          error: `Container exited with code ${code}: ${stderr.slice(-200)}`,
-        });
-        return;
+          resolve({
+            status: 'error',
+            result: null,
+            error: `Container exited with code ${code}: ${stderr.slice(-200)}`,
+          });
+          return;
+        }
       }
 
       // Streaming mode: wait for output chain to settle, return completion marker

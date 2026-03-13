@@ -26,6 +26,8 @@ interface GroupState {
   containerName: string | null;
   groupFolder: string | null;
   retryCount: number;
+  /** Set by /new — prevents dying container from re-saving the old session */
+  sessionCleared: boolean;
 }
 
 export class GroupQueue {
@@ -50,6 +52,7 @@ export class GroupQueue {
         containerName: null,
         groupFolder: null,
         retryCount: 0,
+        sessionCleared: false,
       };
       this.groups.set(groupJid, state);
     }
@@ -184,6 +187,26 @@ export class GroupQueue {
   }
 
   /**
+   * Mark the session as cleared by /new. Prevents the dying container from
+   * re-saving the old session ID via streaming output callbacks, and blocks
+   * sendMessage() from piping new messages to the old container.
+   */
+  markSessionCleared(groupJid: string): void {
+    const state = this.getGroup(groupJid);
+    state.sessionCleared = true;
+    // Clear groupFolder so sendMessage() returns false immediately
+    state.groupFolder = null;
+  }
+
+  /**
+   * Check if the session was cleared by /new (dying container should not
+   * re-save its session ID).
+   */
+  isSessionCleared(groupJid: string): boolean {
+    return this.getGroup(groupJid).sessionCleared;
+  }
+
+  /**
    * Send a follow-up message to the active container via IPC file.
    * Returns true if the message was written, false if no active container.
    */
@@ -235,6 +258,7 @@ export class GroupQueue {
     state.idleWaiting = false;
     state.isTaskContainer = false;
     state.pendingMessages = false;
+    state.sessionCleared = false;
     this.activeCount++;
 
     logger.debug(

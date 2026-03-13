@@ -34,6 +34,7 @@ import {
   cleanupOrphans,
   ensureContainerRuntimeRunning,
   ensureImageAvailable,
+  killContainer,
 } from './container-runtime.js';
 import {
   getAllChats,
@@ -257,6 +258,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     const state = queue.getState(chatJid);
     if (state?.active && state.process) {
       state.process.kill('SIGTERM');
+      if (state.containerName) killContainer(state.containerName);
       logger.info({ group: group.name }, 'Agent stopped via /stop command');
       if (channel) {
         await channel.sendMessage(chatJid, 'Agent stopped.');
@@ -337,6 +339,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     if (sessions[group.folder]) {
       previousSessions[group.folder] = sessions[group.folder];
     }
+    queue.markSessionCleared(chatJid);
     delete sessions[group.folder];
     deleteSession(group.folder);
     lastAgentTimestamp[chatJid] =
@@ -570,10 +573,12 @@ async function runAgent(
     new Set(Object.keys(registeredGroups)),
   );
 
-  // Wrap onOutput to track session ID from streamed results
+  // Wrap onOutput to track session ID from streamed results.
+  // Skip saving if /new cleared the session (dying container's output
+  // must not re-save the old session ID).
   const wrappedOnOutput = onOutput
     ? async (output: ContainerOutput) => {
-        if (output.newSessionId) {
+        if (output.newSessionId && !queue.isSessionCleared(chatJid)) {
           sessions[group.folder] = output.newSessionId;
           setSession(group.folder, output.newSessionId);
         }
@@ -597,7 +602,7 @@ async function runAgent(
       wrappedOnOutput,
     );
 
-    if (output.newSessionId) {
+    if (output.newSessionId && !queue.isSessionCleared(chatJid)) {
       sessions[group.folder] = output.newSessionId;
       setSession(group.folder, output.newSessionId);
     }
@@ -636,6 +641,7 @@ async function handleControlCommand(
     const state = queue.getState(chatJid);
     if (state?.active && state.process) {
       state.process.kill('SIGTERM');
+      if (state.containerName) killContainer(state.containerName);
       logger.info({ group: group.name }, 'Agent stopped via /stop command');
       await channel.sendMessage(chatJid, 'Agent stopped.');
     } else {
@@ -648,7 +654,12 @@ async function handleControlCommand(
     // Stop running container first
     const state = queue.getState(chatJid);
     if (state?.active && state.process) {
+      // Mark session cleared BEFORE killing — prevents the dying container's
+      // output callbacks from re-saving the old session ID, and blocks
+      // sendMessage() from piping new messages to the old container.
+      queue.markSessionCleared(chatJid);
       state.process.kill('SIGTERM');
+      if (state.containerName) killContainer(state.containerName);
       logger.info({ group: group.name }, 'Agent stopped for /new command');
     }
     if (sessions[group.folder]) {
@@ -792,6 +803,7 @@ async function handleControlCommand(
     const state = queue.getState(chatJid);
     if (state?.active && state.process) {
       state.process.kill('SIGTERM');
+      if (state.containerName) killContainer(state.containerName);
       logger.info({ group: group.name }, 'Agent stopped for /resume command');
     }
 

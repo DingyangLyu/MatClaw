@@ -455,7 +455,7 @@ async function runQuery(
       allowedTools: [
         'Bash',
         'Read', 'Write', 'Edit', 'Glob', 'Grep',
-        'WebSearch', 'WebFetch',
+        ...(process.env.DISABLE_WEB_TOOLS === '1' ? [] : ['WebSearch', 'WebFetch']),
         'Task', 'TaskOutput', 'TaskStop',
         'TeamCreate', 'TeamDelete', 'SendMessage',
         'TodoWrite', 'ToolSearch', 'Skill',
