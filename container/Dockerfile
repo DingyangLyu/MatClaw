@@ -159,13 +159,18 @@ RUN apt-get update && apt-get install -y \
     python3 python3-pip python-is-python3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install RASPA3
-RUN wget -q https://github.com/iRASPA/RASPA3/releases/download/v3.0.16/raspa_3.0.16_amd64_ubuntu-24-core-avx2.deb -O /tmp/raspa3.deb && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends /tmp/raspa3.deb && \
-    rm /tmp/raspa3.deb && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install RASPA3 (amd64 only — no official arm64 release)
+RUN dpkgArch="$(dpkg --print-architecture)" && \
+    if [ "$dpkgArch" = "amd64" ]; then \
+      wget -q https://github.com/iRASPA/RASPA3/releases/download/v3.0.16/raspa_3.0.16_amd64_ubuntu-24-core-avx2.deb -O /tmp/raspa3.deb && \
+      apt-get update && \
+      apt-get install -y --no-install-recommends /tmp/raspa3.deb && \
+      rm /tmp/raspa3.deb && \
+      apt-get clean && \
+      rm -rf /var/lib/apt/lists/*; \
+    else \
+      echo "RASPA3: skipping (no arm64 release available, MC simulations will not work)"; \
+    fi
 
 # Copy Quantum ESPRESSO binaries from builder stage
 COPY --from=qe-builder /opt/qe/bin /opt/qe/bin
@@ -182,8 +187,14 @@ RUN if [ "$ENABLE_CUDA" = "ON" ]; then \
     fi
 ENV PATH="/opt/lammps/bin:$PATH"
 
-# Install Miniconda
-RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
+# Install Miniconda (auto-detect architecture)
+RUN dpkgArch="$(dpkg --print-architecture)" && \
+    if [ "$dpkgArch" = "amd64" ]; then \
+      CONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"; \
+    else \
+      CONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh"; \
+    fi && \
+    wget -q "$CONDA_URL" -O /tmp/miniconda.sh && \
     bash /tmp/miniconda.sh -b -p /opt/conda && \
     rm /tmp/miniconda.sh
 ENV PATH="/opt/conda/bin:$PATH"
