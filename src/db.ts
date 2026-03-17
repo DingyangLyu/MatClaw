@@ -181,12 +181,7 @@ function ensureDefaultWebChatThread(database: Database.Database): void {
       VALUES (?, ?, ?, ?, NULL, NULL)
     `,
     )
-    .run(
-      WEB_CHAT_DEFAULT_THREAD_ID,
-      'New chat',
-      now,
-      now,
-    );
+    .run(WEB_CHAT_DEFAULT_THREAD_ID, 'New chat', now, now);
 
   database
     .prepare(
@@ -408,7 +403,7 @@ export function getRecentMessages(
   limit = 100,
   threadId?: string,
 ): NewMessage[] {
-  const filters = ['chat_jid = ?', 'content != \'\'', 'content IS NOT NULL'];
+  const filters = ['chat_jid = ?', "content != ''", 'content IS NOT NULL'];
   const values: unknown[] = [chatJid];
   if (threadId) {
     filters.push('thread_id = ?');
@@ -678,7 +673,8 @@ export function touchWebChatThread(
   preview: string,
   timestamp: string,
 ): void {
-  const cleanPreview = preview.replace(/\s+/g, ' ').trim().slice(0, 160) || null;
+  const cleanPreview =
+    preview.replace(/\s+/g, ' ').trim().slice(0, 160) || null;
   const thread = getWebChatThread(threadId);
   if (!thread) return;
 
@@ -726,9 +722,10 @@ export function renameWebChatThread(
 }
 
 export function deleteWebChatThread(threadId: string): void {
-  db.prepare(
-    'DELETE FROM messages WHERE chat_jid = ? AND thread_id = ?',
-  ).run(WEB_CHAT_JID, threadId);
+  db.prepare('DELETE FROM messages WHERE chat_jid = ? AND thread_id = ?').run(
+    WEB_CHAT_JID,
+    threadId,
+  );
   db.prepare('DELETE FROM web_chat_threads WHERE id = ?').run(threadId);
 }
 

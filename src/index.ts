@@ -155,13 +155,21 @@ function getAgentCursorKey(chatJid: string, threadId?: string): string {
   return chatJid;
 }
 
-function deleteAndReplaceWebChatThread(threadId: string):
-  | { deletedThreadId: string; activeThreadId: string; activeSession: NonNullable<ReturnType<typeof getWebChatThread>> }
+function deleteAndReplaceWebChatThread(
+  threadId: string,
+):
+  | {
+      deletedThreadId: string;
+      activeThreadId: string;
+      activeSession: NonNullable<ReturnType<typeof getWebChatThread>>;
+    }
   | undefined {
   const target = getWebChatThread(threadId);
   if (!target) return undefined;
 
-  const existing = listWebChatThreads().filter((thread) => thread.id !== threadId);
+  const existing = listWebChatThreads().filter(
+    (thread) => thread.id !== threadId,
+  );
   let fallback = existing[0];
   if (!fallback) {
     fallback = createWebChatThread('New chat');
@@ -1049,12 +1057,12 @@ async function startMessageLoop(): Promise<void> {
 
           // Pull all messages since lastAgentTimestamp so non-trigger
           // context that accumulated between triggers is included.
-    const allPending = getMessagesSince(
-      chatJid,
-      lastAgentTimestamp[cursorKey] || '',
-      ASSISTANT_NAME,
-      activeThreadId,
-    );
+          const allPending = getMessagesSince(
+            chatJid,
+            lastAgentTimestamp[cursorKey] || '',
+            ASSISTANT_NAME,
+            activeThreadId,
+          );
           const messagesToSend =
             allPending.length > 0 ? allPending : scopedGroupMessages;
           const formatted = formatMessages(messagesToSend);
@@ -1245,7 +1253,8 @@ async function main(): Promise<void> {
     },
     renameSession: (threadId: string, title: string) =>
       renameWebChatThread(threadId, title),
-    deleteSession: (threadId: string) => deleteAndReplaceWebChatThread(threadId),
+    deleteSession: (threadId: string) =>
+      deleteAndReplaceWebChatThread(threadId),
   });
 }
 

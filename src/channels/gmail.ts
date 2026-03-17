@@ -313,7 +313,8 @@ export class GmailChannel implements Channel {
       msg.data.payload,
       mainGroup.folder,
     );
-    const attachmentText = attachmentRefs.length > 0 ? '\n' + attachmentRefs.join('\n') : '';
+    const attachmentText =
+      attachmentRefs.length > 0 ? '\n' + attachmentRefs.join('\n') : '';
 
     const content = `[Email from ${senderName} <${senderEmail}>]\nSubject: ${subject}\n\n${body}${attachmentText}`;
 
@@ -408,9 +409,15 @@ export class GmailChannel implements Channel {
         const isImage = (part.mimeType || '').startsWith('image/');
         const label = isImage ? 'image' : 'file';
         results.push(`[Attached ${label}: uploads/${safeName}]`);
-        logger.info({ filename: safeName, messageId }, 'Gmail: downloaded attachment');
+        logger.info(
+          { filename: safeName, messageId },
+          'Gmail: downloaded attachment',
+        );
       } catch (err) {
-        logger.warn({ filename: part.filename, messageId, err }, 'Gmail: failed to download attachment');
+        logger.warn(
+          { filename: part.filename, messageId, err },
+          'Gmail: failed to download attachment',
+        );
       }
     }
 

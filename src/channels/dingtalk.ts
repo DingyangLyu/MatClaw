@@ -302,7 +302,10 @@ export class DingTalkChannel implements Channel {
       const safeName = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_')}`;
       fs.writeFileSync(path.join(uploadDir, safeName), buffer);
 
-      logger.info({ filename: safeName, groupFolder }, 'DingTalk: downloaded media');
+      logger.info(
+        { filename: safeName, groupFolder },
+        'DingTalk: downloaded media',
+      );
       return `uploads/${safeName}`;
     } catch (err) {
       logger.error({ err, downloadCode }, 'DingTalk: failed to download media');
@@ -332,35 +335,56 @@ export class DingTalkChannel implements Channel {
 
     if (msgtype === 'picture' || msgtype === 'image') {
       try {
-        const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
-        downloadCode = parsed?.pictureDownloadCode || parsed?.downloadCode || '';
+        const parsed =
+          typeof data.content === 'string'
+            ? JSON.parse(data.content)
+            : data.content;
+        downloadCode =
+          parsed?.pictureDownloadCode || parsed?.downloadCode || '';
         mediaFilename = 'image.png';
         mediaType = 'image';
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       if (!downloadCode && data.picUrl) {
         content = `[Image: ${data.picUrl}]`;
       }
     } else if (msgtype === 'file') {
       try {
-        const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+        const parsed =
+          typeof data.content === 'string'
+            ? JSON.parse(data.content)
+            : data.content;
         downloadCode = parsed?.downloadCode || '';
         mediaFilename = parsed?.fileName || 'file';
         mediaType = 'file';
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     } else if (msgtype === 'video') {
       try {
-        const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+        const parsed =
+          typeof data.content === 'string'
+            ? JSON.parse(data.content)
+            : data.content;
         downloadCode = parsed?.downloadCode || '';
         mediaFilename = parsed?.fileName || 'video.mp4';
         mediaType = 'file';
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     } else if (msgtype === 'audio') {
       try {
-        const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+        const parsed =
+          typeof data.content === 'string'
+            ? JSON.parse(data.content)
+            : data.content;
         downloadCode = parsed?.downloadCode || '';
         mediaFilename = parsed?.fileName || 'audio.ogg';
         mediaType = 'file';
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     } else if (data.text?.content) {
       content = data.text.content.trim();
     }
@@ -388,7 +412,11 @@ export class DingTalkChannel implements Channel {
     if (groups[jid]) {
       // Download media attachment if present
       if (downloadCode && groups[jid].folder) {
-        const savedPath = await this.downloadMedia(downloadCode, mediaFilename, groups[jid].folder);
+        const savedPath = await this.downloadMedia(
+          downloadCode,
+          mediaFilename,
+          groups[jid].folder,
+        );
         if (savedPath) {
           const label = mediaType === 'image' ? 'image' : 'file';
           content = content

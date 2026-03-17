@@ -810,10 +810,16 @@ export class FeishuChannel implements Channel {
       });
 
       await (resp as any).writeFile(filePath);
-      logger.info({ messageId, fileKey, filePath }, 'Feishu: downloaded attachment');
+      logger.info(
+        { messageId, fileKey, filePath },
+        'Feishu: downloaded attachment',
+      );
       return `uploads/${safeName}`;
     } catch (err) {
-      logger.error({ messageId, fileKey, err }, 'Feishu: failed to download attachment');
+      logger.error(
+        { messageId, fileKey, err },
+        'Feishu: failed to download attachment',
+      );
       return null;
     }
   }
@@ -821,7 +827,10 @@ export class FeishuChannel implements Channel {
   private parseContent(
     rawContent: string,
     messageType: string,
-  ): { text: string; attachment?: { type: 'image' | 'file'; key: string; name: string } } {
+  ): {
+    text: string;
+    attachment?: { type: 'image' | 'file'; key: string; name: string };
+  } {
     try {
       const parsed = JSON.parse(rawContent);
       switch (messageType) {
@@ -853,22 +862,38 @@ export class FeishuChannel implements Channel {
         case 'image':
           return {
             text: '<media:image>',
-            attachment: { type: 'image', key: parsed.image_key || '', name: 'image.png' },
+            attachment: {
+              type: 'image',
+              key: parsed.image_key || '',
+              name: 'image.png',
+            },
           };
         case 'file':
           return {
             text: `<media:file:${parsed.file_name || 'unknown'}>`,
-            attachment: { type: 'file', key: parsed.file_key || '', name: parsed.file_name || 'file' },
+            attachment: {
+              type: 'file',
+              key: parsed.file_key || '',
+              name: parsed.file_name || 'file',
+            },
           };
         case 'audio':
           return {
             text: '<media:audio>',
-            attachment: { type: 'file', key: parsed.file_key || '', name: parsed.file_name || 'audio.ogg' },
+            attachment: {
+              type: 'file',
+              key: parsed.file_key || '',
+              name: parsed.file_name || 'audio.ogg',
+            },
           };
         case 'video':
           return {
             text: '<media:video>',
-            attachment: { type: 'file', key: parsed.file_key || '', name: parsed.file_name || 'video.mp4' },
+            attachment: {
+              type: 'file',
+              key: parsed.file_key || '',
+              name: parsed.file_name || 'video.mp4',
+            },
           };
         case 'sticker':
           return { text: '<media:sticker>' };

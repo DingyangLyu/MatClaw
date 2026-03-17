@@ -143,14 +143,26 @@ export class WebChannel implements Channel {
       };
       setRegisteredGroup(WEB_JID, group);
       // Create chats row (FK target for messages table)
-      storeChatMetadata(WEB_JID, new Date().toISOString(), 'Web Chat', 'web', false);
+      storeChatMetadata(
+        WEB_JID,
+        new Date().toISOString(),
+        'Web Chat',
+        'web',
+        false,
+      );
       // Also update in-memory map so message loop can find this group
       groups[WEB_JID] = group;
       logger.info('Web channel: registered web_chat group');
     }
 
     // Ensure chats row exists (FK target for messages table) — idempotent
-    storeChatMetadata(WEB_JID, new Date().toISOString(), 'Web Chat', 'web', false);
+    storeChatMetadata(
+      WEB_JID,
+      new Date().toISOString(),
+      'Web Chat',
+      'web',
+      false,
+    );
 
     this.connected = true;
     logger.info('Web channel connected');

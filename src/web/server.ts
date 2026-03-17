@@ -25,11 +25,13 @@ interface WebChatController {
   createSession(): WebChatThread;
   switchSession(threadId: string): WebChatThread | undefined;
   renameSession(threadId: string, title: string): WebChatThread | undefined;
-  deleteSession(threadId: string): {
-    deletedThreadId: string;
-    activeThreadId: string;
-    activeSession: WebChatThread;
-  } | undefined;
+  deleteSession(threadId: string):
+    | {
+        deletedThreadId: string;
+        activeThreadId: string;
+        activeSession: WebChatThread;
+      }
+    | undefined;
 }
 
 function broadcast(event: AgentEvent) {
@@ -406,7 +408,9 @@ export function startDashboard(
       }
 
       let body = '';
-      req.on('data', (chunk) => { body += chunk; });
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
       req.on('end', () => {
         try {
           const { threadId } = JSON.parse(body);
@@ -444,7 +448,9 @@ export function startDashboard(
       }
 
       let body = '';
-      req.on('data', (chunk) => { body += chunk; });
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
       req.on('end', () => {
         try {
           const { threadId, title } = JSON.parse(body);
@@ -455,7 +461,9 @@ export function startDashboard(
             typeof title !== 'string'
           ) {
             res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Missing threadId or title field' }));
+            res.end(
+              JSON.stringify({ error: 'Missing threadId or title field' }),
+            );
             return;
           }
           const thread = webChatController.renameSession(threadId, title);
@@ -482,7 +490,9 @@ export function startDashboard(
       }
 
       let body = '';
-      req.on('data', (chunk) => { body += chunk; });
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
       req.on('end', () => {
         try {
           const { threadId } = JSON.parse(body);
@@ -527,7 +537,9 @@ export function startDashboard(
         return;
       }
       // Sanitize filename
-      const safeName = path.basename(filename).replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_');
+      const safeName = path
+        .basename(filename)
+        .replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_');
       const uniqueName = `${Date.now()}_${safeName}`;
       const uploadDir = path.join(GROUPS_DIR, 'web_chat', 'uploads');
       fs.mkdirSync(uploadDir, { recursive: true });
@@ -554,7 +566,9 @@ export function startDashboard(
         if (aborted) return;
         fs.writeFileSync(filePath, Buffer.concat(chunks));
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ path: `uploads/${uniqueName}`, filename: safeName }));
+        res.end(
+          JSON.stringify({ path: `uploads/${uniqueName}`, filename: safeName }),
+        );
       });
       return;
     }
@@ -562,7 +576,9 @@ export function startDashboard(
     // ── API: Chat send (POST fallback for non-WS clients) ──
     if (url.pathname === '/api/chat/send' && req.method === 'POST') {
       let body = '';
-      req.on('data', (chunk) => { body += chunk; });
+      req.on('data', (chunk) => {
+        body += chunk;
+      });
       req.on('end', () => {
         try {
           const { text, threadId } = JSON.parse(body);
@@ -571,11 +587,7 @@ export function startDashboard(
             res.end(JSON.stringify({ error: 'Missing text field' }));
             return;
           }
-          if (
-            threadId &&
-            typeof threadId === 'string' &&
-            webChatController
-          ) {
+          if (threadId && typeof threadId === 'string' && webChatController) {
             webChatController.switchSession(threadId);
           }
           if (channelOpts) {
@@ -637,11 +649,12 @@ export function startDashboard(
     ws.on('message', (raw) => {
       try {
         const msg = JSON.parse(String(raw));
-        if (msg.type === 'chat:send' && typeof msg.text === 'string' && channelOpts) {
-          if (
-            typeof msg.threadId === 'string' &&
-            webChatController
-          ) {
+        if (
+          msg.type === 'chat:send' &&
+          typeof msg.text === 'string' &&
+          channelOpts
+        ) {
+          if (typeof msg.threadId === 'string' && webChatController) {
             webChatController.switchSession(msg.threadId);
           }
           handleWebChatMessage(
