@@ -863,18 +863,29 @@ export function startDashboard(
   // Forward all agent events to WebSocket clients
   agentEvents.on('agent', broadcast);
 
-  server.on('error', (err: NodeJS.ErrnoException) => {
-    if (err.code === 'EADDRINUSE') {
-      logger.warn({ port: PORT }, `Dashboard port ${PORT} already in use — skipping. Kill the existing process or use a different port.`);
-    } else {
-      logger.error({ err }, 'Dashboard server error');
-    }
-  });
+  let currentPort = PORT;
+  const MAX_PORT_ATTEMPTS = 10;
 
-  server.listen(PORT, () => {
-    logger.info(
-      { port: PORT },
-      `Dashboard running at http://localhost:${PORT}`,
-    );
-  });
+  const tryListen = (attempt: number) => {
+    server.once('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'EADDRINUSE' && attempt < MAX_PORT_ATTEMPTS) {
+        currentPort++;
+        logger.info({ port: currentPort }, `Port ${currentPort - 1} in use, trying ${currentPort}`);
+        tryListen(attempt + 1);
+      } else if (err.code === 'EADDRINUSE') {
+        logger.warn(`All ports ${PORT}-${currentPort} in use — dashboard disabled`);
+      } else {
+        logger.error({ err }, 'Dashboard server error');
+      }
+    });
+
+    server.listen(currentPort, () => {
+      logger.info(
+        { port: currentPort },
+        `Dashboard running at http://localhost:${currentPort}`,
+      );
+    });
+  };
+
+  tryListen(0);
 }
