@@ -72,10 +72,10 @@ echo "Image: ${IMAGE_NAME}:${TAG}"
 if [ "$SMOKE_TEST" = true ]; then
   echo ""
   echo "Running smoke test..."
-  ${CONTAINER_RUNTIME} run --rm \
+  ${CONTAINER_RUNTIME} run --rm --entrypoint python3 \
     -v "${SCRIPT_DIR}/smoke-test.py:/tmp/smoke-test.py:ro" \
     "${IMAGE_NAME}:${TAG}" \
-    python3 /tmp/smoke-test.py
+    /tmp/smoke-test.py
 fi
 
 if [ "$CUDA" = true ]; then

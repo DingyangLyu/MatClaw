@@ -43,7 +43,14 @@ export function readEnvFile(keys: string[]): Record<string, string> {
   // from Claude Code's credentials file (~/.claude/.credentials.json).
   // This lets developers use their Claude Max/Pro subscription without
   // manually copying tokens, while distributed users just set API keys.
-  if (!result.ANTHROPIC_API_KEY && !result.CLAUDE_CODE_OAUTH_TOKEN) {
+  // Check the raw file content (not just the result) — callers may not
+  // request ANTHROPIC_API_KEY but it could still be set in .env.
+  const hasApiKey =
+    result.ANTHROPIC_API_KEY || /^ANTHROPIC_API_KEY=.+/m.test(content);
+  const hasOAuthToken =
+    result.CLAUDE_CODE_OAUTH_TOKEN ||
+    /^CLAUDE_CODE_OAUTH_TOKEN=.+/m.test(content);
+  if (!hasApiKey && !hasOAuthToken) {
     const token = readClaudeOAuthToken();
     if (token) {
       result.CLAUDE_CODE_OAUTH_TOKEN = token;

@@ -62,10 +62,10 @@ jobs:
 
       - name: Smoke test
         run: |
-          docker run --rm \
+          docker run --rm --entrypoint python3 \
             -v "${{ github.workspace }}/container/smoke-test.py:/tmp/smoke-test.py:ro" \
             matclaw-agent:smoke-test \
-            python3 /tmp/smoke-test.py
+            /tmp/smoke-test.py
 
       - name: Push image
         uses: docker/build-push-action@v6

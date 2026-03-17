@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Mock config
 vi.mock('./config.js', () => ({
   CONTAINER_IMAGE: 'matclaw-agent:latest',
-  CONTAINER_IMAGE_REMOTE: 'ghcr.io/dingyangLyu/matclaw-agent:latest',
+  CONTAINER_IMAGE_REMOTE: 'ghcr.io/dingyanglyu/matclaw-agent:latest',
 }));
 
 // Mock logger
@@ -113,12 +113,12 @@ describe('ensureImageAvailable', () => {
     expect(mockExecSync).toHaveBeenCalledTimes(3);
     expect(mockExecSync).toHaveBeenNthCalledWith(
       2,
-      `${CONTAINER_RUNTIME_BIN} pull ghcr.io/dingyangLyu/matclaw-agent:latest`,
+      `${CONTAINER_RUNTIME_BIN} pull ghcr.io/dingyanglyu/matclaw-agent:latest`,
       expect.objectContaining({ timeout: 600000 }),
     );
     expect(mockExecSync).toHaveBeenNthCalledWith(
       3,
-      `${CONTAINER_RUNTIME_BIN} tag ghcr.io/dingyangLyu/matclaw-agent:latest matclaw-agent:latest`,
+      `${CONTAINER_RUNTIME_BIN} tag ghcr.io/dingyanglyu/matclaw-agent:latest matclaw-agent:latest`,
       expect.objectContaining({ timeout: 10000 }),
     );
     expect(logger.info).toHaveBeenCalledWith(

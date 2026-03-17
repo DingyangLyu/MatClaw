@@ -73,15 +73,17 @@ Run `npx tsx setup/index.ts --step container -- --runtime <chosen>` and parse th
 
 **If TEST_OK=false but BUILD_OK=true:** The image built but won't run. Check logs — common cause is runtime not fully started. Wait a moment and retry the test.
 
-## 4. Claude Authentication (No Script)
+## 4. API Configuration
 
-If HAS_ENV=true from step 2, read `.env` and check for `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY`. If present, confirm with user: keep or reconfigure?
+Run `npx tsx setup/index.ts --step configure-api` and parse the status block.
 
-AskUserQuestion: Claude subscription (Pro/Max) vs Anthropic API key?
+The interactive wizard handles provider selection (34 providers: Anthropic, Gemini, OpenAI, DeepSeek, Qwen, GLM, Kimi, and more), API key input with validation, and `.env` updates. If the user already has keys configured (detected from `.env` or Claude OAuth), the wizard will show the current config and offer to keep or reconfigure.
 
-**Subscription:** Tell user to run `claude setup-token` in another terminal, copy the token, add `CLAUDE_CODE_OAUTH_TOKEN=<token>` to `.env`. Do NOT collect the token in chat.
+**If STATUS=ok:** API configured. Continue to step 5.
 
-**API key:** Tell user to add `ANTHROPIC_API_KEY=<key>` to `.env`.
+**If STATUS=failed:**
+- ERROR contains "validation" → API key is invalid. Re-run the step.
+- ERROR contains "non_interactive" → Not running interactively. Tell the user to run `npm run setup:api` in a terminal.
 
 ## 5. Set Up Channels
 

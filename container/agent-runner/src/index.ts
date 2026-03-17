@@ -157,6 +157,10 @@ async function createEngine(): Promise<AgentEngine> {
       const { CodexEngine } = await import('./engines/codex.js');
       return new CodexEngine();
     }
+    case 'gemini':
+      throw new Error(
+        'Gemini engine is not yet implemented. Use claude or codex for now.',
+      );
     case 'claude':
     default: {
       const { ClaudeEngine } = await import('./engines/claude.js');

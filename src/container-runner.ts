@@ -281,6 +281,8 @@ function readSecrets(): Record<string, string> {
     'OPENAI_API_KEY',
     'OPENAI_BASE_URL',
     'CODEX_MODEL',
+    // Gemini
+    'GOOGLE_API_KEY',
     // Shared
     'MP_API_KEY',
   ]);

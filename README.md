@@ -296,15 +296,15 @@ Benchmark tasks adapted from [QUASAR](https://github.com/fengxuyy/QUASAR). All e
 **Option A — Pull pre-built image (recommended):**
 
 ```bash
-docker pull ghcr.io/dingyangLyu/matclaw-agent:latest
-docker tag ghcr.io/dingyangLyu/matclaw-agent:latest matclaw-agent:latest
+docker pull ghcr.io/dingyanglyu/matclaw-agent:latest
+docker tag ghcr.io/dingyanglyu/matclaw-agent:latest matclaw-agent:latest
 ```
 
 For GPU support:
 
 ```bash
-docker pull ghcr.io/dingyangLyu/matclaw-agent:cuda
-docker tag ghcr.io/dingyangLyu/matclaw-agent:cuda matclaw-agent:cuda
+docker pull ghcr.io/dingyanglyu/matclaw-agent:cuda
+docker tag ghcr.io/dingyanglyu/matclaw-agent:cuda matclaw-agent:cuda
 ```
 
 **Option B — Build from source:**
@@ -504,11 +504,12 @@ matclaw/
 | [Architecture Spec](docs/SPEC.md) | Full system architecture and design |
 | [Security Model](docs/SECURITY.md) | Container isolation and trust model |
 | [Requirements](docs/REQUIREMENTS.md) | Original requirements and design decisions |
+| [Troubleshooting](docs/troubleshooting.md) | Docker build, WSL, runtime, channel, and computation issues |
 | [Feishu Setup](docs/feishu-setup.md) | Feishu channel configuration guide |
 | [DingTalk Setup](docs/dingtalk-setup.md) | DingTalk channel configuration guide |
 | [Gmail Setup](docs/gmail-setup.md) | Gmail channel configuration guide |
 | [SDK Deep Dive](docs/SDK_DEEP_DIVE.md) | Claude Agent SDK internals |
-| [Materials Compute Skills](docs/materials-compute-skills.md) | Full inventory of 221 built-in computation skills |
+| [Materials Compute Skills](docs/materials-compute-skills.md) | Full inventory of 240 built-in skills |
 | [VASP Integration](docs/vasp-integration.md) | Connect your VASP installation (SSH or local) |
 | [Creating Skills](docs/creating-skills.md) | How to create a new skill (template included) |
 | [Skills Architecture](docs/nanorepo-architecture.md) | How the skill system works (internals) |

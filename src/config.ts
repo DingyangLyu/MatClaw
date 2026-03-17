@@ -48,7 +48,7 @@ export const STORE_DIR = path.resolve(PROJECT_ROOT, 'store');
 export const GROUPS_DIR = path.resolve(PROJECT_ROOT, 'groups');
 export const DATA_DIR = path.resolve(PROJECT_ROOT, 'data');
 
-// Agent engine: 'claude' (default) or 'codex' (any OpenAI-compatible API)
+// Agent engine: 'claude' (default), 'codex' (OpenAI-compatible), or 'gemini'
 export const AGENT_ENGINE =
   process.env.AGENT_ENGINE || envConfig.AGENT_ENGINE || 'claude';
 
@@ -63,7 +63,7 @@ export const CONTAINER_IMAGE =
   envConfig.CONTAINER_IMAGE ||
   'matclaw-agent:latest';
 export const CONTAINER_IMAGE_REMOTE =
-  'ghcr.io/dingyangLyu/matclaw-agent:latest';
+  'ghcr.io/dingyanglyu/matclaw-agent:latest';
 export const CONTAINER_GPU =
   (process.env.CONTAINER_GPU || envConfig.CONTAINER_GPU || '').toLowerCase() ===
   'true';
