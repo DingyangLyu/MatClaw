@@ -874,7 +874,7 @@ export function startDashboard(
           { port: currentPort },
           `Port ${currentPort - 1} in use, trying ${currentPort}`,
         );
-        tryListen(attempt + 1);
+        server.close(() => tryListen(attempt + 1));
       } else if (err.code === 'EADDRINUSE') {
         logger.warn(
           `All ports ${PORT}-${currentPort} in use — dashboard disabled`,
