@@ -48,7 +48,27 @@ jobs:
           echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-      - uses: docker/build-push-action@v6
+      - name: Build image (load locally for smoke test)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./container
+          load: true
+          tags: matclaw-agent:smoke-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BASE_IMAGE=ubuntu:24.04
+            PYTORCH_INDEX=https://download.pytorch.org/whl/cpu
+
+      - name: Smoke test
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}/container/smoke-test.py:/tmp/smoke-test.py:ro" \
+            matclaw-agent:smoke-test \
+            python3 /tmp/smoke-test.py
+
+      - name: Push image
+        uses: docker/build-push-action@v6
         with:
           context: ./container
           push: true

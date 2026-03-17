@@ -19,14 +19,28 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Bump patch version
+      - name: Bump to calendar version
         run: |
-          npm version patch --no-git-tag-version
+          # Calendar versioning: YYYY.M.D, with -N suffix for same-day bumps
+          TODAY=$(date -u +"%Y.%-m.%-d")
+          CURRENT=$(node -p "require('./package.json').version")
+
+          if [[ "$CURRENT" == "$TODAY" ]]; then
+            # Same day, first collision → append -1
+            NEW="${TODAY}-1"
+          elif [[ "$CURRENT" == "${TODAY}-"* ]]; then
+            # Already has suffix, increment it
+            SUFFIX="${CURRENT##*-}"
+            NEW="${TODAY}-$((SUFFIX + 1))"
+          else
+            NEW="$TODAY"
+          fi
+
+          npm version "$NEW" --no-git-tag-version
           git add package.json package-lock.json
           git diff --cached --quiet && exit 0
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          VERSION=$(node -p "require('./package.json').version")
-          git commit -m "chore: bump version to $VERSION"
+          git commit -m "chore: bump version to $NEW"
           git pull --rebase
           git push

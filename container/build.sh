@@ -4,6 +4,7 @@
 # Usage:
 #   ./build.sh              # Build CPU image (matclaw-agent:latest)
 #   ./build.sh --cuda       # Build CUDA/GPU image (matclaw-agent:cuda)
+#   ./build.sh --smoke-test # Build CPU image and run smoke test
 #   ./build.sh v1.0         # Build CPU image with custom tag
 #   ./build.sh v1.0 --cuda  # Build CUDA/GPU image with custom tag
 
@@ -16,12 +17,16 @@ IMAGE_NAME="matclaw-agent"
 CONTAINER_RUNTIME="${CONTAINER_RUNTIME:-docker}"
 TAG=""
 CUDA=false
+SMOKE_TEST=false
 
 # Parse arguments
 for arg in "$@"; do
   case "$arg" in
     --cuda)
       CUDA=true
+      ;;
+    --smoke-test)
+      SMOKE_TEST=true
       ;;
     *)
       TAG="$arg"
@@ -62,6 +67,16 @@ ${CONTAINER_RUNTIME} build ${NETWORK_ARG} ${BUILD_ARGS} -t "${IMAGE_NAME}:${TAG}
 echo ""
 echo "Build complete!"
 echo "Image: ${IMAGE_NAME}:${TAG}"
+
+# Run smoke test if requested
+if [ "$SMOKE_TEST" = true ]; then
+  echo ""
+  echo "Running smoke test..."
+  ${CONTAINER_RUNTIME} run --rm \
+    -v "${SCRIPT_DIR}/smoke-test.py:/tmp/smoke-test.py:ro" \
+    "${IMAGE_NAME}:${TAG}" \
+    python3 /tmp/smoke-test.py
+fi
 
 if [ "$CUDA" = true ]; then
   echo ""
