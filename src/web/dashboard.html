@@ -147,9 +147,9 @@
   .chat-sidebar {
     display: none;
     flex: 1;
-    padding: 16px 14px 18px;
+    padding: 0;
     overflow-y: auto;
-    gap: 12px;
+    gap: 0;
   }
   .chat-sidebar.show {
     display: flex;
@@ -159,14 +159,31 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 6px;
+    padding: 14px 16px 8px;
   }
   .chat-sidebar-title {
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    font-weight: 600;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
     color: var(--text-muted);
+    padding: 0;
+  }
+  .chat-session-search {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    background: var(--bg-input);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    outline: none;
+  }
+  .chat-session-search:focus {
+    border-color: rgba(99,102,241,0.24);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.10);
   }
   .sb-section-label {
     font-size: 11px; font-weight: 600; text-transform: uppercase;
@@ -214,7 +231,7 @@
   .sb-hist-size { font-size: 11px; font-family: var(--font-mono); }
 
   /* ─── Content ─── */
-  .content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .content { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   .toolbar {
     padding: 8px 20px; background: var(--bg-surface);
     border-bottom: 1px solid var(--border);
@@ -926,7 +943,10 @@
   /* ─── Chat Mode ─── */
   .chat-container {
     display: none;
+    flex: 1;
+    min-height: 0;
     height: 100%;
+    overflow: hidden;
     padding: 24px 28px 30px;
     background:
       radial-gradient(circle at top left, rgba(6,182,212,0.10), transparent 26%),
@@ -936,6 +956,8 @@
   .chat-container.active { display: flex; }
   .chat-stage {
     width: min(1120px, 100%);
+    min-height: 0;
+    flex: 1;
     height: 100%;
     margin: 0 auto;
     display: flex;
@@ -1099,18 +1121,19 @@
     color: var(--text-muted);
   }
   .chat-session-new {
-    border: 0;
-    border-radius: 999px;
-    padding: 8px 12px;
-    background: rgba(99,102,241,0.12);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    background: var(--bg-surface);
     color: var(--accent);
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
+    font-family: var(--font-sans);
     cursor: pointer;
+    transition: all 0.15s;
   }
   .chat-sidebar .chat-session-new {
     width: 100%;
-    justify-content: center;
   }
   .chat-session-list {
     display: flex;
@@ -1122,8 +1145,8 @@
     flex-direction: column;
     overflow-x: visible;
     overflow-y: auto;
-    padding-bottom: 0;
-    padding-right: 4px;
+    padding: 4px 8px 8px;
+    gap: 2px;
   }
   .chat-session-item {
     appearance: none;
@@ -1142,6 +1165,21 @@
     min-width: 0;
     max-width: none;
     width: 100%;
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+  .chat-sidebar .chat-session-item:hover {
+    transform: none;
+    box-shadow: none;
+    background: var(--bg-surface-hover);
+  }
+  .chat-sidebar .chat-session-item.active {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0;
   }
   .chat-session-item:hover {
     transform: translateY(-1px);
@@ -1157,7 +1195,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   .chat-session-item-actions {
     display: inline-flex;
@@ -1178,6 +1216,10 @@
     cursor: pointer;
     font-size: 13px;
   }
+  .chat-session-action.pin.active {
+    background: rgba(99,102,241,0.12);
+    color: var(--accent);
+  }
   .chat-session-action:hover {
     background: rgba(99,102,241,0.12);
     color: var(--accent);
@@ -1187,7 +1229,7 @@
     color: var(--red);
   }
   .chat-session-item-title {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--text-primary);
     overflow: hidden;
@@ -1201,24 +1243,24 @@
     flex-shrink: 0;
   }
   .chat-session-item-preview {
-    font-size: 12px;
-    line-height: 1.5;
+    font-size: 11px;
+    line-height: 1.45;
     color: var(--text-secondary);
-    min-height: 36px;
+    min-height: 30px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
   .chat-session-item-meta {
-    margin-top: 10px;
+    margin-top: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
   }
   .chat-session-count {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-muted);
   }
   .chat-session-badge {
@@ -1233,6 +1275,422 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+  .chat-inline-run {
+    display: none !important;
+  }
+  .chat-inline-run-DISABLED {
+    display: none;
+    width: min(880px, 100%);
+    margin: 0 auto 10px;
+    padding: 14px 16px;
+    border-radius: 22px;
+    background: rgba(255,255,255,0.88);
+    border: 1px solid rgba(99,102,241,0.12);
+    box-shadow: var(--shadow-sm);
+  }
+  .chat-inline-run.show { display: block; }
+  .chat-inline-run-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .chat-inline-run-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .chat-inline-run-status {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+  .chat-inline-run-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .chat-run-item {
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(248,250,252,0.88);
+    border: 1px solid rgba(148,163,184,0.12);
+  }
+  .chat-run-item.kind-thinking {
+    background: rgba(255,251,235,0.92);
+    border-color: rgba(245,158,11,0.14);
+  }
+  .chat-run-item.kind-tool {
+    background: rgba(236,254,255,0.92);
+    border-color: rgba(6,182,212,0.14);
+  }
+  .chat-run-item.kind-result {
+    background: rgba(240,253,244,0.92);
+    border-color: rgba(16,185,129,0.14);
+  }
+  .chat-run-item.kind-error {
+    background: rgba(254,242,242,0.94);
+    border-color: rgba(239,68,68,0.14);
+  }
+  .chat-run-item-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .chat-run-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: var(--font-mono);
+    background: rgba(99,102,241,0.12);
+    color: var(--accent);
+  }
+  .chat-run-item.kind-tool .chat-run-pill {
+    background: rgba(6,182,212,0.12);
+    color: var(--cyan);
+  }
+  .chat-run-item.kind-thinking .chat-run-pill {
+    background: rgba(245,158,11,0.14);
+    color: #9a6700;
+  }
+  .chat-run-item.kind-result .chat-run-pill {
+    background: rgba(16,185,129,0.14);
+    color: var(--green-dark);
+  }
+  .chat-run-item.kind-error .chat-run-pill {
+    background: rgba(239,68,68,0.14);
+    color: var(--red);
+  }
+  .chat-run-item-text {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .workspace-shell {
+    display: flex;
+    gap: 18px;
+    min-height: 0;
+    flex: 1;
+  }
+  .chat-main {
+    min-width: 0;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .workspace-rail {
+    width: 340px;
+    flex-shrink: 0;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+  body.workspace-mode .workspace-rail {
+    display: flex;
+  }
+  body.workspace-mode .chat-stage {
+    width: min(1480px, 100%);
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    gap: 14px;
+    display: flex;
+    flex-direction: column;
+  }
+  body.workspace-mode .workspace-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 20px;
+    min-height: 0;
+    flex: 1;
+    align-items: stretch;
+    overflow: hidden;
+  }
+  body.workspace-mode .chat-main {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+  body.workspace-mode .chat-header {
+    align-items: center;
+    padding: 0 2px 2px;
+    gap: 14px;
+  }
+  body.workspace-mode .chat-header-copy {
+    min-width: 0;
+    flex: 1;
+  }
+  body.workspace-mode .chat-brand {
+    gap: 12px;
+    margin-bottom: 0;
+  }
+  body.workspace-mode .chat-brand-mark {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+  }
+  body.workspace-mode .chat-brand-text {
+    gap: 4px;
+    min-width: 0;
+  }
+  body.workspace-mode .chat-kicker {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+  body.workspace-mode .chat-title {
+    font-size: 18px;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+  }
+  body.workspace-mode .chat-subtitle {
+    display: none;
+  }
+  body.workspace-mode .chat-header {
+    display: none;
+  }
+  body.workspace-mode .chat-status-card {
+    min-width: 260px;
+    max-width: 320px;
+    padding: 12px 14px;
+  }
+  body.workspace-mode .chat-status-label {
+    margin-bottom: 6px;
+  }
+  body.workspace-mode .chat-status-value {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  body.workspace-mode .chat-status-meta {
+    font-size: 11px;
+    margin-top: 6px;
+  }
+  body.workspace-mode .chat-inline-run,
+  body.workspace-mode .chat-composer {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  body.workspace-mode .chat-inline-run {
+    margin-bottom: 8px;
+  }
+  body.workspace-mode .chat-messages {
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 2px 4px;
+  }
+  body.workspace-mode .chat-thread {
+    width: min(980px, 100%);
+    margin: 0;
+  }
+  body.workspace-mode .chat-bubble {
+    max-width: min(920px, calc(100% - 60px));
+  }
+  body.workspace-mode .chat-composer {
+    position: relative;
+    z-index: 4;
+    flex-shrink: 0;
+    padding: 12px;
+    border-radius: 20px;
+    box-shadow: 0 16px 32px rgba(15,23,42,0.08);
+  }
+  body.workspace-mode .workspace-rail {
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  body.workspace-mode .workspace-panel {
+    border-radius: 14px;
+  }
+  body.workspace-mode .workspace-panel-head {
+    padding: 8px 12px;
+  }
+  body.workspace-mode .workspace-panel-body {
+    padding: 8px 12px;
+  }
+  body.workspace-mode .workspace-run-list,
+  body.workspace-mode .workspace-artifact-list,
+  body.workspace-mode .workspace-transcript-list {
+    max-height: 180px;
+  }
+  body.workspace-mode .workspace-transcript-preview {
+    max-height: 160px;
+  }
+  .workspace-panel {
+    background: rgba(255,255,255,0.88);
+    border: 1px solid rgba(148,163,184,0.14);
+    border-radius: 22px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .workspace-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(248,250,252,0.9);
+    border-bottom: 1px solid rgba(148,163,184,0.10);
+  }
+  .workspace-panel-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .workspace-panel-body {
+    padding: 10px 14px;
+  }
+  .workspace-empty {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .workspace-run-list,
+  .workspace-artifact-list,
+  .workspace-transcript-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .workspace-run-item,
+  .workspace-artifact-item,
+  .workspace-transcript-item {
+    padding: 12px;
+    border-radius: 16px;
+    background: rgba(248,250,252,0.86);
+    border: 1px solid rgba(148,163,184,0.12);
+  }
+  .workspace-run-item.kind-tool {
+    background: rgba(236,254,255,0.92);
+    border-color: rgba(6,182,212,0.14);
+  }
+  .workspace-run-item.kind-thinking {
+    background: rgba(255,251,235,0.92);
+    border-color: rgba(245,158,11,0.14);
+  }
+  .workspace-run-item.kind-result {
+    background: rgba(240,253,244,0.92);
+    border-color: rgba(16,185,129,0.14);
+  }
+  .workspace-run-item.kind-error {
+    background: rgba(254,242,242,0.94);
+    border-color: rgba(239,68,68,0.14);
+  }
+  .workspace-artifact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .workspace-artifact-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .workspace-artifact-group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 2px;
+  }
+  .workspace-artifact-group-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .workspace-artifact-group-count {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+  .workspace-artifact-thumb {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: rgba(255,255,255,0.96);
+    border: 1px solid rgba(148,163,184,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+  }
+  .workspace-artifact-meta,
+  .workspace-transcript-meta {
+    min-width: 0;
+    flex: 1;
+  }
+  .workspace-artifact-name,
+  .workspace-transcript-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .workspace-artifact-sub,
+  .workspace-transcript-sub {
+    margin-top: 3px;
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .workspace-artifact-open,
+  .workspace-transcript-open {
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 10px;
+    background: rgba(99,102,241,0.12);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .workspace-transcript-preview {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(148,163,184,0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .workspace-transcript-entry {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(248,250,252,0.86);
   }
   .chat-row {
     display: flex;
@@ -1291,6 +1749,48 @@
     border-bottom-left-radius: 6px;
     box-shadow: 0 14px 36px rgba(15,23,42,0.06);
     backdrop-filter: blur(12px);
+  }
+  .chat-trace-toggle {
+    margin-top: 12px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid rgba(99,102,241,0.14);
+    border-radius: 14px;
+    background: rgba(238,242,255,0.72);
+    color: #4338ca;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .chat-trace-toggle:hover {
+    background: rgba(224,231,255,0.78);
+  }
+  .chat-trace-toggle-meta {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+  .chat-trace-panel {
+    display: none;
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 16px;
+    background: rgba(248,250,252,0.88);
+    border: 1px solid rgba(148,163,184,0.14);
+  }
+  .chat-trace-panel.show {
+    display: block;
+  }
+  .chat-trace-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
   }
   .chat-bubble.assistant .md-body { font-size: 14px; }
   .chat-bubble.assistant .md-body img {
@@ -1660,23 +2160,96 @@
     flex-wrap: wrap;
   }
 
-  /* Hide sidebar/toolbar/footer in chat mode */
-  body.chat-mode { background: linear-gradient(180deg, #f8fafc 0%, #edf4fb 100%); }
-  body.chat-mode header { box-shadow: none; background: transparent; border-bottom-color: transparent; }
-  body.chat-mode .sidebar { display: flex; width: 320px; background: rgba(255,255,255,0.78); backdrop-filter: blur(18px); }
+  /* Hide sidebar/toolbar/footer in chat and workspace modes */
+  body.chat-mode,
+  body.workspace-mode { background: linear-gradient(180deg, #f8fafc 0%, #edf4fb 100%); }
+  body.chat-mode header,
+  body.workspace-mode header { box-shadow: none; background: transparent; border-bottom-color: transparent; }
+  body.chat-mode .header-right,
+  body.workspace-mode .header-right { display: none; }
+  body.chat-mode .sidebar,
+  body.workspace-mode .sidebar { display: flex; width: 320px; background: rgba(255,255,255,0.78); backdrop-filter: blur(18px); }
   body.chat-mode #groups,
   body.chat-mode #history,
   body.chat-mode #hist-label,
-  body.chat-mode .sidebar > .sb-section-label:first-child { display: none; }
-  body.chat-mode .chat-sidebar { display: flex; }
-  body.chat-mode .toolbar { display: none; }
-  body.chat-mode footer { display: none; }
-  body.chat-mode .fab { display: none !important; }
-  body.chat-mode .viewer { display: none; }
-  body.chat-mode .chat-container { display: flex; }
+  body.chat-mode .sidebar > .sb-section-label:first-child,
+  body.workspace-mode #groups,
+  body.workspace-mode #history,
+  body.workspace-mode #hist-label,
+  body.workspace-mode .sidebar > .sb-section-label:first-child { display: none; }
+  body.chat-mode .chat-sidebar,
+  body.workspace-mode .chat-sidebar { display: flex; flex-direction: column; }
+  body.chat-mode .toolbar,
+  body.workspace-mode .toolbar { display: none; }
+  body.chat-mode footer,
+  body.workspace-mode footer { display: none; }
+  body.chat-mode .fab,
+  body.workspace-mode .fab { display: none !important; }
+  body.chat-mode .viewer,
+  body.workspace-mode .viewer { display: none; }
+  /* ── Chat mode: flatten header into a single compact row ── */
+  body.chat-mode .chat-header {
+    align-items: center;
+    padding: 0 6px;
+    gap: 12px;
+  }
+  body.chat-mode .chat-brand {
+    gap: 10px;
+    margin-bottom: 0;
+  }
+  body.chat-mode .chat-brand-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    padding: 2px;
+    box-shadow: var(--shadow-sm);
+  }
+  body.chat-mode .chat-kicker {
+    padding: 3px 8px;
+    font-size: 9px;
+  }
+  body.chat-mode .chat-title {
+    font-size: 15px;
+    letter-spacing: -0.02em;
+  }
+  body.chat-mode .chat-subtitle {
+    display: none;
+  }
+  body.chat-mode .chat-status-card {
+    padding: 8px 12px;
+    min-width: 0;
+    border-radius: var(--radius);
+    max-width: 320px;
+  }
+  body.chat-mode .chat-status-label {
+    font-size: 9px;
+    margin-bottom: 3px;
+  }
+  body.chat-mode .chat-status-value {
+    font-size: 12px;
+    gap: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  body.chat-mode .chat-status-dot {
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+  }
+  body.chat-mode .chat-status-meta {
+    display: none;
+  }
+  body.chat-mode .chat-status-card {
+    display: none;
+  }
+
+  body.chat-mode .chat-container,
+  body.workspace-mode .chat-container { display: flex; }
 
   @media (max-width: 900px) {
-    body.chat-mode .sidebar { display: none; }
+    body.chat-mode .sidebar,
+    body.workspace-mode .sidebar { display: none; }
     .chat-container { padding: 18px 14px 18px; }
     .chat-header {
       flex-direction: column;
@@ -1712,6 +2285,13 @@
     .chat-input-hint {
       flex-direction: column;
       gap: 6px;
+    }
+    .workspace-shell {
+      display: flex;
+      flex-direction: column;
+    }
+    .workspace-rail {
+      width: 100%;
     }
   }
 
@@ -1865,6 +2445,7 @@
     Chat
     <div class="tab-dot" id="chat-dot"></div>
   </div>
+  <div class="tab" data-t="workspace" onclick="switchTab('workspace')">Workspace</div>
   <div class="tab" data-t="transcripts" onclick="switchTab('transcripts')">Transcripts</div>
   <div class="tab" data-t="logs" onclick="switchTab('logs')">Container Logs</div>
 </div>
@@ -1878,6 +2459,7 @@
     <div class="chat-sidebar" id="chat-sidebar">
       <div class="chat-sidebar-header">
         <div class="chat-sidebar-title">Saved Sessions</div>
+        <input class="chat-session-search" id="chat-session-search" type="search" placeholder="Search sessions..." oninput="setChatSessionSearch(this.value)">
         <button class="chat-session-new" type="button" onclick="createChatSession()">New chat</button>
       </div>
       <div class="chat-session-list" id="chat-session-list"></div>
@@ -1898,59 +2480,100 @@
     </div>
     <div class="chat-container" id="chat-container">
       <div class="chat-stage">
-        <div class="chat-header">
-          <div class="chat-header-copy">
-            <div class="chat-brand">
-              <img class="chat-brand-mark" src="/assets/matclaw-icon-square.png" alt="MatClaw">
-              <div class="chat-brand-text">
-                <div class="chat-kicker">Local Chat</div>
-                <div class="chat-title">Chat with MatClaw in the browser</div>
+        <div class="workspace-shell">
+          <div class="chat-main">
+            <div class="chat-header">
+              <div class="chat-header-copy">
+                <div class="chat-brand">
+                  <img class="chat-brand-mark" src="/assets/matclaw-icon-square.png" alt="MatClaw">
+                  <div class="chat-brand-text">
+                    <div class="chat-kicker">Local Chat</div>
+                    <div class="chat-title">Chat with MatClaw in the browser</div>
+                  </div>
+                </div>
+                <div class="chat-subtitle">A lightweight local chat surface for quick prompts, file drops, and markdown answers. No external messaging app required.</div>
+              </div>
+              <div class="chat-status-card">
+                <div class="chat-status-label">Session</div>
+                <div class="chat-status-value" id="chat-status-value"><span class="chat-status-dot"></span>Connected to local web chat</div>
+                <div class="chat-status-meta" id="chat-status-meta">Saved conversations are stored locally.</div>
               </div>
             </div>
-            <div class="chat-subtitle">A lightweight local chat surface for quick prompts, file drops, and markdown answers. No external messaging app required.</div>
-          </div>
-          <div class="chat-status-card">
-            <div class="chat-status-label">Session</div>
-            <div class="chat-status-value" id="chat-status-value"><span class="chat-status-dot"></span>Connected to local web chat</div>
-            <div class="chat-status-meta" id="chat-status-meta">Saved conversations are stored locally.</div>
-          </div>
-        </div>
-        <div class="chat-messages" id="chat-messages">
-          <div class="chat-thread" id="chat-thread">
-            <div class="chat-empty" id="chat-empty">
-              <div class="chat-empty-icon"><img src="/assets/matclaw-icon-square.png" alt="MatClaw"></div>
-              <div class="chat-empty-title">Start a local conversation</div>
-              <div class="chat-empty-sub">Ask a quick question, paste a task, or drop in a file. Replies support markdown, images, and rich formatting.</div>
+            <div class="chat-inline-run" id="chat-inline-run">
+              <div class="chat-inline-run-head">
+                <div class="chat-inline-run-title">Current Run</div>
+                <div class="chat-inline-run-status" id="chat-inline-run-status">Idle</div>
+              </div>
+              <div class="chat-inline-run-list" id="chat-inline-run-list"></div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+              <div class="chat-thread" id="chat-thread">
+                <div class="chat-empty" id="chat-empty">
+                  <div class="chat-empty-icon"><img src="/assets/matclaw-icon-square.png" alt="MatClaw"></div>
+                  <div class="chat-empty-title">Start a local conversation</div>
+                  <div class="chat-empty-sub">Ask a quick question, paste a task, or drop in a file. Replies support markdown, images, and rich formatting.</div>
+                </div>
+              </div>
+            </div>
+            <div class="chat-composer">
+              <div class="chat-drag-overlay" id="chat-drag-overlay">Drop files anywhere in the chat to attach them</div>
+              <div class="chat-composer-top">
+                <div class="chat-thinking" id="chat-thinking">
+                  <div class="dots"><span></span><span></span><span></span></div>
+                  <span>MatClaw is thinking...</span>
+                </div>
+                <div class="chat-composer-meta">Enter or Ctrl/Cmd+Enter to send · Shift+Enter newline · Drag files to upload</div>
+              </div>
+              <div class="chat-upload-label" id="chat-upload-label">Uploading attachment...</div>
+              <div class="chat-upload-progress" id="chat-upload-progress"></div>
+              <div class="chat-file-preview" id="chat-file-preview">
+                <img class="file-thumb" id="chat-file-thumb" src="" alt="" style="display:none">
+                <span id="chat-file-icon" style="font-size:20px">&#128206;</span>
+                <span class="file-name" id="chat-file-name"></span>
+                <span class="file-remove" onclick="clearPendingFile()">&times;</span>
+              </div>
+              <div class="chat-input-bar">
+                <input type="file" id="chat-file-input" style="display:none" onchange="onFileSelected(this)">
+                <button class="chat-attach-btn" onclick="d('chat-file-input').click()" title="Attach file">&#128206;</button>
+                <textarea id="chat-input" placeholder="Ask anything, describe a task, or drop a file..." rows="1"></textarea>
+                <button class="chat-send-btn" id="chat-send" onclick="sendChatMessage()">Send</button>
+              </div>
+              <div class="chat-input-hint">
+                <span>Markdown replies render inline.</span>
+                <span>Images open in the same lightbox viewer.</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="chat-composer">
-          <div class="chat-drag-overlay" id="chat-drag-overlay">Drop files anywhere in the chat to attach them</div>
-          <div class="chat-composer-top">
-            <div class="chat-thinking" id="chat-thinking">
-              <div class="dots"><span></span><span></span><span></span></div>
-              <span>MatClaw is thinking...</span>
+          <aside class="workspace-rail">
+            <div class="workspace-panel">
+              <div class="workspace-panel-head">
+                <div class="workspace-panel-title">Run Activity</div>
+                <button class="workspace-transcript-open" type="button" onclick="openLiveFromWorkspace()">Open Live</button>
+              </div>
+              <div class="workspace-panel-body">
+                <div class="workspace-run-list" id="workspace-run-list"></div>
+              </div>
             </div>
-            <div class="chat-composer-meta">Enter or Ctrl/Cmd+Enter to send · Shift+Enter newline · Drag files to upload</div>
-          </div>
-          <div class="chat-upload-label" id="chat-upload-label">Uploading attachment...</div>
-          <div class="chat-upload-progress" id="chat-upload-progress"></div>
-          <div class="chat-file-preview" id="chat-file-preview">
-            <img class="file-thumb" id="chat-file-thumb" src="" alt="" style="display:none">
-            <span id="chat-file-icon" style="font-size:20px">&#128206;</span>
-            <span class="file-name" id="chat-file-name"></span>
-            <span class="file-remove" onclick="clearPendingFile()">&times;</span>
-          </div>
-          <div class="chat-input-bar">
-            <input type="file" id="chat-file-input" style="display:none" onchange="onFileSelected(this)">
-            <button class="chat-attach-btn" onclick="d('chat-file-input').click()" title="Attach file">&#128206;</button>
-            <textarea id="chat-input" placeholder="Ask anything, describe a task, or drop a file..." rows="1"></textarea>
-            <button class="chat-send-btn" id="chat-send" onclick="sendChatMessage()">Send</button>
-          </div>
-          <div class="chat-input-hint">
-            <span>Markdown replies render inline.</span>
-            <span>Images open in the same lightbox viewer.</span>
-          </div>
+            <div class="workspace-panel">
+              <div class="workspace-panel-head">
+                <div class="workspace-panel-title">Artifacts</div>
+                <button class="workspace-transcript-open" type="button" onclick="loadChatArtifacts(currentChatThreadId)">Refresh</button>
+              </div>
+              <div class="workspace-panel-body">
+                <div class="workspace-artifact-list" id="workspace-artifact-list"></div>
+              </div>
+            </div>
+            <div class="workspace-panel">
+              <div class="workspace-panel-head">
+                <div class="workspace-panel-title">Recent Transcripts</div>
+                <button class="workspace-transcript-open" type="button" onclick="switchTab('transcripts')">Open Tab</button>
+              </div>
+              <div class="workspace-panel-body">
+                <div class="workspace-transcript-list" id="workspace-transcript-list"></div>
+                <div class="workspace-transcript-preview" id="workspace-transcript-preview"></div>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
@@ -1978,6 +2601,20 @@ let ws, autoScroll = true, entries = 0, events = 0;
 let filterRe = null, tab = 'live', selGroup = null;
 let activeStart = null, durTimer = null;
 const running = new Set();
+let chatSessionSearch = '';
+let pinnedChatSessionIds = [];
+try {
+  pinnedChatSessionIds = JSON.parse(localStorage.getItem('matclaw.chat.pins') || '[]');
+  if (!Array.isArray(pinnedChatSessionIds)) pinnedChatSessionIds = [];
+} catch {
+  pinnedChatSessionIds = [];
+}
+let chatRunItems = [];
+let chatRunStatus = 'Idle';
+let chatArtifacts = { conversation: [], workspace: [] };
+let workspaceTranscripts = [];
+let selectedWorkspaceTranscript = null;
+let chatTraceSeq = 0;
 
 // ── Live event parsing state ──
 let pendingCmd = null;    // current command card being built
@@ -2003,7 +2640,7 @@ function connect() {
     // Chat messages — always process regardless of active tab
     if (data.type === 'chat:message') {
       handleChatIncoming(data);
-      if (tab !== 'chat') d('chat-dot').classList.add('show');
+      if (tab !== 'chat' && tab !== 'workspace') d('chat-dot').classList.add('show');
       return;
     }
 
@@ -2035,6 +2672,12 @@ function handleEvent(ev) {
       hideEmpty(); activeStart = Date.now(); startDur();
       running.add(ev.groupFolder); updateDots();
       activeGroup = ev.groupFolder;
+      if (ev.groupFolder === 'web_chat') {
+        chatRunItems = [];
+        chatRunStatus = 'Running';
+        if (ev.data.prompt) appendChatRunItem('tool', 'Prompt', String(ev.data.prompt).slice(0, 200), ts);
+        renderChatRun();
+      }
       d('st-active').textContent = ev.group;
       flushPendingCmd();
       addDivider('Agent Started \u2022 ' + ev.group);
@@ -2045,26 +2688,42 @@ function handleEvent(ev) {
     case 'agent:stdout':
       hideEmpty();
       for (const l of String(ev.data.chunk||'').split('\n')) {
-        if (l.trim()) parseLiveLine(l.trim(), ts);
+        if (l.trim()) {
+          parseLiveLine(l.trim(), ts);
+          if (ev.groupFolder === 'web_chat') trackChatRunLine(l.trim(), ts);
+        }
       }
       break;
 
     case 'agent:stderr':
       hideEmpty();
       for (const l of String(ev.data.chunk||'').split('\n')) {
-        if (l.trim()) parseLiveLine(l.trim(), ts);
+        if (l.trim()) {
+          parseLiveLine(l.trim(), ts);
+          if (ev.groupFolder === 'web_chat') trackChatRunLine(l.trim(), ts);
+        }
       }
       break;
 
     case 'agent:output':
       hideEmpty();
       flushPendingCmd();
-      addResult(ts, ev.data.result ? String(ev.data.result).slice(0, 800) : '(empty)');
+      addResult(ts, ev.data.result ? String(ev.data.result).slice(0, 4000) : '(empty)');
+      if (ev.groupFolder === 'web_chat' && ev.data.result) {
+        appendChatRunItem('result', 'Result', String(ev.data.result).slice(0, 240), ts);
+      }
       break;
 
     case 'agent:end':
       flushPendingCmd();
       running.delete(ev.groupFolder); updateDots(); stopDur();
+      if (ev.groupFolder === 'web_chat') {
+        const exitCode = Number(ev.data.exitCode ?? 0);
+        chatRunStatus = exitCode === 0 ? 'Completed' : 'Failed';
+        renderChatRun();
+        loadChatArtifacts(currentChatThreadId).catch(() => {});
+        loadWorkspaceTranscripts().catch(() => {});
+      }
       const s = ev.data.duration ? Math.round(Number(ev.data.duration)/1000)+'s' : '?';
       const code = ev.data.exitCode;
       addDivider(`Agent Finished \u2022 ${s} \u2022 exit ${code}`);
@@ -2089,6 +2748,9 @@ function parseLiveLine(line, ts) {
   line = line.replace(/^(INFO|DEBUG|WARN|ERROR)\s+/, '');
 
   if (!line.trim()) return;
+
+  // Skip bare event-type labels (Progress/Stage/etc come as separate lines from content)
+  if (/^(Progress|Stage|Item|Turn|Thread)$/i.test(line.trim())) return;
 
   // Extract timestamp if present: [HH:MM:SS.mmm]
   const tsMatch = line.match(/^\[(\d{2}:\d{2}:\d{2}\.\d{3})\]\s*(.*)/);
@@ -2310,6 +2972,131 @@ function lineTs(ts) { return ts || ''; }
 function syncViewerMode() {
   V.classList.toggle('live-mode', tab === 'live');
   document.body.classList.toggle('chat-mode', tab === 'chat');
+  document.body.classList.toggle('workspace-mode', tab === 'workspace');
+}
+
+function appendChatRunItem(kind, label, text, ts) {
+  const clean = String(text || '').trim();
+  if (!clean) return;
+  const next = { kind, label, text: clean, ts: ts || '' };
+  const last = chatRunItems[chatRunItems.length - 1];
+  if (last && last.kind === next.kind && last.label === next.label && (last.text.length + clean.length) < 420) {
+    last.text += `\n${clean}`;
+    last.ts = next.ts || last.ts;
+  } else {
+    chatRunItems.push(next);
+  }
+  if (chatRunItems.length > 18) chatRunItems = chatRunItems.slice(-18);
+  renderChatRun();
+}
+
+function renderChatRun() {
+  const inline = d('chat-inline-run');
+  const inlineList = d('chat-inline-run-list');
+  const inlineStatus = d('chat-inline-run-status');
+  const workspaceList = d('workspace-run-list');
+  if (!inline || !inlineList || !inlineStatus || !workspaceList) return;
+
+  inlineStatus.textContent = chatRunStatus;
+  inlineList.innerHTML = '';
+  workspaceList.innerHTML = '';
+
+  if (!chatRunItems.length) {
+    inline.classList.remove('show');
+    workspaceList.innerHTML = '<div class="workspace-empty">Run activity for the current session will appear here once MatClaw starts working.</div>';
+    return;
+  }
+
+  inline.classList.add('show');
+  for (const item of chatRunItems) {
+    const inlineNode = document.createElement('div');
+    inlineNode.className = `chat-run-item kind-${item.kind}`;
+    inlineNode.innerHTML =
+      `<div class="chat-run-item-head">` +
+        `<span class="chat-run-pill">${esc(item.label)}</span>` +
+        `<span class="chat-session-count">${esc(item.ts || '')}</span>` +
+      `</div>` +
+      `<div class="chat-run-item-text">${esc(item.text)}</div>`;
+    inlineList.appendChild(inlineNode);
+
+    const railNode = document.createElement('div');
+    railNode.className = `workspace-run-item kind-${item.kind}`;
+    railNode.innerHTML =
+      `<div class="chat-run-item-head">` +
+        `<span class="chat-run-pill">${esc(item.label)}</span>` +
+        `<span class="chat-session-count">${esc(item.ts || '')}</span>` +
+      `</div>` +
+      `<div class="chat-run-item-text">${esc(item.text)}</div>`;
+    workspaceList.appendChild(railNode);
+  }
+}
+
+function trackChatRunLine(line, ts) {
+  const content = String(line || '').replace(/^\[stderr\]\s*/, '').replace(/^(INFO|DEBUG|WARN|ERROR)\s+/, '').trim();
+  if (!content) return;
+
+  const thinkingMatch = content.match(/^\[Thinking\]\s*(.*)/s);
+  if (thinkingMatch) {
+    appendChatRunItem('thinking', 'Thinking', thinkingMatch[1].slice(0, 200), ts);
+    return;
+  }
+
+  const toolCallMatch = content.match(/^\[ToolCall\]\s+(\S+)\s+\(id:\s*([^)]+)\)/);
+  if (toolCallMatch) {
+    appendChatRunItem('tool', toolCallMatch[1], `Started ${toolCallMatch[1]}`, ts);
+    return;
+  }
+
+  const toolInputMatch = content.match(/^\[ToolInput\]\s*(.*)/s);
+  if (toolInputMatch) {
+    appendChatRunItem('tool', 'Input', toolInputMatch[1].slice(0, 200), ts);
+    return;
+  }
+
+  const toolResultMatch = content.match(/^\[ToolResult\]\s*\(id:\s*([^)]+)\)\s*(.*)/s);
+  if (toolResultMatch) {
+    appendChatRunItem('result', 'Tool Result', toolResultMatch[2].slice(0, 220), ts);
+    return;
+  }
+
+  const cmdMatch = content.match(/^\[(command_execution|Command)\]\s*(.*)/);
+  if (cmdMatch) {
+    appendChatRunItem('tool', 'Command', cmdMatch[2].slice(0, 220), ts);
+    return;
+  }
+
+  const outputMatch = content.match(/^\[Output\]\s*(.*)/s);
+  if (outputMatch) {
+    appendChatRunItem('result', 'Output', outputMatch[1].slice(0, 220), ts);
+    return;
+  }
+
+  if (/traceback|error|exception|failed/i.test(content)) {
+    appendChatRunItem('error', 'Error', content.slice(0, 220), ts);
+    return;
+  }
+
+  if (/^===.+===$/.test(content)) {
+    appendChatRunItem('tool', 'Stage', content, ts);
+    return;
+  }
+
+  if (!content.startsWith('[')) {
+    appendChatRunItem('tool', 'Progress', content.slice(0, 220), ts);
+  }
+}
+
+function openLiveFromWorkspace() {
+  switchTab('live');
+}
+
+function snapshotCurrentRunTrace() {
+  if (!chatRunItems.length) return null;
+  return {
+    id: `trace-${++chatTraceSeq}`,
+    status: chatRunStatus,
+    items: chatRunItems.map((item) => ({ ...item })),
+  };
 }
 
 // ── Render helpers ──
@@ -2793,9 +3580,14 @@ function switchTab(t) {
   syncViewerMode();
   document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.dataset.t === t));
   if (t === 'live') d('live-dot').classList.remove('show');
-  if (t === 'chat') {
+  if (t === 'chat' || t === 'workspace') {
     d('chat-dot').classList.remove('show');
     scrollChatEnd();
+  }
+  if (t === 'workspace') {
+    loadChatArtifacts(currentChatThreadId).catch(() => {});
+    loadWorkspaceTranscripts().catch(() => {});
+    renderChatRun();
   }
   if (selGroup) loadHistory(selGroup);
 }
@@ -2834,7 +3626,11 @@ V.addEventListener('scroll', () => {
 
 function enc(s) { return encodeURIComponent(s); }
 function buildWebChatFileUrl(filePath) {
-  return `/api/file?group=web_chat&path=${enc(filePath)}`;
+  const raw = String(filePath || '').trim();
+  if (!raw) return '';
+  if (/^(https?:|data:|blob:)/i.test(raw)) return raw;
+  const clean = raw.replace(/[?#].*$/, '');
+  return `/api/file?group=web_chat&path=${enc(clean)}`;
 }
 
 function openImage(src) {
@@ -2864,6 +3660,7 @@ const chatThread = d('chat-thread');
 const chatInput = d('chat-input');
 const chatEmpty = d('chat-empty');
 const chatSessionList = d('chat-session-list');
+const chatSessionSearchInput = d('chat-session-search');
 const chatStatusValue = d('chat-status-value');
 const chatStatusMeta = d('chat-status-meta');
 const chatComposer = document.querySelector('.chat-composer');
@@ -2932,6 +3729,15 @@ function deriveAttachmentKind(fileName, attachType) {
   return 'File';
 }
 
+function getArtifactCategory(item) {
+  if (item.kind === 'image') return 'Images';
+  const ext = (item.name.split('.').pop() || '').toLowerCase();
+  if (['csv', 'tsv', 'xlsx', 'xls', 'json'].includes(ext)) return 'Data';
+  if (['py', 'js', 'ts', 'tsx', 'jsx', 'sh', 'ipynb'].includes(ext)) return 'Code';
+  if (['md', 'txt', 'pdf', 'html', 'doc', 'docx', 'ppt', 'pptx'].includes(ext)) return 'Docs';
+  return 'Files';
+}
+
 function formatChatDateLabel(timestamp) {
   if (!timestamp) return 'Conversation';
   const date = new Date(timestamp);
@@ -2983,9 +3789,50 @@ function formatSessionRelative(timestamp) {
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
+function persistPinnedSessions() {
+  localStorage.setItem('matclaw.chat.pins', JSON.stringify(pinnedChatSessionIds));
+}
+
+function setChatSessionSearch(value) {
+  chatSessionSearch = String(value || '').trim().toLowerCase();
+  renderChatSessions();
+}
+
+function togglePinChatSession(threadId) {
+  if (!threadId) return;
+  if (pinnedChatSessionIds.includes(threadId)) {
+    pinnedChatSessionIds = pinnedChatSessionIds.filter((id) => id !== threadId);
+  } else {
+    pinnedChatSessionIds = [threadId, ...pinnedChatSessionIds];
+  }
+  persistPinnedSessions();
+  renderChatSessions();
+}
+
 function renderChatSessions() {
   chatSessionList.innerHTML = '';
-  for (const session of chatSessions) {
+  const needle = chatSessionSearch;
+  const sessions = [...chatSessions]
+    .filter((session) => {
+      if (!needle) return true;
+      const haystack = `${session.title || ''} ${session.last_message_preview || ''}`.toLowerCase();
+      return haystack.includes(needle);
+    })
+    .sort((a, b) => {
+      const aPinned = pinnedChatSessionIds.includes(a.id) ? 1 : 0;
+      const bPinned = pinnedChatSessionIds.includes(b.id) ? 1 : 0;
+      if (aPinned !== bPinned) return bPinned - aPinned;
+      const aTime = a.updated_at || a.created_at || '';
+      const bTime = b.updated_at || b.created_at || '';
+      return bTime.localeCompare(aTime);
+    });
+
+  if (!sessions.length) {
+    chatSessionList.innerHTML = `<div class="workspace-empty">${needle ? 'No saved sessions match this search.' : 'No saved sessions yet. Start a conversation to create one.'}</div>`;
+  }
+
+  for (const session of sessions) {
+    const isPinned = pinnedChatSessionIds.includes(session.id);
     const item = document.createElement('div');
     item.className = `chat-session-item ${session.id === currentChatThreadId ? 'active' : ''}`;
     item.onclick = () => switchChatSession(session.id);
@@ -2995,6 +3842,7 @@ function renderChatSessions() {
       `<div class="chat-session-item-top">` +
         `<div class="chat-session-item-title">${esc(session.title || 'New chat')}</div>` +
         `<div class="chat-session-item-actions">` +
+          `<button class="chat-session-action pin ${isPinned ? 'active' : ''}" type="button" data-action="pin" title="${isPinned ? 'Unpin session' : 'Pin session'}">&#128204;</button>` +
           `<button class="chat-session-action" type="button" data-action="rename" title="Rename session">&#9998;</button>` +
           `<button class="chat-session-action delete" type="button" data-action="delete" title="Delete session">&#128465;</button>` +
         `</div>` +
@@ -3002,9 +3850,13 @@ function renderChatSessions() {
       `<div class="chat-session-item-preview">${esc(preview)}</div>` +
       `<div class="chat-session-item-meta">` +
         `<span class="chat-session-count">${esc(countLabel)} · ${esc(formatSessionRelative(session.updated_at || session.created_at))}</span>` +
-        `${session.id === currentChatThreadId ? '<span class="chat-session-badge">Active</span>' : ''}` +
+        `${session.id === currentChatThreadId ? '<span class="chat-session-badge">Active</span>' : (isPinned ? '<span class="chat-session-badge">Pinned</span>' : '')}` +
       `</div>`;
 
+    item.querySelector('[data-action="pin"]').onclick = async (e) => {
+      e.stopPropagation();
+      togglePinChatSession(session.id);
+    };
     item.querySelector('[data-action="rename"]').onclick = async (e) => {
       e.stopPropagation();
       await renameChatSession(session.id);
@@ -3023,6 +3875,9 @@ function renderChatSessions() {
       ? `Claude session ${active.agent_session_id.slice(0, 8)}...`
       : 'Fresh conversation. First reply will create a new agent session.';
     chatStatusMeta.textContent = meta;
+  } else {
+    chatStatusValue.innerHTML = `<span class="chat-status-dot"></span>Connected to local web chat`;
+    chatStatusMeta.textContent = 'Saved conversations are stored locally.';
   }
 }
 
@@ -3031,6 +3886,9 @@ async function loadChatSessions(preferredThreadId) {
     const payload = await (await fetch('/api/chat/sessions')).json();
     chatSessions = payload.sessions || [];
     currentChatThreadId = preferredThreadId || currentChatThreadId || payload.activeThreadId || chatSessions[0]?.id || null;
+    if (chatSessionSearchInput && chatSessionSearchInput.value !== chatSessionSearch) {
+      chatSessionSearchInput.value = chatSessionSearch;
+    }
     renderChatSessions();
     return currentChatThreadId;
   } catch {
@@ -3046,18 +3904,28 @@ async function switchChatSession(threadId) {
     body: JSON.stringify({ threadId }),
   });
   currentChatThreadId = threadId;
+  chatRunItems = [];
+  chatRunStatus = 'Idle';
+  renderChatRun();
   resetChatThreadView();
   await loadChatSessions(threadId);
   await loadChatHistory(threadId);
+  await loadChatArtifacts(threadId);
+  await loadWorkspaceTranscripts();
   d('chat-thinking').classList.remove('show');
 }
 
 async function createChatSession() {
   const payload = await (await fetch('/api/chat/sessions', { method: 'POST' })).json();
   currentChatThreadId = payload.activeThreadId || payload.session?.id || null;
+  chatRunItems = [];
+  chatRunStatus = 'Idle';
+  renderChatRun();
   resetChatThreadView();
   await loadChatSessions(currentChatThreadId);
   await loadChatHistory(currentChatThreadId);
+  await loadChatArtifacts(currentChatThreadId);
+  await loadWorkspaceTranscripts();
   chatInput.focus();
 }
 
@@ -3085,10 +3953,165 @@ async function deleteChatSession(threadId) {
     body: JSON.stringify({ threadId }),
   })).json();
   currentChatThreadId = payload.activeThreadId || null;
+  chatRunItems = [];
+  chatRunStatus = 'Idle';
+  renderChatRun();
   resetChatThreadView();
   await loadChatSessions(currentChatThreadId);
   await loadChatHistory(currentChatThreadId);
+  await loadChatArtifacts(currentChatThreadId);
+  await loadWorkspaceTranscripts();
   d('chat-thinking').classList.remove('show');
+}
+
+function renderWorkspaceArtifacts() {
+  const list = d('workspace-artifact-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  const seen = new Set();
+  const items = [...(chatArtifacts.conversation || []), ...(chatArtifacts.workspace || [])]
+    .filter((item) => {
+      const key = `${item.source}:${item.path}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 14);
+
+  if (!items.length) {
+    list.innerHTML = '<div class="workspace-empty">Artifacts generated in this session will show up here for quick access.</div>';
+    return;
+  }
+
+  const order = ['Images', 'Data', 'Docs', 'Code', 'Files'];
+  const grouped = new Map();
+  for (const item of items) {
+    const category = getArtifactCategory(item);
+    if (!grouped.has(category)) grouped.set(category, []);
+    grouped.get(category).push(item);
+  }
+
+  for (const category of order) {
+    const groupItems = grouped.get(category);
+    if (!groupItems?.length) continue;
+    const section = document.createElement('div');
+    section.className = 'workspace-artifact-group';
+    section.innerHTML =
+      `<div class="workspace-artifact-group-head">` +
+        `<div class="workspace-artifact-group-title">${esc(category)}</div>` +
+        `<div class="workspace-artifact-group-count">${groupItems.length}</div>` +
+      `</div>`;
+
+    for (const item of groupItems.slice(0, 6)) {
+      const row = document.createElement('div');
+      row.className = 'workspace-artifact-item';
+      const sub = [
+        item.source === 'conversation' ? 'Mentioned in chat' : 'Workspace file',
+        item.modified ? formatSessionRelative(item.modified) : null,
+      ].filter(Boolean).join(' · ');
+      const artifactUrl = buildWebChatFileUrl(item.path);
+      const thumb = item.kind === 'image'
+        ? `<img class="workspace-artifact-thumb" src="${artifactUrl}" alt="${esc(item.name)}" onerror="this.replaceWith(Object.assign(document.createElement('div'), { className: 'workspace-artifact-thumb', textContent: '🖼️' }))">`
+        : `<div class="workspace-artifact-thumb">${category === 'Data' ? '📊' : category === 'Code' ? '💻' : category === 'Docs' ? '📘' : '📄'}</div>`;
+      row.innerHTML =
+        `${thumb}` +
+        `<div class="workspace-artifact-meta">` +
+          `<div class="workspace-artifact-name">${esc(item.name)}</div>` +
+          `<div class="workspace-artifact-sub">${esc(sub)}</div>` +
+        `</div>` +
+        `<button class="workspace-artifact-open" type="button">Open</button>`;
+      row.querySelector('button').onclick = () => {
+        const url = artifactUrl;
+        if (item.kind === 'image') openImage(url);
+        else window.open(url, '_blank', 'noopener');
+      };
+      section.appendChild(row);
+    }
+    list.appendChild(section);
+  }
+}
+
+async function loadChatArtifacts(threadId = currentChatThreadId) {
+  try {
+    const qs = threadId ? `?threadId=${enc(threadId)}` : '';
+    chatArtifacts = await (await fetch(`/api/chat/artifacts${qs}`)).json();
+  } catch {
+    chatArtifacts = { conversation: [], workspace: [] };
+  }
+  renderWorkspaceArtifacts();
+}
+
+function renderWorkspaceTranscripts(entries) {
+  const list = d('workspace-transcript-list');
+  const preview = d('workspace-transcript-preview');
+  if (!list || !preview) return;
+  list.innerHTML = '';
+  preview.innerHTML = '';
+
+  if (!workspaceTranscripts.length) {
+    list.innerHTML = '<div class="workspace-empty">Recent agent transcripts for this workspace will appear here.</div>';
+    return;
+  }
+
+  for (const item of workspaceTranscripts) {
+    const node = document.createElement('div');
+    node.className = 'workspace-transcript-item';
+    node.innerHTML =
+      `<div class="workspace-transcript-meta">` +
+        `<div class="workspace-transcript-name">${esc(item.file.replace('.jsonl', ''))}</div>` +
+        `<div class="workspace-transcript-sub">${esc(item.modified.slice(0, 16).replace('T', ' '))} · ${Math.max(1, Math.round(item.size / 1024))} KB</div>` +
+      `</div>` +
+      `<button class="workspace-transcript-open" type="button">Open</button>`;
+    node.onclick = () => previewWorkspaceTranscript(item.file);
+    node.querySelector('button').onclick = (e) => {
+      e.stopPropagation();
+      switchTab('transcripts');
+      loadTranscript('web_chat', item.file);
+    };
+    list.appendChild(node);
+  }
+
+  if (!entries?.length) {
+    preview.innerHTML = '<div class="workspace-empty">Select a transcript to preview the latest turns here.</div>';
+    return;
+  }
+
+  for (const entry of entries.slice(-4)) {
+    const row = document.createElement('div');
+    row.className = 'workspace-transcript-entry';
+    row.innerHTML = `<strong>${esc(entry.type || 'entry')}</strong> · ${esc(entry.time || '')}<br>${esc(String(entry.content || '').slice(0, 220))}`;
+    preview.appendChild(row);
+  }
+}
+
+async function previewWorkspaceTranscript(file) {
+  selectedWorkspaceTranscript = file;
+  try {
+    const entries = await (await fetch(`/api/transcript/json?group=web_chat&file=${enc(file)}`)).json();
+    renderWorkspaceTranscripts(entries);
+  } catch {
+    renderWorkspaceTranscripts([]);
+  }
+}
+
+async function loadWorkspaceTranscripts() {
+  try {
+    workspaceTranscripts = await (await fetch('/api/transcripts?group=web_chat')).json();
+    workspaceTranscripts = workspaceTranscripts.slice(0, 8);
+  } catch {
+    workspaceTranscripts = [];
+  }
+
+  const preferred = selectedWorkspaceTranscript && workspaceTranscripts.some((item) => item.file === selectedWorkspaceTranscript)
+    ? selectedWorkspaceTranscript
+    : workspaceTranscripts[0]?.file || null;
+
+  if (preferred) {
+    await previewWorkspaceTranscript(preferred);
+  } else {
+    renderWorkspaceTranscripts([]);
+  }
 }
 
 function onFileSelected(input) {
@@ -3178,6 +4201,15 @@ function enhanceMarkdown(bodyDiv) {
 
   bodyDiv.querySelectorAll('img').forEach(img => {
     img.onclick = () => openImage(img.src);
+    // Fallback: if external URL fails, try local workspace file
+    img.onerror = function() {
+      if (this.dataset.retried) return;
+      this.dataset.retried = '1';
+      const filename = decodeURIComponent(this.src.split('/').pop().split('?')[0] || '');
+      if (filename) {
+        this.src = buildWebChatFileUrl(filename);
+      }
+    };
   });
 }
 
@@ -3235,10 +4267,13 @@ async function sendChatMessage() {
 function handleChatIncoming(data) {
   if (data.sender === 'assistant') {
     d('chat-thinking').classList.remove('show');
+    const runTrace = snapshotCurrentRunTrace();
     if (!data.threadId || data.threadId === currentChatThreadId) {
-      appendChatBubble('assistant', data.text, data.timestamp);
+      appendChatBubble('assistant', data.text, data.timestamp, { runTrace });
     }
     loadChatSessions(currentChatThreadId).catch(() => {});
+    loadChatArtifacts(currentChatThreadId).catch(() => {});
+    loadWorkspaceTranscripts().catch(() => {});
   }
 }
 
@@ -3299,6 +4334,12 @@ function appendUserAttachment(bubble, attachType, attachPath, attachmentMeta) {
   bubble.appendChild(card);
 }
 
+function toggleChatTrace(id) {
+  const panel = d(id);
+  if (!panel) return;
+  panel.classList.toggle('show');
+}
+
 function appendChatBubble(role, text, timestamp, attachmentMeta) {
   chatEmpty.style.display = 'none';
   appendChatDateDivider(timestamp);
@@ -3323,15 +4364,48 @@ function appendChatBubble(role, text, timestamp, attachmentMeta) {
 
   if (role === 'assistant') {
     // Render markdown for assistant messages
+    // Agent output uses single \n between lines — convert to double \n
+    // so marked.js treats them as separate paragraphs, but preserve
+    // existing double newlines and don't break markdown constructs.
+    const chatText = String(text)
+      .replace(/\n(•|\*\s|[-–]\s|\d+[\.)]\s)/g, '\n\n$1')  // bullets/lists
+      .replace(/([^\n])\n([^\n*#|>`\-\d![])/g, '$1\n\n$2');  // plain lines
     const bodyDiv = document.createElement('div');
     bodyDiv.className = 'md-body';
-    let html = marked.parse(text, { breaks: false, gfm: true });
-    // Replace image paths with /api/file URLs for web_chat group
-    html = html.replace(/<img\s+src="(?!https?:\/\/|data:|blob:)([^"]+)"/g,
-      '<img src="/api/file?group=web_chat&path=$1"');
-    bodyDiv.innerHTML = stripWhitespaceNodes(html);
+    bodyDiv.innerHTML = renderText(chatText, 'web_chat');
     enhanceMarkdown(bodyDiv);
     bubble.appendChild(bodyDiv);
+
+    if (attachmentMeta?.runTrace?.items?.length) {
+      const trace = attachmentMeta.runTrace;
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'chat-trace-toggle';
+      toggle.innerHTML =
+        `<span>View run trace</span>` +
+        `<span class="chat-trace-toggle-meta">${esc(trace.status || 'Completed')} · ${trace.items.length} step${trace.items.length === 1 ? '' : 's'}</span>`;
+      const panel = document.createElement('div');
+      panel.className = 'chat-trace-panel';
+      panel.id = trace.id;
+
+      const list = document.createElement('div');
+      list.className = 'chat-trace-list';
+      for (const item of trace.items) {
+        const node = document.createElement('div');
+        node.className = `chat-run-item kind-${item.kind}`;
+        node.innerHTML =
+          `<div class="chat-run-item-head">` +
+            `<span class="chat-run-pill">${esc(item.label)}</span>` +
+            `<span class="chat-session-count">${esc(item.ts || '')}</span>` +
+          `</div>` +
+          `<div class="chat-run-item-text">${esc(item.text)}</div>`;
+        list.appendChild(node);
+      }
+      panel.appendChild(list);
+      toggle.onclick = () => toggleChatTrace(trace.id);
+      bubble.appendChild(toggle);
+      bubble.appendChild(panel);
+    }
   } else {
     // User messages — handle file attachments
     const bodyDiv = document.createElement('div');
@@ -3385,9 +4459,14 @@ async function loadChatHistory(threadId = currentChatThreadId) {
       }
     }
   } catch {}
+  loadChatArtifacts(threadId).catch(() => {});
 }
 
-loadChatSessions().then((threadId) => loadChatHistory(threadId));
+loadChatSessions().then((threadId) => {
+  loadChatHistory(threadId);
+  loadWorkspaceTranscripts().catch(() => {});
+  renderChatRun();
+});
 
 syncViewerMode();
 connect();

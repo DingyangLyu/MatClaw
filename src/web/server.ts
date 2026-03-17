@@ -870,10 +870,15 @@ export function startDashboard(
     server.once('error', (err: NodeJS.ErrnoException) => {
       if (err.code === 'EADDRINUSE' && attempt < MAX_PORT_ATTEMPTS) {
         currentPort++;
-        logger.info({ port: currentPort }, `Port ${currentPort - 1} in use, trying ${currentPort}`);
+        logger.info(
+          { port: currentPort },
+          `Port ${currentPort - 1} in use, trying ${currentPort}`,
+        );
         tryListen(attempt + 1);
       } else if (err.code === 'EADDRINUSE') {
-        logger.warn(`All ports ${PORT}-${currentPort} in use — dashboard disabled`);
+        logger.warn(
+          `All ports ${PORT}-${currentPort} in use — dashboard disabled`,
+        );
       } else {
         logger.error({ err }, 'Dashboard server error');
       }

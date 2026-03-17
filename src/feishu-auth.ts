@@ -10,8 +10,13 @@ import * as Lark from '@larksuiteoapi/node-sdk';
 import { input, password, confirm } from '@inquirer/prompts';
 import ora from 'ora';
 import {
-  c, gradient, println,
-  boxTop, boxLine, boxBottom, boxDivider,
+  c,
+  gradient,
+  println,
+  boxTop,
+  boxLine,
+  boxBottom,
+  boxDivider,
 } from '../setup/ui.js';
 import { setLocale, detectLocale, t, type Locale } from '../setup/i18n.js';
 
@@ -41,17 +46,28 @@ async function testConnection(
     });
 
     if (response.code === 0 && response.bot) {
-      return { success: true, botName: response.bot.bot_name || response.bot.app_name };
+      return {
+        success: true,
+        botName: response.bot.bot_name || response.bot.app_name,
+      };
     }
-    return { success: false, error: response.msg || `Error code: ${response.code}` };
+    return {
+      success: false,
+      error: response.msg || `Error code: ${response.code}`,
+    };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : String(err) };
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
   }
 }
 
 async function main(): Promise<void> {
   // Detect language
-  const langArg = process.argv.find((_, i, a) => a[i - 1] === '--lang') as Locale | undefined;
+  const langArg = process.argv.find((_, i, a) => a[i - 1] === '--lang') as
+    | Locale
+    | undefined;
   setLocale(langArg || detectLocale());
 
   println();
@@ -86,11 +102,31 @@ async function main(): Promise<void> {
   println(boxTop(t('feishu.step4')));
   println(boxLine(`${t('feishu.step4.intro')}`));
   println(boxDivider());
-  println(boxLine(`${c.brightGreen}im:message${c.reset}                  ${c.dim}${t('feishu.perm.message')}${c.reset}`));
-  println(boxLine(`${c.brightGreen}im:message:send_as_bot${c.reset}     ${c.dim}${t('feishu.perm.send')}${c.reset}`));
-  println(boxLine(`${c.brightGreen}im:chat:readonly${c.reset}           ${c.dim}${t('feishu.perm.chat')}${c.reset}`));
-  println(boxLine(`${c.brightGreen}im:resource${c.reset}                ${c.dim}${t('feishu.perm.resource')}${c.reset}`));
-  println(boxLine(`${c.brightGreen}contact:contact.base:readonly${c.reset} ${c.dim}${t('feishu.perm.contact')}${c.reset}`));
+  println(
+    boxLine(
+      `${c.brightGreen}im:message${c.reset}                  ${c.dim}${t('feishu.perm.message')}${c.reset}`,
+    ),
+  );
+  println(
+    boxLine(
+      `${c.brightGreen}im:message:send_as_bot${c.reset}     ${c.dim}${t('feishu.perm.send')}${c.reset}`,
+    ),
+  );
+  println(
+    boxLine(
+      `${c.brightGreen}im:chat:readonly${c.reset}           ${c.dim}${t('feishu.perm.chat')}${c.reset}`,
+    ),
+  );
+  println(
+    boxLine(
+      `${c.brightGreen}im:resource${c.reset}                ${c.dim}${t('feishu.perm.resource')}${c.reset}`,
+    ),
+  );
+  println(
+    boxLine(
+      `${c.brightGreen}contact:contact.base:readonly${c.reset} ${c.dim}${t('feishu.perm.contact')}${c.reset}`,
+    ),
+  );
   println(boxBottom());
   println();
 
@@ -130,10 +166,14 @@ async function main(): Promise<void> {
       if (!overwrite) {
         println(`  ${c.dim}${t('feishu.keeping')}${c.reset}`);
         const spinner = ora({ text: t('feishu.testing'), indent: 4 }).start();
-        const existing: FeishuCredentials = JSON.parse(fs.readFileSync(CREDS_PATH, 'utf-8'));
+        const existing: FeishuCredentials = JSON.parse(
+          fs.readFileSync(CREDS_PATH, 'utf-8'),
+        );
         const result = await testConnection(existing);
         if (result.success) {
-          spinner.succeed(t('feishu.connected', { name: result.botName || 'Unknown' }));
+          spinner.succeed(
+            t('feishu.connected', { name: result.botName || 'Unknown' }),
+          );
         } else {
           spinner.fail(t('feishu.connFailed', { error: result.error || '' }));
         }
@@ -146,24 +186,28 @@ async function main(): Promise<void> {
 
   const appId = await input({
     message: `  ${t('feishu.appId')}`,
-    validate: (val) => val.trim() ? true : t('feishu.appIdRequired'),
+    validate: (val) => (val.trim() ? true : t('feishu.appIdRequired')),
   });
 
   const appSecret = await password({
     message: `  ${t('feishu.appSecret')}`,
     mask: '*',
-    validate: (val) => val.trim() ? true : t('feishu.appSecretRequired'),
+    validate: (val) => (val.trim() ? true : t('feishu.appSecretRequired')),
   });
 
   println(`\n  ${c.dim}${t('feishu.optional')}${c.reset}`);
   const encryptKey = await input({ message: `  ${t('feishu.encryptKey')}` });
-  const verificationToken = await input({ message: `  ${t('feishu.verifyToken')}` });
+  const verificationToken = await input({
+    message: `  ${t('feishu.verifyToken')}`,
+  });
 
   const creds: FeishuCredentials = {
     appId: appId.trim(),
     appSecret: appSecret.trim(),
     ...(encryptKey.trim() && { encryptKey: encryptKey.trim() }),
-    ...(verificationToken.trim() && { verificationToken: verificationToken.trim() }),
+    ...(verificationToken.trim() && {
+      verificationToken: verificationToken.trim(),
+    }),
   };
 
   // ── Test Connection ──
@@ -175,9 +219,15 @@ async function main(): Promise<void> {
     spinner.fail(t('feishu.connFailed', { error: testResult.error || '' }));
     println();
     println(boxTop(t('feishu.troubleshoot')));
-    println(boxLine(`${c.brightYellow}1.${c.reset} ${t('feishu.troubleshoot.1')}`));
-    println(boxLine(`${c.brightYellow}2.${c.reset} ${t('feishu.troubleshoot.2')}`));
-    println(boxLine(`${c.brightYellow}3.${c.reset} ${t('feishu.troubleshoot.3')}`));
+    println(
+      boxLine(`${c.brightYellow}1.${c.reset} ${t('feishu.troubleshoot.1')}`),
+    );
+    println(
+      boxLine(`${c.brightYellow}2.${c.reset} ${t('feishu.troubleshoot.2')}`),
+    );
+    println(
+      boxLine(`${c.brightYellow}3.${c.reset} ${t('feishu.troubleshoot.3')}`),
+    );
     println(boxBottom());
     process.exit(1);
   }

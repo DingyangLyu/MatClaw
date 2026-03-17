@@ -293,40 +293,33 @@ export class CodexEngine implements AgentEngine {
    * Write system prompt as AGENTS.md in the working directory.
    * Codex reads AGENTS.md for project-level instructions (similar to CLAUDE.md).
    *
-   * Unlike Claude (which auto-loads ~/.claude/skills/), Codex has no built-in
-   * skill loader. We inject skill content directly into AGENTS.md so the model
-   * has access to computation guides and tool references.
+   * Skills are loaded natively by Codex from ~/.codex/skills/ (symlinked from
+   * ~/.claude/skills/ by the entrypoint script). This method only handles
+   * the global CLAUDE.md → AGENTS.md conversion.
    */
   private writeSystemPrompt(ctx: EngineContext): void {
-    const parts: string[] = [];
-
-    // 1. Global CLAUDE.md (project-level instructions)
     const globalClaudeMdPath = '/workspace/global/CLAUDE.md';
     if (!ctx.isMain && fs.existsSync(globalClaudeMdPath)) {
-      parts.push(fs.readFileSync(globalClaudeMdPath, 'utf-8'));
+      const content = fs.readFileSync(globalClaudeMdPath, 'utf-8');
+      // Write as AGENTS.md so Codex picks it up as project context
+      fs.writeFileSync('/workspace/group/AGENTS.md', content);
     }
 
-    // 2. Load skills — Codex doesn't have a skill loader, so we bundle
-    //    top-level SKILL.md files into the prompt. Sub-skills are referenced
-    //    by path so the model can read them on demand via file tools.
-    const skillsDirs = ['/home/node/.claude/skills', '/home/node/.codex/skills'];
-    for (const skillsDir of skillsDirs) {
-      if (!fs.existsSync(skillsDir)) continue;
-      for (const entry of fs.readdirSync(skillsDir)) {
-        const skillMd = path.join(skillsDir, entry, 'SKILL.md');
-        if (!fs.existsSync(skillMd)) continue;
-        const stat = fs.statSync(skillMd);
-        // Only inject top-level index skills (< 20KB) to avoid prompt bloat.
-        // The model can read sub-skill files on demand.
-        if (stat.size > 20480) continue;
-        parts.push(`\n---\n\n# Skill: ${entry}\n\n${fs.readFileSync(skillMd, 'utf-8')}`);
+    // Ensure skills are accessible at ~/.codex/skills/
+    // The entrypoint symlinks .claude/skills/ → .codex/skills/, but if
+    // skills were mounted after entrypoint ran, we need to re-sync here.
+    const claudeSkills = '/home/node/.claude/skills';
+    const codexSkills = '/home/node/.codex/skills';
+    if (fs.existsSync(claudeSkills) && !fs.existsSync(codexSkills)) {
+      fs.mkdirSync(path.dirname(codexSkills), { recursive: true });
+      for (const entry of fs.readdirSync(claudeSkills)) {
+        const src = path.join(claudeSkills, entry);
+        const dst = path.join(codexSkills, entry);
+        if (fs.statSync(src).isDirectory() && !fs.existsSync(dst)) {
+          fs.symlinkSync(src, dst);
+        }
       }
-      break; // Use first existing skills dir
-    }
-
-    if (parts.length > 0) {
-      fs.writeFileSync('/workspace/group/AGENTS.md', parts.join('\n\n'));
-      ctx.log(`Wrote AGENTS.md with ${parts.length} sections (skills injected for Codex)`);
+      ctx.log(`Synced ${fs.readdirSync(codexSkills).length} skills to ${codexSkills}`);
     }
   }
 
