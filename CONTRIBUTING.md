@@ -9,6 +9,7 @@ We welcome contributions! Whether it's a new computation skill, a bug fix, or a 
 | Add a computation skill | Easy | Write a SKILL.md for a new calculation workflow |
 | Improve existing skills | Easy | Fix bugs, add methods, improve parameters in existing skills |
 | Add examples | Easy | Benchmark tasks with screenshots and results |
+| Submit benchmark test cases | Easy | Provide real-world tasks from your domain expertise to test MatClaw |
 | Report issues | Easy | Bugs, wrong results, missing capabilities |
 | Add a channel skill | Medium | Integrate a new messaging platform |
 | Core improvements | Hard | Agent runner, container, orchestrator |
@@ -311,6 +312,139 @@ examples/<task-name>/
 ```
 
 Update the results table in `README.md` / `README_zh.md`.
+
+---
+
+## Contributing Benchmark Test Cases
+
+**For domain experts in computational or experimental materials science.** You don't need to write code — just provide real-world tasks and reference answers so we can evaluate how well MatClaw performs and where it needs improvement.
+
+This is one of the most valuable contributions. MatClaw's skills are only as good as the benchmarks that validate them. Tasks from real research problems surface failure modes that synthetic tests miss.
+
+### What Makes a Good Test Case
+
+A good benchmark test case has:
+
+1. **A clear natural language task** — the prompt you'd send to MatClaw, as you would describe it to a knowledgeable colleague
+2. **A reference answer** — the expected result with source (literature, your own calculation, experiment)
+3. **Difficulty and domain tags** — so we can track coverage across subfields
+4. **Evaluation criteria** — how to judge if the result is correct (exact match, within N%, qualitative agreement)
+
+### Difficulty Levels
+
+| Level | Description | Example |
+|-------|-------------|---------|
+| **Basic** | Single calculation, textbook system | Band gap of Si, bulk modulus of Cu |
+| **Intermediate** | Multi-step workflow, parameter decisions | Phonon dispersion of a ternary oxide, adsorption isotherm with charge equilibration |
+| **Advanced** | Requires method selection, domain knowledge | DFT+U for correlated oxide, NEB for migration barrier with correct endpoint relaxation |
+| **Expert** | Multi-tool pipeline, non-obvious pitfalls | Phase diagram from high-throughput screening, thermal conductivity requiring converged phonon BTE |
+
+### How to Submit
+
+#### Option A: Open a GitHub Issue (easiest)
+
+Use the **Benchmark Test Case** issue template, or structure your issue like this:
+
+```markdown
+## Benchmark: [Short Title]
+
+**Domain:** [e.g., electronic structure, catalysis, thermodynamics, MD, MC, experimental comparison]
+**Difficulty:** [Basic / Intermediate / Advanced / Expert]
+**Computation engine:** [QE / LAMMPS / RASPA3 / MACE / any]
+
+### Task (natural language prompt)
+
+> Calculate the formation energy of a single oxygen vacancy in rutile TiO2 using DFT+U (U=4.2 eV on Ti-3d).
+
+### Reference Answer
+
+- **Value:** 4.2 ± 0.3 eV (depending on supercell size and U value)
+- **Source:** Morgan & Watson, PRB 80, 233102 (2009) / your own VASP calculation / experiment
+- **Method used for reference:** VASP PAW-PBE, 3×3×4 supercell, 450 eV cutoff, Γ-centered 2×2×2 k-mesh
+
+### Evaluation Criteria
+
+- [ ] Correctly identifies TiO2 as requiring DFT+U
+- [ ] Chooses reasonable U value for Ti-3d (3.5–5.0 eV)
+- [ ] Uses adequate supercell (at least 2×2×2)
+- [ ] Formation energy within 0.5 eV of reference
+- [ ] Correctly applies finite-size correction or notes the limitation
+
+### Known Pitfalls
+
+- Using bare PBE (no +U) gives ~1 eV, far too low
+- 1×1×1 unit cell has severe finite-size errors
+- Oxygen chemical potential choice matters: O2 molecule vs. bulk oxide reference
+
+### Notes (optional)
+
+Any additional context: why this is a meaningful test, what you'd expect a competent researcher to check, common mistakes students make, etc.
+```
+
+#### Option B: Submit a PR with structured YAML
+
+Add a file to `benchmarks/`:
+
+```
+benchmarks/
+├── electronic-structure/
+│   ├── si-band-gap.yaml
+│   └── tio2-vacancy-formation.yaml
+├── thermodynamics/
+│   └── al-melting-point.yaml
+└── README.md
+```
+
+Each YAML file:
+
+```yaml
+title: Oxygen vacancy formation energy in rutile TiO2
+domain: defects
+difficulty: advanced
+engine: QE  # or LAMMPS, RASPA3, MACE, any
+
+prompt: >
+  Calculate the formation energy of a single oxygen vacancy
+  in rutile TiO2 using DFT+U.
+
+reference:
+  value: "4.2 ± 0.3 eV"
+  source: "Morgan & Watson, PRB 80, 233102 (2009)"
+  method: "VASP PAW-PBE+U (U=4.2 eV), 3×3×4 supercell"
+
+evaluation:
+  - "Applies DFT+U with reasonable U value (3.5–5.0 eV)"
+  - "Uses supercell ≥ 2×2×2"
+  - "Formation energy within 0.5 eV of reference"
+
+pitfalls:
+  - "Bare PBE gives ~1 eV (too low)"
+  - "1×1×1 cell has severe finite-size errors"
+
+tags: [oxide, defect, DFT+U, correlated-electron]
+```
+
+### What Happens After You Submit
+
+1. We run MatClaw on your test case and record the result
+2. If it passes — great, it becomes part of our benchmark suite
+3. If it fails — we file an internal issue to improve the relevant skill
+4. Either way, your contribution is credited in the benchmark results
+
+### Ideas for Test Cases We Need
+
+We especially welcome test cases in these areas:
+
+| Area | Why |
+|------|-----|
+| **Experimental comparison** | Tasks where the reference is a measured value, not another calculation |
+| **Method selection** | Tasks where choosing the wrong method gives a plausible but wrong answer |
+| **Multi-step workflows** | Tasks requiring 3+ sequential calculations (e.g., relax → bands → DOS → effective mass) |
+| **Edge cases** | Unusual crystal symmetries, magnetic ordering, SOC effects, heavy elements |
+| **Cross-engine** | Tasks that can be done with both DFT and MLIP, to benchmark accuracy vs. speed tradeoffs |
+| **Negative tests** | Tasks where the correct answer is "this method can't reliably compute this" |
+
+You don't need to run MatClaw yourself — just describe the task and the expected answer. We handle the testing.
 
 ---
 

@@ -179,7 +179,10 @@ function buildVolumeMounts(
   if (fs.existsSync(codexAuthFile)) {
     // Ensure the target directory exists in the container's codex home
     const groupCodexDir = path.join(
-      DATA_DIR, 'sessions', group.folder, '.codex',
+      DATA_DIR,
+      'sessions',
+      group.folder,
+      '.codex',
     );
     fs.mkdirSync(groupCodexDir, { recursive: true });
     // Copy auth.json so it coexists with engine-generated config.toml
@@ -563,12 +566,17 @@ export async function runContainerAgent(
       if (AGENT_ENGINE === 'codex') {
         const hostAuthFile = path.join(os.homedir(), '.codex', 'auth.json');
         const groupAuthFile = path.join(
-          DATA_DIR, 'sessions', group.folder, '.codex', 'auth.json',
+          DATA_DIR,
+          'sessions',
+          group.folder,
+          '.codex',
+          'auth.json',
         );
         try {
           if (fs.existsSync(groupAuthFile)) {
             const hostStat = fs.existsSync(hostAuthFile)
-              ? fs.statSync(hostAuthFile).mtimeMs : 0;
+              ? fs.statSync(hostAuthFile).mtimeMs
+              : 0;
             const groupStat = fs.statSync(groupAuthFile).mtimeMs;
             if (groupStat > hostStat) {
               fs.mkdirSync(path.dirname(hostAuthFile), { recursive: true });
