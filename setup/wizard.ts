@@ -2,10 +2,10 @@
 /**
  * MatClaw Interactive Setup Wizard
  *
- * A beautiful, guided CLI that walks users through the complete
- * installation process — from zero to running agent.
+ * Claude Code–inspired terminal UI with box-drawn panels, animated
+ * progress, gradient colors, and a polished feel.
  *
- * Usage: npm run setup:wizard
+ * Usage: npm run setup
  */
 import { execSync, spawn } from 'child_process';
 import fs from 'fs';
@@ -13,340 +13,365 @@ import path from 'path';
 import { select, confirm, checkbox } from '@inquirer/prompts';
 import ora from 'ora';
 
-// ── ANSI Colors & Styles ────────────────────────────────────────────────────
+// ── ANSI ────────────────────────────────────────────────────────────────────
 
+const ESC = '\x1b';
 const c = {
-  reset: '\x1b[0m',
-  bold: '\x1b[1m',
-  dim: '\x1b[2m',
-  italic: '\x1b[3m',
-  underline: '\x1b[4m',
-  // Colors
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
-  white: '\x1b[37m',
-  // Bright
-  brightRed: '\x1b[91m',
-  brightGreen: '\x1b[92m',
-  brightYellow: '\x1b[93m',
-  brightBlue: '\x1b[94m',
-  brightMagenta: '\x1b[95m',
-  brightCyan: '\x1b[96m',
-  // BG
-  bgBlue: '\x1b[44m',
-  bgMagenta: '\x1b[45m',
-  bgCyan: '\x1b[46m',
+  reset: `${ESC}[0m`,
+  bold: `${ESC}[1m`,
+  dim: `${ESC}[2m`,
+  italic: `${ESC}[3m`,
+  underline: `${ESC}[4m`,
+  red: `${ESC}[31m`,
+  green: `${ESC}[32m`,
+  yellow: `${ESC}[33m`,
+  blue: `${ESC}[34m`,
+  magenta: `${ESC}[35m`,
+  cyan: `${ESC}[36m`,
+  white: `${ESC}[37m`,
+  brightRed: `${ESC}[91m`,
+  brightGreen: `${ESC}[92m`,
+  brightYellow: `${ESC}[93m`,
+  brightBlue: `${ESC}[94m`,
+  brightMagenta: `${ESC}[95m`,
+  brightCyan: `${ESC}[96m`,
+  brightWhite: `${ESC}[97m`,
+  // 256-colour for gradient
+  fg: (n: number) => `${ESC}[38;5;${n}m`,
 };
 
-// ── UI Helpers ──────────────────────────────────────────────────────────────
+const cols = Math.min(process.stdout.columns || 80, 76);
 
-function clearScreen(): void {
-  process.stdout.write('\x1b[2J\x1b[H');
-}
+// ── Utility ─────────────────────────────────────────────────────────────────
 
 function println(text = ''): void {
   console.log(text);
 }
 
-function printBanner(): void {
-  const claw = `${c.brightRed}
-    ╔╦╗┌─┐┌┬┐${c.brightCyan}╔═╗┬  ┌─┐┬ ┬${c.reset}
-    ${c.brightRed}║║║├─┤ │ ${c.brightCyan}║  │  ├─┤│││${c.reset}
-    ${c.brightRed}╩ ╩┴ ┴ ┴ ${c.brightCyan}╚═╝┴─┘┴ ┴└┴┘${c.reset}`;
-
-  println(claw);
-  println();
-  println(`  ${c.dim}AI-Powered Autonomous Materials Science Agent${c.reset}`);
-  println(`  ${c.dim}────────────────────────────────────────────${c.reset}`);
-  println();
-}
-
-function printStep(current: number, total: number, title: string): void {
-  const progress = '█'.repeat(current) + '░'.repeat(total - current);
-  println(`  ${c.brightCyan}[${progress}]${c.reset} ${c.bold}Step ${current}/${total}: ${title}${c.reset}`);
-  println();
-}
-
-function printSuccess(msg: string): void {
-  println(`  ${c.brightGreen}✓${c.reset} ${msg}`);
-}
-
-function printWarning(msg: string): void {
-  println(`  ${c.brightYellow}⚠${c.reset} ${msg}`);
-}
-
-function printError(msg: string): void {
-  println(`  ${c.brightRed}✗${c.reset} ${msg}`);
-}
-
-function printInfo(msg: string): void {
-  println(`  ${c.brightBlue}ℹ${c.reset} ${msg}`);
-}
-
-function printDivider(): void {
-  println(`  ${c.dim}${'─'.repeat(56)}${c.reset}`);
-}
-
-function commandExists(cmd: string): boolean {
-  try {
-    execSync(`command -v ${cmd}`, { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function dockerRunning(): boolean {
-  try {
-    execSync('docker info', { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
+function clearScreen(): void {
+  process.stdout.write(`${ESC}[2J${ESC}[H`);
 }
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// ── Step 1: Environment Check ───────────────────────────────────────────────
+function commandExists(cmd: string): boolean {
+  try { execSync(`command -v ${cmd}`, { stdio: 'ignore' }); return true; } catch { return false; }
+}
 
-async function step1_environment(): Promise<{ docker: boolean; node: boolean }> {
-  printStep(1, 7, 'Environment Check');
+function dockerRunning(): boolean {
+  try { execSync('docker info', { stdio: 'ignore' }); return true; } catch { return false; }
+}
 
-  const checks = [
-    { name: 'Node.js', cmd: 'node', version: () => {
-      try { return execSync('node --version', { encoding: 'utf-8' }).trim(); } catch { return null; }
-    }},
-    { name: 'npm', cmd: 'npm', version: () => {
-      try { return execSync('npm --version', { encoding: 'utf-8' }).trim(); } catch { return null; }
-    }},
-    { name: 'Docker', cmd: 'docker', version: () => {
-      try { return execSync('docker --version', { encoding: 'utf-8' }).trim().replace('Docker version ', ''); } catch { return null; }
-    }},
-    { name: 'Git', cmd: 'git', version: () => {
-      try { return execSync('git --version', { encoding: 'utf-8' }).trim().replace('git version ', ''); } catch { return null; }
-    }},
+function stripAnsi(s: string): string {
+  return s.replace(/\x1b\[[0-9;]*m/g, '');
+}
+
+// ── Box Drawing ─────────────────────────────────────────────────────────────
+
+const BOX_W = cols;
+
+function boxTop(title?: string): string {
+  if (title) {
+    const t = ` ${title} `;
+    const vis = stripAnsi(t).length;
+    const remaining = BOX_W - 2 - vis;
+    const left = 2;
+    const right = Math.max(0, remaining - left);
+    return `  ${c.dim}╭${'─'.repeat(left)}${c.reset}${c.bold}${c.brightCyan}${t}${c.reset}${c.dim}${'─'.repeat(right)}╮${c.reset}`;
+  }
+  return `  ${c.dim}╭${'─'.repeat(BOX_W - 2)}╮${c.reset}`;
+}
+
+function boxLine(text: string): string {
+  const vis = stripAnsi(text).length;
+  const pad = Math.max(0, BOX_W - 4 - vis);
+  return `  ${c.dim}│${c.reset} ${text}${' '.repeat(pad)} ${c.dim}│${c.reset}`;
+}
+
+function boxEmpty(): string {
+  return `  ${c.dim}│${' '.repeat(BOX_W - 2)}│${c.reset}`;
+}
+
+function boxBottom(): string {
+  return `  ${c.dim}╰${'─'.repeat(BOX_W - 2)}╯${c.reset}`;
+}
+
+function boxDivider(): string {
+  return `  ${c.dim}├${'─'.repeat(BOX_W - 2)}┤${c.reset}`;
+}
+
+// ── Gradient Text ───────────────────────────────────────────────────────────
+
+// 256-colour gradient: red → magenta → cyan → blue
+const GRADIENT = [196, 197, 198, 199, 200, 164, 128, 92, 56, 57, 63, 69, 75, 81, 45, 39, 33, 27];
+
+function gradient(text: string): string {
+  const chars = [...text];
+  return chars.map((ch, i) => {
+    if (ch === ' ') return ch;
+    const idx = Math.floor((i / Math.max(chars.length - 1, 1)) * (GRADIENT.length - 1));
+    return `${c.fg(GRADIENT[idx])}${c.bold}${ch}${c.reset}`;
+  }).join('');
+}
+
+// ── Animated Typing ─────────────────────────────────────────────────────────
+
+async function typewrite(text: string, delay = 12): Promise<void> {
+  for (const ch of text) {
+    process.stdout.write(ch);
+    await sleep(delay);
+  }
+  println();
+}
+
+// ── Banner ──────────────────────────────────────────────────────────────────
+
+async function printBanner(): Promise<void> {
+  const logo = [
+    '  ███╗   ███╗ █████╗ ████████╗ ██████╗██╗      █████╗ ██╗    ██╗',
+    '  ████╗ ████║██╔══██╗╚══██╔══╝██╔════╝██║     ██╔══██╗██║    ██║',
+    '  ██╔████╔██║███████║   ██║   ██║     ██║     ███████║██║ █╗ ██║',
+    '  ██║╚██╔╝██║██╔══██║   ██║   ██║     ██║     ██╔══██║██║███╗██║',
+    '  ██║ ╚═╝ ██║██║  ██║   ██║   ╚██████╗███████╗██║  ██║╚███╔███╔╝',
+    '  ╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝ ',
+  ];
+
+  for (const line of logo) {
+    println(gradient(line));
+    await sleep(40);
+  }
+  println();
+  await typewrite(`  ${c.dim}AI-Powered Autonomous Materials Science Agent${c.reset}`, 15);
+  println();
+}
+
+// ── Step Header ─────────────────────────────────────────────────────────────
+
+const TOTAL_STEPS = 7;
+
+function stepHeader(n: number, title: string): void {
+  const filled = n;
+  const empty = TOTAL_STEPS - n;
+  // Gradient progress bar
+  let bar = '';
+  for (let i = 0; i < filled; i++) {
+    const idx = Math.floor((i / Math.max(TOTAL_STEPS - 1, 1)) * (GRADIENT.length - 1));
+    bar += `${c.fg(GRADIENT[idx])}━${c.reset}`;
+  }
+  bar += `${c.dim}${'╌'.repeat(empty)}${c.reset}`;
+
+  println(boxTop(`Step ${n}/${TOTAL_STEPS}`));
+  println(boxLine(`${bar}  ${c.bold}${c.brightWhite}${title}${c.reset}`));
+  println(boxDivider());
+}
+
+function stepFooter(): void {
+  println(boxBottom());
+  println();
+}
+
+// ── Status Icons ────────────────────────────────────────────────────────────
+
+function ok(msg: string): void {
+  println(boxLine(`${c.brightGreen}✔${c.reset}  ${msg}`));
+}
+
+function warn(msg: string): void {
+  println(boxLine(`${c.brightYellow}⚠${c.reset}  ${msg}`));
+}
+
+function fail(msg: string): void {
+  println(boxLine(`${c.brightRed}✖${c.reset}  ${msg}`));
+}
+
+function info(msg: string): void {
+  println(boxLine(`${c.brightCyan}│${c.reset}  ${msg}`));
+}
+
+// ── Step 1: Environment ─────────────────────────────────────────────────────
+
+async function step1(): Promise<{ docker: boolean }> {
+  stepHeader(1, 'Environment');
+
+  const checks: { name: string; cmd: string; getVer: () => string | null; required: boolean }[] = [
+    { name: 'Node.js', cmd: 'node', required: true,
+      getVer: () => { try { return execSync('node --version', { encoding: 'utf-8' }).trim(); } catch { return null; } } },
+    { name: 'npm', cmd: 'npm', required: true,
+      getVer: () => { try { return execSync('npm --version', { encoding: 'utf-8' }).trim(); } catch { return null; } } },
+    { name: 'Docker', cmd: 'docker', required: false,
+      getVer: () => { try { return execSync('docker --version', { encoding: 'utf-8' }).trim().replace('Docker version ', '').split(',')[0]; } catch { return null; } } },
+    { name: 'Git', cmd: 'git', required: false,
+      getVer: () => { try { return execSync('git --version', { encoding: 'utf-8' }).trim().replace('git version ', ''); } catch { return null; } } },
   ];
 
   let nodeOk = false;
   let dockerOk = false;
 
-  for (const check of checks) {
-    const exists = commandExists(check.cmd);
-    const ver = exists ? check.version() : null;
+  for (const chk of checks) {
+    const exists = commandExists(chk.cmd);
+    const ver = exists ? chk.getVer() : null;
+    await sleep(80);
 
     if (exists) {
-      printSuccess(`${check.name} ${c.dim}${ver || ''}${c.reset}`);
-      if (check.cmd === 'node') nodeOk = true;
-      if (check.cmd === 'docker') dockerOk = true;
+      ok(`${c.bold}${chk.name}${c.reset} ${c.dim}${ver ?? ''}${c.reset}`);
+      if (chk.cmd === 'node') nodeOk = true;
+      if (chk.cmd === 'docker') dockerOk = true;
+    } else if (chk.required) {
+      fail(`${chk.name} ${c.red}— required${c.reset}`);
     } else {
-      if (check.cmd === 'node' || check.cmd === 'npm') {
-        printError(`${check.name} — ${c.red}required${c.reset}`);
-      } else {
-        printWarning(`${check.name} — not found (optional)`);
-      }
+      warn(`${chk.name} ${c.dim}— not found (optional)${c.reset}`);
     }
   }
 
   if (dockerOk) {
+    await sleep(80);
     if (dockerRunning()) {
-      printSuccess(`Docker daemon ${c.dim}running${c.reset}`);
+      ok(`Docker daemon ${c.dim}running${c.reset}`);
     } else {
-      printWarning('Docker installed but not running — please start Docker');
+      warn('Docker daemon not running');
       dockerOk = false;
     }
   }
 
-  println();
+  stepFooter();
 
   if (!nodeOk) {
-    printError('Node.js is required. Install from https://nodejs.org/');
+    println(`  ${c.brightRed}Node.js is required. Install from https://nodejs.org/${c.reset}`);
     process.exit(1);
   }
 
-  return { docker: dockerOk, node: nodeOk };
+  return { docker: dockerOk };
 }
 
-// ── Step 2: Install Dependencies ────────────────────────────────────────────
+// ── Step 2: Dependencies ────────────────────────────────────────────────────
 
-async function step2_dependencies(): Promise<void> {
-  printStep(2, 7, 'Install Dependencies');
+async function step2(): Promise<void> {
+  stepHeader(2, 'Dependencies');
 
-  const nodeModulesExists = fs.existsSync(path.join(process.cwd(), 'node_modules'));
-
-  if (nodeModulesExists) {
-    const pkgLockTime = fs.statSync(path.join(process.cwd(), 'package-lock.json')).mtimeMs;
-    const nodeModTime = fs.statSync(path.join(process.cwd(), 'node_modules')).mtimeMs;
-
-    if (nodeModTime > pkgLockTime) {
-      printSuccess('Dependencies already installed and up to date');
-      println();
-      return;
-    }
+  const nmExists = fs.existsSync(path.join(process.cwd(), 'node_modules'));
+  if (nmExists) {
+    try {
+      const lockTime = fs.statSync(path.join(process.cwd(), 'package-lock.json')).mtimeMs;
+      const nmTime = fs.statSync(path.join(process.cwd(), 'node_modules')).mtimeMs;
+      if (nmTime > lockTime) {
+        ok('All dependencies up to date');
+        stepFooter();
+        return;
+      }
+    } catch { /* proceed to install */ }
   }
 
-  const spinner = ora({ text: 'Installing npm dependencies...', indent: 2 }).start();
+  println(boxLine(`${c.dim}Running npm install...${c.reset}`));
+  stepFooter();
 
+  const spinner = ora({ text: 'Installing dependencies...', indent: 4 }).start();
   try {
-    execSync('npm install', {
-      cwd: process.cwd(),
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    execSync('npm install', { cwd: process.cwd(), stdio: ['ignore', 'pipe', 'pipe'] });
     spinner.succeed('Dependencies installed');
-  } catch (err) {
-    spinner.fail('npm install failed');
-    printError('Run `npm install` manually to see the error');
+  } catch {
+    spinner.fail('npm install failed — run manually to see errors');
     process.exit(1);
   }
-
   println();
 }
 
-// ── Step 3: Container Setup ─────────────────────────────────────────────────
+// ── Step 3: Container ───────────────────────────────────────────────────────
 
-async function step3_container(hasDocker: boolean): Promise<void> {
-  printStep(3, 7, 'Container Setup');
+async function step3(hasDocker: boolean): Promise<void> {
+  stepHeader(3, 'Container');
 
   if (!hasDocker) {
-    printWarning('Docker not available — skipping container setup');
-    printInfo('You can set up the container later with: ./container/build.sh');
-    println();
+    warn('Docker not available — skipping');
+    info(`${c.dim}Run ./container/build.sh later to set up${c.reset}`);
+    stepFooter();
     return;
   }
 
-  // Check if image already exists
   let imageExists = false;
-  try {
-    execSync('docker image inspect matclaw-agent:latest', { stdio: 'ignore' });
-    imageExists = true;
-  } catch {
-    // Image not found
-  }
+  try { execSync('docker image inspect matclaw-agent:latest', { stdio: 'ignore' }); imageExists = true; } catch {}
 
   if (imageExists) {
-    const rebuild = await confirm({
-      message: 'Container image already exists. Rebuild?',
-      default: false,
-    });
-    if (!rebuild) {
-      printSuccess('Using existing container image');
-      println();
-      return;
-    }
+    ok('Container image found');
+    stepFooter();
+
+    const rebuild = await confirm({ message: '  Rebuild container image?', default: false });
+    if (!rebuild) return;
+    println();
+    stepHeader(3, 'Container — Rebuild');
   }
 
+  stepFooter();
+
   const method = await select({
-    message: 'How would you like to get the container?',
+    message: '  Container setup method',
     choices: [
-      {
-        value: 'pull',
-        name: `${c.brightGreen}⬇  Pull pre-built image${c.reset} ${c.dim}(fastest, ~2 min)${c.reset}`,
-      },
-      {
-        value: 'build',
-        name: `${c.yellow}🔨 Build from source${c.reset} ${c.dim}(~10 min, compiles QE 7.5)${c.reset}`,
-      },
-      {
-        value: 'build-cuda',
-        name: `${c.magenta}🎮 Build with GPU/CUDA${c.reset} ${c.dim}(~15 min, requires NVIDIA toolkit)${c.reset}`,
-      },
-      {
-        value: 'skip',
-        name: `${c.dim}⏭  Skip for now${c.reset}`,
-      },
+      { value: 'pull',       name: `  ${c.brightGreen}⬇  Pull pre-built${c.reset}      ${c.dim}fastest, ~2 min${c.reset}` },
+      { value: 'build',      name: `  ${c.yellow}🔨 Build from source${c.reset}   ${c.dim}~10 min, compiles QE${c.reset}` },
+      { value: 'build-cuda', name: `  ${c.magenta}🎮 Build with CUDA${c.reset}     ${c.dim}~15 min, GPU support${c.reset}` },
+      { value: 'skip',       name: `  ${c.dim}⏭  Skip${c.reset}` },
     ],
   });
 
-  if (method === 'skip') {
-    printWarning('Skipped — run `./container/build.sh` later');
-    println();
-    return;
-  }
+  println();
+
+  if (method === 'skip') return;
 
   if (method === 'pull') {
-    const spinner = ora({ text: 'Pulling ghcr.io/dingyanglyu/matclaw-agent:latest...', indent: 2 }).start();
+    const spinner = ora({ text: 'Pulling ghcr.io/dingyanglyu/matclaw-agent:latest ...', indent: 4 }).start();
     try {
-      execSync('docker pull ghcr.io/dingyanglyu/matclaw-agent:latest', {
-        stdio: ['ignore', 'pipe', 'pipe'],
-      });
-      execSync('docker tag ghcr.io/dingyanglyu/matclaw-agent:latest matclaw-agent:latest', {
-        stdio: 'ignore',
-      });
-      spinner.succeed('Container image pulled and tagged');
+      execSync('docker pull ghcr.io/dingyanglyu/matclaw-agent:latest', { stdio: ['ignore', 'pipe', 'pipe'] });
+      execSync('docker tag ghcr.io/dingyanglyu/matclaw-agent:latest matclaw-agent:latest', { stdio: 'ignore' });
+      spinner.succeed('Image pulled and tagged');
     } catch {
-      spinner.fail('Pull failed — try building from source instead');
+      spinner.fail('Pull failed — try building from source');
     }
-  } else if (method === 'build' || method === 'build-cuda') {
-    const buildArgs = method === 'build-cuda' ? '--cuda' : '';
-    printInfo(`Building container${buildArgs ? ' with CUDA' : ''}... this may take a while`);
-    println();
-
+  } else {
+    const cuda = method === 'build-cuda' ? ' --cuda' : '';
+    println(`  ${c.dim}Building container${cuda}...${c.reset}`);
     try {
-      const buildScript = path.join(process.cwd(), 'container', 'build.sh');
-      execSync(`bash ${buildScript} ${buildArgs}`, {
-        cwd: process.cwd(),
-        stdio: 'inherit',
-      });
-      printSuccess('Container built successfully');
+      execSync(`bash ${path.join(process.cwd(), 'container', 'build.sh')}${cuda}`, { cwd: process.cwd(), stdio: 'inherit' });
     } catch {
-      printError('Build failed — check the output above for errors');
+      println(`  ${c.brightRed}Build failed${c.reset}`);
     }
   }
 
   println();
 }
 
-// ── Step 4: API Configuration ───────────────────────────────────────────────
+// ── Step 4: API ─────────────────────────────────────────────────────────────
 
-async function step4_api(): Promise<void> {
-  printStep(4, 7, 'API Provider Configuration');
+async function step4(): Promise<void> {
+  stepHeader(4, 'API Provider');
 
-  // Check if already configured
-  const envPath = path.join(process.cwd(), '.env');
-  let alreadyConfigured = false;
-  if (fs.existsSync(envPath)) {
-    const content = fs.readFileSync(envPath, 'utf-8');
-    if (/^(ANTHROPIC_API_KEY|OPENAI_API_KEY|CLAUDE_CODE_OAUTH_TOKEN)=/m.test(content)) {
-      alreadyConfigured = true;
-    }
+  const envFile = path.join(process.cwd(), '.env');
+  let configured = false;
+  if (fs.existsSync(envFile)) {
+    const txt = fs.readFileSync(envFile, 'utf-8');
+    configured = /^(ANTHROPIC_API_KEY|OPENAI_API_KEY|CLAUDE_CODE_OAUTH_TOKEN)=/m.test(txt);
   }
 
-  if (alreadyConfigured) {
-    printSuccess('API credentials already configured');
-    const reconfigure = await confirm({
-      message: 'Reconfigure API provider?',
-      default: false,
-    });
-    if (!reconfigure) {
-      println();
-      return;
-    }
+  if (configured) {
+    ok('API credentials configured');
+    stepFooter();
+    const redo = await confirm({ message: '  Reconfigure API provider?', default: false });
+    if (!redo) return;
+    println();
+  } else {
+    info('No API credentials detected');
+    stepFooter();
   }
 
-  printInfo('Launching API configuration wizard...');
-  println();
+  println(`  ${c.dim}Launching API wizard...${c.reset}\n`);
 
-  // Run the existing configure-api wizard
   try {
-    const child = spawn('npx', ['tsx', 'setup/index.ts', '--step', 'configure-api'], {
-      cwd: process.cwd(),
-      stdio: 'inherit',
-    });
+    const child = spawn('npx', ['tsx', 'setup/index.ts', '--step', 'configure-api'], { cwd: process.cwd(), stdio: 'inherit' });
     await new Promise<void>((resolve, reject) => {
-      child.on('close', (code) => {
-        if (code === 0) resolve();
-        else reject(new Error(`configure-api exited with code ${code}`));
-      });
+      child.on('close', code => code === 0 ? resolve() : reject(new Error(`exit ${code}`)));
     });
-    printSuccess('API provider configured');
   } catch {
-    printWarning('API configuration skipped or failed');
-    printInfo('You can configure later with: npm run setup:api');
+    println(`  ${c.brightYellow}Skipped or failed — run npm run setup:api later${c.reset}`);
   }
 
   println();
@@ -354,62 +379,42 @@ async function step4_api(): Promise<void> {
 
 // ── Step 5: Smoke Test ──────────────────────────────────────────────────────
 
-async function step5_smokeTest(hasDocker: boolean): Promise<void> {
-  printStep(5, 7, 'Smoke Test');
+async function step5(hasDocker: boolean): Promise<void> {
+  stepHeader(5, 'Smoke Test');
 
-  if (!hasDocker) {
-    printWarning('Docker not available — skipping smoke test');
-    println();
-    return;
-  }
+  if (!hasDocker) { warn('Docker not available — skipping'); stepFooter(); return; }
 
-  // Check if image exists
-  try {
-    execSync('docker image inspect matclaw-agent:latest', { stdio: 'ignore' });
-  } catch {
-    printWarning('No container image found — skipping smoke test');
-    println();
-    return;
-  }
+  try { execSync('docker image inspect matclaw-agent:latest', { stdio: 'ignore' }); }
+  catch { warn('No container image — skipping'); stepFooter(); return; }
 
-  const runTest = await confirm({
-    message: 'Run container smoke test? (verifies QE, LAMMPS, MACE, Python packages)',
-    default: true,
-  });
+  info('Verifies: QE, LAMMPS, MACE, pymatgen, ASE, PyTorch, Node.js');
+  stepFooter();
 
-  if (!runTest) {
-    printWarning('Skipped');
-    println();
-    return;
-  }
+  const run = await confirm({ message: '  Run smoke test?', default: true });
+  if (!run) return;
 
-  const spinner = ora({ text: 'Running smoke test inside container...', indent: 2 }).start();
+  println();
+  const spinner = ora({ text: 'Running smoke test inside container...', indent: 4 }).start();
 
   try {
-    const smokeTestPath = path.join(process.cwd(), 'container', 'smoke-test.py');
-    if (fs.existsSync(smokeTestPath)) {
-      const output = execSync(
-        'docker run --rm -v ./container/smoke-test.py:/tmp/smoke-test.py matclaw-agent:latest bash -c "python3 /tmp/smoke-test.py"',
-        { encoding: 'utf-8', cwd: process.cwd(), timeout: 120000 }
-      );
-      const passed = output.includes('PASSED');
-      const failed = output.includes('FAILED');
+    const smokeTest = path.join(process.cwd(), 'container', 'smoke-test.py');
+    if (!fs.existsSync(smokeTest)) { spinner.info('smoke-test.py not found'); return; }
 
-      if (failed) {
-        spinner.warn('Some tests failed');
-        println();
-        // Print last few lines
-        const lines = output.trim().split('\n').slice(-12);
-        for (const line of lines) {
-          if (line.includes('PASS')) printSuccess(line.trim());
-          else if (line.includes('FAIL')) printError(line.trim());
-          else printInfo(line.trim());
-        }
-      } else {
-        spinner.succeed('All smoke tests passed');
+    const output = execSync(
+      'docker run --rm -v ./container/smoke-test.py:/tmp/smoke-test.py matclaw-agent:latest bash -c "python3 /tmp/smoke-test.py"',
+      { encoding: 'utf-8', cwd: process.cwd(), timeout: 180000 },
+    );
+
+    if (output.includes('FAILED')) {
+      spinner.warn('Some checks failed');
+      println();
+      for (const line of output.trim().split('\n').slice(-12)) {
+        if (line.includes('PASS')) println(`    ${c.brightGreen}✔${c.reset} ${line.trim()}`);
+        else if (line.includes('FAIL')) println(`    ${c.brightRed}✖${c.reset} ${line.trim()}`);
+        else println(`    ${c.dim}${line.trim()}${c.reset}`);
       }
     } else {
-      spinner.info('Smoke test script not found — skipping');
+      spinner.succeed('All smoke tests passed');
     }
   } catch {
     spinner.fail('Smoke test failed or timed out');
@@ -418,198 +423,158 @@ async function step5_smokeTest(hasDocker: boolean): Promise<void> {
   println();
 }
 
-// ── Step 6: Messaging Channels ──────────────────────────────────────────────
+// ── Step 6: Channels ────────────────────────────────────────────────────────
 
-async function step6_channels(): Promise<void> {
-  printStep(6, 7, 'Messaging Channels (Optional)');
+async function step6(): Promise<void> {
+  stepHeader(6, 'Messaging Channels');
+  info(`${c.dim}The Web UI at localhost:3210 works without any channel.${c.reset}`);
+  info(`${c.dim}Channels let you chat from Feishu, Telegram, etc.${c.reset}`);
+  stepFooter();
 
-  println(`  ${c.dim}MatClaw can connect to messaging platforms so you can${c.reset}`);
-  println(`  ${c.dim}chat with your agent from anywhere. The Web UI at${c.reset}`);
-  println(`  ${c.dim}localhost:3210 is always available without any setup.${c.reset}`);
-  println();
-
-  const addChannels = await confirm({
-    message: 'Set up messaging channels now?',
-    default: false,
-  });
-
-  if (!addChannels) {
-    printInfo('Skipped — you can add channels anytime with /add-* commands in claude CLI');
-    println();
+  const add = await confirm({ message: '  Set up messaging channels now?', default: false });
+  if (!add) {
+    println(`  ${c.dim}Add anytime with /add-* commands in claude CLI${c.reset}\n`);
     return;
   }
 
+  println();
   const channels = await checkbox({
-    message: 'Select channels to configure:',
+    message: '  Select channels',
     choices: [
-      { value: 'feishu',    name: `${c.brightBlue}飞书 (Feishu)${c.reset}       ${c.dim}— WebSocket, no public URL needed. Recommended for China users${c.reset}` },
-      { value: 'dingtalk',  name: `${c.brightBlue}钉钉 (DingTalk)${c.reset}     ${c.dim}— Stream Mode, no public URL needed${c.reset}` },
-      { value: 'telegram',  name: `${c.brightCyan}Telegram${c.reset}             ${c.dim}— Bot API, works worldwide${c.reset}` },
-      { value: 'discord',   name: `${c.brightMagenta}Discord${c.reset}              ${c.dim}— Bot with slash commands${c.reset}` },
-      { value: 'slack',     name: `${c.brightYellow}Slack${c.reset}                ${c.dim}— Socket Mode, no public URL needed${c.reset}` },
-      { value: 'gmail',     name: `${c.brightRed}Gmail${c.reset}                ${c.dim}— Send tasks via email, receive results${c.reset}` },
-      { value: 'whatsapp',  name: `${c.brightGreen}WhatsApp${c.reset}             ${c.dim}— QR code authentication${c.reset}` },
+      { value: 'feishu',   name: `  ${c.brightBlue}飞书 Feishu${c.reset}     ${c.dim}WebSocket, no public URL${c.reset}` },
+      { value: 'dingtalk', name: `  ${c.brightBlue}钉钉 DingTalk${c.reset}   ${c.dim}Stream Mode, no public URL${c.reset}` },
+      { value: 'telegram', name: `  ${c.brightCyan}Telegram${c.reset}         ${c.dim}Bot API${c.reset}` },
+      { value: 'discord',  name: `  ${c.brightMagenta}Discord${c.reset}          ${c.dim}Bot with slash commands${c.reset}` },
+      { value: 'slack',    name: `  ${c.brightYellow}Slack${c.reset}            ${c.dim}Socket Mode${c.reset}` },
+      { value: 'gmail',    name: `  ${c.brightRed}Gmail${c.reset}            ${c.dim}Email-based tasks${c.reset}` },
+      { value: 'whatsapp', name: `  ${c.brightGreen}WhatsApp${c.reset}         ${c.dim}QR code auth${c.reset}` },
     ],
   });
 
   if (channels.length === 0) {
-    printInfo('No channels selected');
-    println();
+    println(`  ${c.dim}No channels selected${c.reset}\n`);
     return;
   }
 
   println();
-  printInfo('Channel setup requires the claude CLI. For each channel:');
-  println();
-
+  const guide: Record<string, string> = {
+    feishu: 'docs/feishu-setup.md → then claude /add-feishu',
+    dingtalk: 'docs/dingtalk-setup.md → then claude /add-dingtalk',
+    telegram: 'claude /add-telegram',
+    discord: 'claude /add-discord',
+    slack: 'claude /add-slack',
+    gmail: 'claude /add-gmail',
+    whatsapp: 'claude /add-whatsapp',
+  };
   for (const ch of channels) {
-    const cmdMap: Record<string, string> = {
-      feishu: 'See docs/feishu-setup.md for Feishu app creation, then run claude and type /add-feishu',
-      dingtalk: 'See docs/dingtalk-setup.md for DingTalk app creation, then run claude and type /add-dingtalk',
-      telegram: 'Run claude and type: /add-telegram',
-      discord: 'Run claude and type: /add-discord',
-      slack: 'Run claude and type: /add-slack',
-      gmail: 'Run claude and type: /add-gmail',
-      whatsapp: 'Run claude and type: /add-whatsapp',
-    };
-    printInfo(`${c.bold}${ch}${c.reset}: ${cmdMap[ch]}`);
+    println(`  ${c.brightCyan}→${c.reset} ${c.bold}${ch}${c.reset}: ${c.dim}${guide[ch]}${c.reset}`);
   }
-
   println();
 }
 
 // ── Step 7: Launch ──────────────────────────────────────────────────────────
 
-async function step7_launch(): Promise<void> {
-  printStep(7, 7, 'Launch MatClaw');
+async function step7(): Promise<void> {
+  // ── Completion banner ──
+  println();
+  println(boxTop());
+  println(boxEmpty());
+
+  const ready = '✨  MatClaw is ready!';
+  const readyGrad = gradient(ready);
+  const readyVis = stripAnsi(ready).length;
+  const readyPad = Math.max(0, BOX_W - 4 - readyVis);
+  println(`  ${c.dim}│${c.reset} ${readyGrad}${' '.repeat(readyPad)} ${c.dim}│${c.reset}`);
+
+  println(boxEmpty());
+  println(boxDivider());
+  println(boxLine(`${c.brightCyan}Quick commands${c.reset}`));
+  println(boxLine(`  ${c.bold}npm run dev${c.reset}            Start in development mode`));
+  println(boxLine(`  ${c.bold}npm run setup:api${c.reset}      Reconfigure API provider`));
+  println(boxLine(`  ${c.bold}./container/build.sh${c.reset}   Rebuild container`));
+  println(boxDivider());
+  println(boxLine(`${c.brightCyan}Chat commands${c.reset}`));
+  println(boxLine(`  ${c.bold}/watch${c.reset}    See what the agent is doing`));
+  println(boxLine(`  ${c.bold}/status${c.reset}   Check agent status`));
+  println(boxLine(`  ${c.bold}/stop${c.reset}     Stop running agent`));
+  println(boxLine(`  ${c.bold}/help${c.reset}     All commands`));
+  println(boxDivider());
+  println(boxLine(`${c.dim}https://github.com/DingyangLyu/MatClaw${c.reset}`));
+  println(boxBottom());
+  println();
+
+  stepHeader(7, 'Launch');
+  stepFooter();
 
   const action = await select({
-    message: 'How would you like to start MatClaw?',
+    message: '  How to start MatClaw?',
     choices: [
-      {
-        value: 'dev',
-        name: `${c.brightGreen}▶  Start now${c.reset} ${c.dim}(npm run dev — foreground, with hot reload)${c.reset}`,
-      },
-      {
-        value: 'service',
-        name: `${c.brightBlue}⚙  Install as service${c.reset} ${c.dim}(auto-start on boot — systemd/launchd)${c.reset}`,
-      },
-      {
-        value: 'skip',
-        name: `${c.dim}⏭  Don't start yet${c.reset}`,
-      },
+      { value: 'dev',     name: `  ${c.brightGreen}▶  Start now${c.reset}            ${c.dim}npm run dev (foreground)${c.reset}` },
+      { value: 'service', name: `  ${c.brightBlue}⚙  Install as service${c.reset}   ${c.dim}auto-start on boot${c.reset}` },
+      { value: 'skip',    name: `  ${c.dim}⏭  Don't start yet${c.reset}` },
     ],
   });
 
   if (action === 'skip') {
-    printInfo('You can start anytime with: npm run dev');
-    println();
+    println(`\n  ${c.dim}Start anytime with: npm run dev${c.reset}\n`);
     return;
   }
 
   if (action === 'service') {
-    const spinner = ora({ text: 'Setting up system service...', indent: 2 }).start();
-    try {
-      execSync('npx tsx setup/index.ts --step service', {
-        cwd: process.cwd(),
-        stdio: ['ignore', 'pipe', 'pipe'],
-      });
-      spinner.succeed('Service installed and started');
-      printInfo('Manage with: systemctl --user {start|stop|restart} matclaw');
-    } catch {
-      spinner.fail('Service setup failed');
-      printInfo('Start manually with: npm run dev');
-    }
     println();
+    const spinner = ora({ text: 'Setting up system service...', indent: 4 }).start();
+    try {
+      execSync('npx tsx setup/index.ts --step service', { cwd: process.cwd(), stdio: ['ignore', 'pipe', 'pipe'] });
+      spinner.succeed('Service installed and started');
+      println(`  ${c.dim}Manage: systemctl --user {start|stop|restart} matclaw${c.reset}\n`);
+    } catch {
+      spinner.fail('Service setup failed — start manually with npm run dev');
+    }
     return;
   }
 
-  // action === 'dev'
+  // dev mode
   println();
-  printDivider();
-  println();
-  printSuccess(`${c.bold}Setup complete!${c.reset} Starting MatClaw...`);
-  println();
-  println(`  ${c.brightCyan}🌐 Web UI:${c.reset}     http://localhost:3210`);
-  println(`  ${c.brightCyan}📊 Dashboard:${c.reset}  http://localhost:3210`);
-  println(`  ${c.dim}   Press Ctrl+C to stop${c.reset}`);
-  println();
-  printDivider();
+  println(`  ${c.brightCyan}🌐 Web UI:${c.reset}     ${c.underline}http://localhost:3210${c.reset}`);
+  println(`  ${c.dim}   Ctrl+C to stop${c.reset}`);
   println();
 
-  // Hand off to npm run dev
-  const child = spawn('npm', ['run', 'dev'], {
-    cwd: process.cwd(),
-    stdio: 'inherit',
-  });
-
-  child.on('close', (code) => {
-    process.exit(code ?? 0);
-  });
-
-  // Forward signals
+  const child = spawn('npm', ['run', 'dev'], { cwd: process.cwd(), stdio: 'inherit' });
+  child.on('close', code => process.exit(code ?? 0));
   process.on('SIGINT', () => child.kill('SIGINT'));
   process.on('SIGTERM', () => child.kill('SIGTERM'));
-
-  // Keep process alive
   await new Promise(() => {});
-}
-
-// ── Completion Banner ───────────────────────────────────────────────────────
-
-function printCompletionBanner(): void {
-  println();
-  printDivider();
-  println();
-  println(`  ${c.brightGreen}${c.bold}✨ MatClaw is ready!${c.reset}`);
-  println();
-  println(`  ${c.brightCyan}Quick commands:${c.reset}`);
-  println(`    ${c.bold}npm run dev${c.reset}           Start in development mode`);
-  println(`    ${c.bold}npm run setup:api${c.reset}     Reconfigure API provider`);
-  println(`    ${c.bold}./container/build.sh${c.reset}  Rebuild container`);
-  println();
-  println(`  ${c.brightCyan}In chat:${c.reset}`);
-  println(`    ${c.bold}/watch${c.reset}   See what the agent is doing`);
-  println(`    ${c.bold}/status${c.reset}  Check agent status`);
-  println(`    ${c.bold}/stop${c.reset}    Stop running agent`);
-  println(`    ${c.bold}/help${c.reset}    All commands`);
-  println();
-  println(`  ${c.dim}Documentation: https://github.com/DingyangLyu/MatClaw${c.reset}`);
-  println();
-  printDivider();
-  println();
 }
 
 // ── Main ────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
   clearScreen();
-  printBanner();
-
-  const { docker } = await step1_environment();
-  await sleep(300);
-
-  await step2_dependencies();
+  await printBanner();
   await sleep(200);
 
-  await step3_container(docker);
+  const { docker } = await step1();
   await sleep(200);
 
-  await step4_api();
-  await sleep(200);
+  await step2();
+  await sleep(150);
 
-  await step5_smokeTest(docker);
-  await sleep(200);
+  await step3(docker);
+  await sleep(150);
 
-  await step6_channels();
-  await sleep(200);
+  await step4();
+  await sleep(150);
 
-  printCompletionBanner();
+  await step5(docker);
+  await sleep(150);
 
-  await step7_launch();
+  await step6();
+  await sleep(150);
+
+  await step7();
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error(`\n${c.brightRed}Setup failed:${c.reset}`, err.message);
   process.exit(1);
 });
