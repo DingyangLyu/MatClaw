@@ -15,7 +15,34 @@ import { getRecentMessages, type WebChatThread } from '../db.js';
 import { handleWebChatMessage, setWebBroadcast } from '../channels/web.js';
 import type { ChannelOpts } from '../channels/registry.js';
 
-const PORT = parseInt(process.env.DASHBOARD_PORT || '3210', 10); // v4: compact md, no breaks, hide br
+const PORT = parseInt(process.env.DASHBOARD_PORT || '3210', 10);
+
+/** Recursively search for a file by basename within a directory (max 3 levels deep). */
+function findFileRecursive(
+  dir: string,
+  basename: string,
+  root: string,
+  depth = 0,
+): string | null {
+  if (depth > 3) return null;
+  try {
+    for (const entry of fs.readdirSync(dir)) {
+      const full = path.join(dir, entry);
+      if (entry === basename && fs.statSync(full).isFile()) return full;
+      if (
+        depth < 3 &&
+        fs.statSync(full).isDirectory() &&
+        !entry.startsWith('.')
+      ) {
+        const found = findFileRecursive(full, basename, root, depth + 1);
+        if (found) return found;
+      }
+    }
+  } catch {
+    /* permission or read error, skip */
+  }
+  return null;
+} // v4: compact md, no breaks, hide br
 
 let wss: WebSocketServer;
 
@@ -32,6 +59,123 @@ interface WebChatController {
         activeSession: WebChatThread;
       }
     | undefined;
+}
+
+interface ChatArtifact {
+  path: string;
+  name: string;
+  kind: 'image' | 'file';
+  source: 'conversation' | 'workspace';
+  size?: number;
+  modified?: string;
+}
+
+function detectArtifactKind(filePath: string): 'image' | 'file' {
+  return /\.(png|jpe?g|gif|webp|svg)$/i.test(filePath) ? 'image' : 'file';
+}
+
+function extractArtifactRefs(
+  text: string,
+): Array<{ path: string; kind: 'image' | 'file' }> {
+  const seen = new Set<string>();
+  const results: Array<{ path: string; kind: 'image' | 'file' }> = [];
+  const add = (filePath: string, kind?: 'image' | 'file') => {
+    const clean = String(filePath || '').trim();
+    if (!clean || seen.has(clean)) return;
+    seen.add(clean);
+    results.push({ path: clean, kind: kind || detectArtifactKind(clean) });
+  };
+
+  for (const match of text.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)) {
+    add(match[1], 'image');
+  }
+  for (const match of text.matchAll(/\[file:([^\]]+)\]/g)) {
+    add(match[1], 'file');
+  }
+  for (const match of text.matchAll(/\[Attached (image|file): ([^\]]+)\]/g)) {
+    add(match[2], match[1] === 'image' ? 'image' : 'file');
+  }
+
+  return results;
+}
+
+function listWorkspaceArtifacts(groupFolder: string): ChatArtifact[] {
+  const root = path.join(GROUPS_DIR, groupFolder);
+  if (!fs.existsSync(root)) return [];
+
+  const allowedExt = new Set([
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.webp',
+    '.svg',
+    '.pdf',
+    '.csv',
+    '.tsv',
+    '.xlsx',
+    '.xls',
+    '.json',
+    '.md',
+    '.txt',
+    '.html',
+    '.zip',
+  ]);
+  const ignoredDirs = new Set(['logs', '.claude', 'conversations']);
+  const items: ChatArtifact[] = [];
+
+  const walk = (dir: string, depth: number) => {
+    if (depth > 4 || items.length >= 120) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name.startsWith('.') && entry.name !== '.well-known') continue;
+      if (entry.isDirectory()) {
+        if (ignoredDirs.has(entry.name)) continue;
+        walk(path.join(dir, entry.name), depth + 1);
+        continue;
+      }
+      const ext = path.extname(entry.name).toLowerCase();
+      if (!allowedExt.has(ext)) continue;
+      const full = path.join(dir, entry.name);
+      const stat = fs.statSync(full);
+      items.push({
+        path: path.relative(root, full),
+        name: entry.name,
+        kind: detectArtifactKind(entry.name),
+        source: 'workspace',
+        size: stat.size,
+        modified: stat.mtime.toISOString(),
+      });
+    }
+  };
+
+  walk(root, 0);
+  return items.sort((a, b) =>
+    (b.modified || '').localeCompare(a.modified || ''),
+  );
+}
+
+function getChatArtifacts(threadId?: string): {
+  conversation: ChatArtifact[];
+  workspace: ChatArtifact[];
+} {
+  const conversation = new Map<string, ChatArtifact>();
+  const messages = getRecentMessages('web:chat', 200, threadId);
+  for (const msg of messages) {
+    for (const artifact of extractArtifactRefs(msg.content || '')) {
+      if (!conversation.has(artifact.path)) {
+        conversation.set(artifact.path, {
+          path: artifact.path,
+          name: path.basename(artifact.path),
+          kind: artifact.kind,
+          source: 'conversation',
+        });
+      }
+    }
+  }
+  return {
+    conversation: [...conversation.values()],
+    workspace: listWorkspaceArtifacts('web_chat'),
+  };
 }
 
 function broadcast(event: AgentEvent) {
@@ -339,6 +483,36 @@ export function startDashboard(
         return;
       }
       if (!fs.existsSync(resolved)) {
+        // Fallback: agent may output wrong relative path (e.g. dir_combined/file.png
+        // when actual path is dir/file.png). Search by filename in group directory.
+        const basename = path.basename(cleanPath);
+        const groupDir = path.join(GROUPS_DIR, group);
+        const fallback = findFileRecursive(groupDir, basename, groupDir);
+        if (fallback && fallback.startsWith(path.resolve(GROUPS_DIR))) {
+          const ext2 = path.extname(fallback).toLowerCase();
+          const mimeTypes2: Record<string, string> = {
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.webp': 'image/webp',
+            '.pdf': 'application/pdf',
+            '.csv': 'text/csv',
+            '.txt': 'text/plain',
+            '.json': 'application/json',
+            '.html': 'text/html',
+          };
+          const ct = mimeTypes2[ext2] || 'application/octet-stream';
+          const st = fs.statSync(fallback);
+          res.writeHead(200, {
+            'Content-Type': ct,
+            'Content-Length': st.size,
+            'Cache-Control': 'public, max-age=300',
+          });
+          fs.createReadStream(fallback).pipe(res);
+          return;
+        }
         res.writeHead(404);
         res.end('File not found');
         return;
@@ -528,6 +702,16 @@ export function startDashboard(
       return;
     }
 
+    if (url.pathname === '/api/chat/artifacts') {
+      const threadId =
+        url.searchParams.get('threadId') ||
+        webChatController?.getActiveThreadId() ||
+        undefined;
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(getChatArtifacts(threadId)));
+      return;
+    }
+
     // ── API: Chat file upload ──
     if (url.pathname === '/api/chat/upload' && req.method === 'POST') {
       const filename = url.searchParams.get('filename');
@@ -678,6 +862,14 @@ export function startDashboard(
 
   // Forward all agent events to WebSocket clients
   agentEvents.on('agent', broadcast);
+
+  server.on('error', (err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE') {
+      logger.warn({ port: PORT }, `Dashboard port ${PORT} already in use — skipping. Kill the existing process or use a different port.`);
+    } else {
+      logger.error({ err }, 'Dashboard server error');
+    }
+  });
 
   server.listen(PORT, () => {
     logger.info(
