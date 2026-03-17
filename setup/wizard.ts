@@ -291,7 +291,7 @@ async function step5(hasDocker: boolean): Promise<void> {
     if (!fs.existsSync(smokeTest)) { spinner.info(t('smoke.notFound')); return; }
 
     const output = execSync(
-      'docker run --rm -v ./container/smoke-test.py:/tmp/smoke-test.py matclaw-agent:latest bash -c "python3 /tmp/smoke-test.py"',
+      'docker run --rm --entrypoint bash -v ./container/smoke-test.py:/tmp/smoke-test.py matclaw-agent:latest -c "python3 /tmp/smoke-test.py"',
       { encoding: 'utf-8', cwd: process.cwd(), timeout: 180000 },
     );
 

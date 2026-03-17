@@ -13,6 +13,8 @@ import { select, input, password, confirm } from '@inquirer/prompts';
 import { readEnvFile } from '../src/env.js';
 import { writeEnvKeys, removeEnvKeys } from './env-writer.js';
 import { emitStatus } from './status.js';
+import { c, println, boxTop, boxLine, boxBottom, boxDivider, ok, warn, fail, info, phaseHeader, phaseFooter } from './ui.js';
+import { setLocale, getLocale, detectLocale, t, type Locale } from './i18n.js';
 
 // ── Provider definitions ──
 
@@ -696,12 +698,12 @@ async function validateAnthropicKey(
     // 400 with "max_tokens" is still a valid key, just bad request
     if (resp.status === 400) return { ok: true };
     const body = await resp.text().catch(() => '');
-    if (resp.status === 401) return { ok: false, error: 'API Key 无效 (401 Unauthorized)' };
-    if (resp.status === 403) return { ok: false, error: '访问被拒 (403 Forbidden)' };
+    if (resp.status === 401) return { ok: false, error: t('api.invalid401') };
+    if (resp.status === 403) return { ok: false, error: t('api.forbidden403') };
     if (resp.status === 429) return { ok: true }; // Rate limited but key is valid
     return { ok: false, error: `HTTP ${resp.status}: ${body.slice(0, 200)}` };
   } catch (err) {
-    return { ok: false, error: `网络错误: ${err instanceof Error ? err.message : String(err)}` };
+    return { ok: false, error: t('api.networkError', { error: err instanceof Error ? err.message : String(err) }) };
   }
 }
 
@@ -730,11 +732,11 @@ async function validateOpenAIKey(
     if (resp.ok) return { ok: true };
     if (resp.status === 400) return { ok: true };
     if (resp.status === 429) return { ok: true };
-    if (resp.status === 401) return { ok: false, error: 'API Key 无效 (401 Unauthorized)' };
+    if (resp.status === 401) return { ok: false, error: t('api.invalid401') };
     const body = await resp.text().catch(() => '');
     return { ok: false, error: `HTTP ${resp.status}: ${body.slice(0, 200)}` };
   } catch (err) {
-    return { ok: false, error: `网络错误: ${err instanceof Error ? err.message : String(err)}` };
+    return { ok: false, error: t('api.networkError', { error: err instanceof Error ? err.message : String(err) }) };
   }
 }
 
@@ -757,12 +759,12 @@ async function validateGeminiKey(
     if (resp.status === 400) return { ok: true };
     if (resp.status === 429) return { ok: true };
     if (resp.status === 401 || resp.status === 403) {
-      return { ok: false, error: 'API Key 无效 (401/403)' };
+      return { ok: false, error: t('api.invalid401') };
     }
     const body = await resp.text().catch(() => '');
     return { ok: false, error: `HTTP ${resp.status}: ${body.slice(0, 200)}` };
   } catch (err) {
-    return { ok: false, error: `网络错误: ${err instanceof Error ? err.message : String(err)}` };
+    return { ok: false, error: t('api.networkError', { error: err instanceof Error ? err.message : String(err) }) };
   }
 }
 
@@ -792,24 +794,26 @@ export async function run(_args: string[]): Promise<void> {
     return;
   }
 
-  console.log();
-  const banner = ora({ text: 'MatClaw API Configuration', spinner: 'arc' }).start();
-  // Brief animation then settle
-  await new Promise((r) => setTimeout(r, 800));
+  // Detect language from env or args
+  const langArg = _args.find((_, i, a) => a[i - 1] === '--lang') as Locale | undefined;
+  setLocale(langArg || detectLocale());
+
+  println();
+  println(boxTop(t('api.title')));
+  println(boxLine(`${c.dim}${t('api.detecting')}${c.reset}`));
 
   // Step 1: Auto-detection
-  banner.text = 'Detecting existing configuration...';
   const existing = detectExistingConfig(projectRoot);
-  await new Promise((r) => setTimeout(r, 400));
 
   if (existing) {
-    banner.info(`Current: ${existing.provider} (${existing.maskedKey})`);
+    info(t('api.current', { provider: existing.provider, key: existing.maskedKey }));
+    println(boxBottom());
     const keepExisting = await confirm({
-      message: '保留当前配置?',
+      message: t('api.keepCurrent'),
       default: true,
     });
     if (keepExisting) {
-      ora().succeed('Keeping current configuration.');
+      ok(t('api.keeping'));
       emitStatus('CONFIGURE_API', {
         STATUS: 'ok',
         PROVIDER: existing.provider,
@@ -820,12 +824,13 @@ export async function run(_args: string[]): Promise<void> {
       return;
     }
   } else {
-    banner.info('No existing configuration found.');
+    info(t('api.noExisting'));
+    println(boxBottom());
   }
 
   // Step 2: Provider selection
   const provider = await select({
-    message: '选择 AI 供应商:',
+    message: t('api.selectProvider'),
     choices: PROVIDERS.map((p) => ({
       name: p.description ? `${p.label}  —  ${p.description}` : p.label,
       value: p.id,
@@ -843,43 +848,43 @@ export async function run(_args: string[]): Promise<void> {
   if (providerConfig.authMethods.length > 1) {
     const choices: { name: string; value: string }[] = [];
     if (providerConfig.authMethods.includes('api_key')) {
-      choices.push({ name: '粘贴 API Key', value: 'api_key' });
+      choices.push({ name: t('api.authPasteKey'), value: 'api_key' });
     }
     if (providerConfig.authMethods.includes('oauth_auto')) {
       const oauthToken = detectOAuthToken();
       const label = oauthToken
-        ? 'Claude Code OAuth（已检测到有效 token）'
-        : 'Claude Code OAuth（未检测到）';
+        ? t('api.authOAuthDetected')
+        : t('api.authOAuthNotDetected');
       choices.push({ name: label, value: 'oauth_auto' });
     }
     if (providerConfig.authMethods.includes('env_ref')) {
-      choices.push({ name: '从环境变量导入（一次性复制到 .env）', value: 'env_ref' });
+      choices.push({ name: t('api.authEnvImport'), value: 'env_ref' });
     }
 
     const authMethod = await select({
-      message: '认证方式:',
+      message: t('api.authMethod'),
       choices,
     });
 
     if (authMethod === 'oauth_auto') {
       const token = detectOAuthToken();
       if (!token) {
-        ora().fail('No valid Claude Code OAuth token found.\n         Run `claude` to log in, or choose another auth method.');
+        ora().fail(t('api.authOAuthFail'));
         process.exit(1);
       }
       useOAuth = true;
-      ora().succeed('Using Claude Code OAuth token (auto-detected).');
+      ora().succeed(t('api.authOAuthSuccess'));
     } else if (authMethod === 'env_ref') {
       useEnvRef = true;
       envRefName = await input({
-        message: '环境变量名:',
+        message: t('api.envVarName'),
         default: providerConfig.apiKeyEnvName,
         validate: (val) => {
           if (!/^[A-Z_][A-Z0-9_]*$/.test(val)) {
-            return '请使用大写字母、数字和下划线（如 OPENAI_API_KEY）';
+            return t('api.envVarInvalid');
           }
           if (!process.env[val]) {
-            return `环境变量 ${val} 未设置或为空`;
+            return t('api.envVarNotSet', { name: val });
           }
           return true;
         },
@@ -894,12 +899,12 @@ export async function run(_args: string[]): Promise<void> {
   if (!useOAuth && !useEnvRef && !apiKey) {
     if (providerConfig.keyOptional) {
       const wantKey = await confirm({
-        message: `${providerConfig.label} 通常不需要 API Key，是否设置?`,
+        message: t('api.keyOptionalPrompt', { provider: providerConfig.label }),
         default: false,
       });
       if (wantKey) {
         const raw = await input({
-          message: 'API Key（可选）:',
+          message: t('api.keyOptional'),
         });
         apiKey = sanitizeApiKey(raw);
         if (apiKey) console.log(`   Key: ${maskKey(apiKey)}`);
@@ -909,16 +914,16 @@ export async function run(_args: string[]): Promise<void> {
       }
     } else {
       const raw = await password({
-        message: `输入 ${providerConfig.label} API Key:`,
+        message: t('api.enterKey', { provider: providerConfig.label }),
         mask: '*',
         validate: (val) => {
           const cleaned = sanitizeApiKey(val);
-          if (!cleaned) return 'API Key 不能为空';
+          if (!cleaned) return t('api.keyEmpty');
           if (
             providerConfig.apiKeyPrefix &&
             !cleaned.startsWith(providerConfig.apiKeyPrefix)
           ) {
-            return `格式不正确，应以 ${providerConfig.apiKeyPrefix} 开头`;
+            return t('api.keyBadPrefix', { prefix: providerConfig.apiKeyPrefix });
           }
           return true;
         },
@@ -932,15 +937,15 @@ export async function run(_args: string[]): Promise<void> {
   let baseUrl = providerConfig.defaultBaseUrl || '';
   if (providerConfig.needsBaseUrl) {
     baseUrl = await input({
-      message: 'API Base URL:',
+      message: t('api.baseUrl'),
       default: providerConfig.defaultBaseUrl || '',
       validate: (val) => {
-        if (!val) return 'Base URL 不能为空';
+        if (!val) return t('api.baseUrlEmpty');
         try {
           new URL(val);
           return true;
         } catch {
-          return '请输入有效的 URL（如 https://api.example.com/v1）';
+          return t('api.baseUrlInvalid');
         }
       },
     });
@@ -950,15 +955,15 @@ export async function run(_args: string[]): Promise<void> {
   let model = providerConfig.defaultModel || '';
   if (providerConfig.needsModel) {
     model = await input({
-      message: '模型名称:',
+      message: t('api.modelName'),
       default: providerConfig.defaultModel || '',
-      validate: (val) => (val ? true : '模型名称不能为空'),
+      validate: (val) => (val ? true : t('api.modelEmpty')),
     });
   }
 
   // Step 7: API Validation (skip for local providers with placeholder keys)
   if (!useOAuth && apiKey && !providerConfig.keyOptional) {
-    const spinner = ora({ text: 'Validating API key...', spinner: 'dots' }).start();
+    const spinner = ora({ text: t('api.validating'), spinner: 'dots' }).start();
     let result: ValidationResult;
 
     if (providerConfig.engine === 'claude') {
@@ -970,15 +975,15 @@ export async function run(_args: string[]): Promise<void> {
     }
 
     if (result.ok) {
-      spinner.succeed('API key validated.');
+      spinner.succeed(t('api.validated'));
     } else {
-      spinner.fail(`Validation failed: ${result.error}`);
+      spinner.fail(t('api.validationFailed', { error: result.error || '' }));
       const proceed = await confirm({
-        message: '仍然保存此 Key?（可能是网络问题）',
+        message: t('api.saveAnyway'),
         default: false,
       });
       if (!proceed) {
-        ora().fail('Cancelled.');
+        ora().fail(t('api.cancelled'));
         process.exit(1);
       }
     }
@@ -986,15 +991,13 @@ export async function run(_args: string[]): Promise<void> {
 
   // Warn if engine is not yet implemented
   if (providerConfig.engine === 'gemini') {
-    ora().warn(
-      'Gemini engine is not yet implemented. Key will be saved for future use,\n         but npm run dev will fail until the engine is added.',
-    );
+    ora().warn(t('api.geminiWarning'));
     const proceed = await confirm({
-      message: '仍然保存配置?',
+      message: t('api.saveConfig'),
       default: true,
     });
     if (!proceed) {
-      ora().fail('Cancelled.');
+      ora().fail(t('api.cancelled'));
       process.exit(1);
     }
   }
@@ -1055,9 +1058,9 @@ export async function run(_args: string[]): Promise<void> {
     }
   }
 
-  const saveSpinner = ora({ text: 'Writing configuration...', spinner: 'dots' }).start();
+  const saveSpinner = ora({ text: t('api.saving'), spinner: 'dots' }).start();
   writeEnvKeys(projectRoot, updates);
-  saveSpinner.succeed(`Configuration saved to .env (${providerConfig.label})`);
+  saveSpinner.succeed(t('api.saved', { provider: providerConfig.label }));
 
   emitStatus('CONFIGURE_API', {
     STATUS: 'ok',
