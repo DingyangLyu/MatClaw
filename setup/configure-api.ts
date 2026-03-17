@@ -20,8 +20,11 @@ import { setLocale, getLocale, detectLocale, t, type Locale } from './i18n.js';
 
 interface ProviderConfig {
   id: string;
-  label: string;
-  description?: string; // Pricing, plan info, shown below the label
+  label: string;       // Machine-readable label (used in emitStatus, detectExistingConfig)
+  labelEn: string;     // English display name
+  labelZh: string;     // Chinese display name
+  descEn?: string;     // English description
+  descZh?: string;     // Chinese description
   engine: string;
   apiKeyEnvName: string;
   apiKeyPrefix?: string;
@@ -33,6 +36,14 @@ interface ProviderConfig {
   authMethods: ('api_key' | 'oauth_auto' | 'env_ref')[];
 }
 
+function providerLabel(p: ProviderConfig): string {
+  return getLocale() === 'zh' ? p.labelZh : p.labelEn;
+}
+
+function providerDesc(p: ProviderConfig): string | undefined {
+  return getLocale() === 'zh' ? p.descZh : p.descEn;
+}
+
 const PROVIDERS: ProviderConfig[] = [
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   //  推荐
@@ -40,7 +51,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'anthropic',
     label: 'Anthropic Claude（推荐）',
-    description: 'Claude Opus/Sonnet/Haiku | API Key 或 Claude Pro/Max OAuth',
+    labelEn: 'Anthropic Claude (Recommended)',
+    labelZh: 'Anthropic Claude（推荐）',
+    descEn: 'Claude Opus/Sonnet/Haiku | API Key or Claude Pro/Max OAuth',
+    descZh: 'Claude Opus/Sonnet/Haiku | API Key 或 Claude Pro/Max OAuth',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     apiKeyPrefix: 'sk-ant-',
@@ -53,7 +67,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'gemini',
     label: 'Google Gemini [engine 开发中]',
-    description: 'Gemini 2.5 Pro/Flash | 免费额度可用 | 可预配置 Key，engine 待实现',
+    labelEn: 'Google Gemini [engine in dev]',
+    labelZh: 'Google Gemini [engine 开发中]',
+    descEn: 'Gemini 2.5 Pro/Flash | Free tier available',
+    descZh: 'Gemini 2.5 Pro/Flash | 免费额度可用',
     engine: 'gemini',
     apiKeyEnvName: 'GOOGLE_API_KEY',
     apiKeyPrefix: 'AIza',
@@ -64,7 +81,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'openai',
     label: 'OpenAI',
-    description: 'GPT-4.1 / o4-mini | API Key 按量付费',
+    labelEn: 'OpenAI',
+    labelZh: 'OpenAI',
+    descEn: 'GPT-4.1 / o4-mini | Pay per use',
+    descZh: 'GPT-4.1 / o4-mini | 按量付费',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     apiKeyPrefix: 'sk-',
@@ -75,7 +95,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'deepseek',
     label: 'DeepSeek（深度求索）',
-    description: 'DeepSeek-V3 / R1 | 低成本高性能',
+    labelEn: 'DeepSeek',
+    labelZh: 'DeepSeek（深度求索）',
+    descEn: 'DeepSeek-V3 / R1 | Low cost, high performance',
+    descZh: 'DeepSeek-V3 / R1 | 低成本高性能',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     apiKeyPrefix: 'sk-',
@@ -87,7 +110,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'mistral',
     label: 'Mistral AI',
-    description: 'Mistral Large / Codestral | 262K 上下文',
+    labelEn: 'Mistral AI',
+    labelZh: 'Mistral AI',
+    descEn: 'Mistral Large / Codestral | 262K context',
+    descZh: 'Mistral Large / Codestral | 262K 上下文',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.mistral.ai/v1',
@@ -98,7 +124,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'xai',
     label: 'xAI（Grok）',
-    description: 'Grok 4 / Grok 3 | 131K 上下文 | 免费额度',
+    labelEn: 'xAI (Grok)',
+    labelZh: 'xAI（Grok）',
+    descEn: 'Grok 4 / Grok 3 | 131K context | Free tier',
+    descZh: 'Grok 4 / Grok 3 | 131K 上下文 | 免费额度',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     apiKeyPrefix: 'xai-',
@@ -110,7 +139,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'perplexity',
     label: 'Perplexity AI',
-    description: 'Sonar Pro | 内置搜索增强',
+    labelEn: 'Perplexity AI',
+    labelZh: 'Perplexity AI',
+    descEn: 'Sonar Pro | Built-in search',
+    descZh: 'Sonar Pro | 内置搜索增强',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.perplexity.ai',
@@ -125,7 +157,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'qwen',
     label: '阿里通义千问（Qwen）',
-    description: 'Qwen3.5 / Qwen-Coder | 1M 上下文 | 提供 Coding Plan 订阅',
+    labelEn: 'Alibaba Qwen',
+    labelZh: '阿里通义千问（Qwen）',
+    descEn: 'Qwen3.5 / Qwen-Coder | 1M context | Coding Plan available',
+    descZh: 'Qwen3.5 / Qwen-Coder | 1M 上下文 | 提供 Coding Plan 订阅',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     apiKeyPrefix: 'sk-',
@@ -137,7 +172,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'qwen-coding',
     label: '阿里通义 Coding Plan（国内 / OpenAI 兼容）',
-    description: 'Qwen3.5 / Qwen-Coder | 订阅制 | 1M 上下文 | 包含 GLM/Kimi/MiniMax',
+    labelEn: 'Qwen Coding Plan (China / OpenAI)',
+    labelZh: '通义 Coding Plan（国内 / OpenAI 兼容）',
+    descEn: 'Qwen3.5 | Subscription | 1M context | Includes GLM/Kimi/MiniMax',
+    descZh: 'Qwen3.5 | 订阅制 | 1M 上下文 | 包含 GLM/Kimi/MiniMax',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     apiKeyPrefix: 'sk-',
@@ -149,7 +187,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'qwen-coding-anthropic',
     label: '阿里通义 Coding Plan（国内 / Anthropic 兼容）',
-    description: 'Qwen3.5 / Qwen-Coder | 订阅制 | Claude Agent SDK 直接调用',
+    labelEn: 'Qwen Coding Plan (China / Anthropic)',
+    labelZh: '通义 Coding Plan（国内 / Anthropic 兼容）',
+    descEn: 'Qwen3.5 | Subscription | Claude Agent SDK',
+    descZh: 'Qwen3.5 | 订阅制 | Claude Agent SDK 直接调用',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     apiKeyPrefix: 'sk-',
@@ -161,7 +202,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'qwen-coding-intl',
     label: '阿里通义 Coding Plan（国际 / OpenAI 兼容）',
-    description: 'Qwen3.5 / Qwen-Coder | 订阅制 | 海外加速端点',
+    labelEn: 'Qwen Coding Plan (Intl / OpenAI)',
+    labelZh: '通义 Coding Plan（国际 / OpenAI 兼容）',
+    descEn: 'Qwen3.5 | Subscription | Global endpoint',
+    descZh: 'Qwen3.5 | 订阅制 | 海外加速端点',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     apiKeyPrefix: 'sk-',
@@ -173,7 +217,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'qwen-coding-intl-anthropic',
     label: '阿里通义 Coding Plan（国际 / Anthropic 兼容）',
-    description: 'Qwen3.5 / Qwen-Coder | 订阅制 | 海外 | Claude Agent SDK',
+    labelEn: 'Qwen Coding Plan (Intl / Anthropic)',
+    labelZh: '通义 Coding Plan（国际 / Anthropic 兼容）',
+    descEn: 'Qwen3.5 | Subscription | Global | Claude Agent SDK',
+    descZh: 'Qwen3.5 | 订阅制 | 海外 | Claude Agent SDK',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     apiKeyPrefix: 'sk-',
@@ -185,7 +232,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'zhipu',
     label: '智谱 AI（GLM）',
-    description: 'GLM-5 / GLM-4.7 | 200K 上下文 | 推理 | 免费额度',
+    labelEn: 'Zhipu AI (GLM)',
+    labelZh: '智谱 AI（GLM）',
+    descEn: 'GLM-5 / GLM-4.7 | 200K context | Free tier',
+    descZh: 'GLM-5 / GLM-4.7 | 200K 上下文 | 免费额度',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://open.bigmodel.cn/api/paas/v4',
@@ -196,7 +246,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'zhipu-anthropic',
     label: '智谱 GLM Coding Plan（Anthropic 兼容）',
-    description: 'GLM-5 / GLM-4.7 | 订阅制 | Claude Agent SDK 直接调用 | 推荐',
+    labelEn: 'Zhipu GLM Coding Plan (Anthropic)',
+    labelZh: '智谱 GLM Coding Plan（Anthropic 兼容）',
+    descEn: 'GLM-5 | Subscription | Claude Agent SDK',
+    descZh: 'GLM-5 | 订阅制 | Claude Agent SDK 直接调用',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     defaultBaseUrl: 'https://open.bigmodel.cn/api/anthropic',
@@ -207,7 +260,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'zhipu-coding',
     label: '智谱 GLM Coding Plan（国内 OpenAI 兼容）',
-    description: 'GLM-5 / GLM-4.7 | 订阅制 Coding 端点',
+    labelEn: 'Zhipu GLM Coding Plan (China OpenAI)',
+    labelZh: '智谱 GLM Coding Plan（国内 OpenAI 兼容）',
+    descEn: 'GLM-5 | Subscription | Coding endpoint',
+    descZh: 'GLM-5 | 订阅制 | Coding 端点',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://open.bigmodel.cn/api/coding/paas/v4',
@@ -218,7 +274,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'zhipu-coding-intl',
     label: '智谱 GLM Coding Plan（国际 OpenAI 兼容）',
-    description: 'GLM-5 / GLM-4.7 | 订阅制 Coding 端点 | Z.AI 海外',
+    labelEn: 'Zhipu GLM Coding Plan (Intl OpenAI)',
+    labelZh: '智谱 GLM Coding Plan（国际 OpenAI 兼容）',
+    descEn: 'GLM-5 | Subscription | Z.AI global',
+    descZh: 'GLM-5 | 订阅制 | Z.AI 海外',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.z.ai/api/coding/paas/v4',
@@ -229,7 +288,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'moonshot',
     label: '月之暗面 Kimi（.cn 国内）',
-    description: 'Kimi K2.5 | 256K 上下文 | 支持图片 | 免费额度',
+    labelEn: 'Moonshot Kimi (.cn)',
+    labelZh: '月之暗面 Kimi（.cn 国内）',
+    descEn: 'Kimi K2.5 | 256K context | Free tier',
+    descZh: 'Kimi K2.5 | 256K 上下文 | 免费额度',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.moonshot.cn/v1',
@@ -240,7 +302,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'moonshot-intl',
     label: '月之暗面 Kimi（.ai 国际）',
-    description: 'Kimi K2.5 | 256K 上下文 | 海外加速端点',
+    labelEn: 'Moonshot Kimi (.ai Intl)',
+    labelZh: '月之暗面 Kimi（.ai 国际）',
+    descEn: 'Kimi K2.5 | 256K context | Global endpoint',
+    descZh: 'Kimi K2.5 | 256K 上下文 | 海外加速端点',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.moonshot.ai/v1',
@@ -251,7 +316,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'kimi-coding',
     label: 'Kimi Coding Plan',
-    description: 'Kimi-Code | 订阅制 | Anthropic 兼容 API | 262K 上下文 | 推理',
+    labelEn: 'Kimi Coding Plan',
+    labelZh: 'Kimi Coding Plan',
+    descEn: 'Kimi-Code | Subscription | Anthropic API | 262K context',
+    descZh: 'Kimi-Code | 订阅制 | Anthropic 兼容 | 262K 上下文',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     defaultBaseUrl: 'https://api.kimi.com/coding/',
@@ -262,7 +330,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'qianfan',
     label: '百度千帆（文心一言）',
-    description: 'ERNIE-5.0-Thinking / DeepSeek-V3.2 | 推理 | 免费额度',
+    labelEn: 'Baidu Qianfan (ERNIE)',
+    labelZh: '百度千帆（文心一言）',
+    descEn: 'ERNIE-5.0 / DeepSeek-V3.2 | Free tier',
+    descZh: 'ERNIE-5.0 / DeepSeek-V3.2 | 免费额度',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://qianfan.baidubce.com/v2',
@@ -273,7 +344,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'volcengine',
     label: '火山引擎（豆包 / OpenAI 兼容）',
-    description: 'Doubao-Seed-Code | 256K 上下文 | 字节跳动旗下',
+    labelEn: 'Volcengine (Doubao / OpenAI)',
+    labelZh: '火山引擎（豆包 / OpenAI 兼容）',
+    descEn: 'Doubao-Seed-Code | 256K context | ByteDance',
+    descZh: 'Doubao-Seed-Code | 256K 上下文 | 字节跳动旗下',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
@@ -284,7 +358,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'volcengine-anthropic',
     label: '火山引擎 Coding Plan（Anthropic 兼容）',
-    description: 'Doubao-Seed-Code | 订阅制 | Claude Agent SDK 直接调用',
+    labelEn: 'Volcengine Coding Plan (Anthropic)',
+    labelZh: '火山引擎 Coding Plan（Anthropic 兼容）',
+    descEn: 'Doubao-Seed-Code | Subscription | Claude Agent SDK',
+    descZh: 'Doubao-Seed-Code | 订阅制 | Claude Agent SDK 直接调用',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     defaultBaseUrl: 'https://ark.cn-beijing.volces.com/api/coding',
@@ -295,7 +372,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'byteplus',
     label: 'BytePlus（火山海外版）',
-    description: 'Seed 1.8 / Kimi K2.5 / GLM-4.7 | 256K 上下文 | 海外可用',
+    labelEn: 'BytePlus (Volcengine Intl)',
+    labelZh: 'BytePlus（火山海外版）',
+    descEn: 'Seed 1.8 / Kimi / GLM | 256K context | Global',
+    descZh: 'Seed 1.8 / Kimi / GLM | 256K 上下文 | 海外可用',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://ark.ap-southeast.bytepluses.com/api/v3',
@@ -306,7 +386,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'minimax',
     label: 'MiniMax（海螺 AI / OpenAI 兼容）',
-    description: 'MiniMax-M2.5 | 200K 上下文 | 推理 | $0.3/$1.2 per M tokens',
+    labelEn: 'MiniMax (OpenAI)',
+    labelZh: 'MiniMax（海螺 AI / OpenAI 兼容）',
+    descEn: 'MiniMax-M2.5 | 200K context',
+    descZh: 'MiniMax-M2.5 | 200K 上下文',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.minimax.chat/v1',
@@ -317,7 +400,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'minimax-anthropic',
     label: 'MiniMax（海螺 AI / Anthropic 兼容）',
-    description: 'MiniMax-M2.5 | Claude Agent SDK 直接调用',
+    labelEn: 'MiniMax (Anthropic)',
+    labelZh: 'MiniMax（海螺 AI / Anthropic 兼容）',
+    descEn: 'MiniMax-M2.5 | Claude Agent SDK',
+    descZh: 'MiniMax-M2.5 | Claude Agent SDK 直接调用',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     defaultBaseUrl: 'https://api.minimax.io/anthropic',
@@ -328,7 +414,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'minimax-anthropic-cn',
     label: 'MiniMax（海螺 AI / Anthropic 兼容 / 国内）',
-    description: 'MiniMax-M2.5 | Claude Agent SDK | 国内端点',
+    labelEn: 'MiniMax (Anthropic / China)',
+    labelZh: 'MiniMax（海螺 AI / Anthropic / 国内）',
+    descEn: 'MiniMax-M2.5 | Claude Agent SDK | China endpoint',
+    descZh: 'MiniMax-M2.5 | Claude Agent SDK | 国内端点',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     defaultBaseUrl: 'https://api.minimaxi.com/anthropic',
@@ -339,7 +428,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'baichuan',
     label: '百川智能',
-    description: 'Baichuan4 | 通用对话模型',
+    labelEn: 'Baichuan AI',
+    labelZh: '百川智能',
+    descEn: 'Baichuan4 | General chat',
+    descZh: 'Baichuan4 | 通用对话模型',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.baichuan-ai.com/v1',
@@ -350,7 +442,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'stepfun',
     label: '阶跃星辰（Step）',
-    description: 'Step-2 | 256K 上下文',
+    labelEn: 'StepFun (Step)',
+    labelZh: '阶跃星辰（Step）',
+    descEn: 'Step-2 | 256K context',
+    descZh: 'Step-2 | 256K 上下文',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.stepfun.com/v1',
@@ -361,7 +456,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'xiaomi',
     label: '小米 MiMo',
-    description: 'MiMo-V2-Flash | 262K 上下文 | Anthropic 兼容 API',
+    labelEn: 'Xiaomi MiMo',
+    labelZh: '小米 MiMo',
+    descEn: 'MiMo-V2-Flash | 262K context | Anthropic API',
+    descZh: 'MiMo-V2-Flash | 262K 上下文 | Anthropic 兼容 API',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     defaultBaseUrl: 'https://api.xiaomimimo.com/anthropic',
@@ -376,7 +474,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'openrouter',
     label: 'OpenRouter（OpenAI 兼容）',
-    description: 'API 聚合 | 320+ 模型 | 按量付费',
+    labelEn: 'OpenRouter (OpenAI)',
+    labelZh: 'OpenRouter（OpenAI 兼容）',
+    descEn: 'API aggregator | 320+ models | Pay per use',
+    descZh: 'API 聚合 | 320+ 模型 | 按量付费',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     apiKeyPrefix: 'sk-or-',
@@ -388,7 +489,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'openrouter-anthropic',
     label: 'OpenRouter（Anthropic 兼容）',
-    description: 'API 聚合 | Claude Agent SDK 直接调用 | 多供应商自动 failover',
+    labelEn: 'OpenRouter (Anthropic)',
+    labelZh: 'OpenRouter（Anthropic 兼容）',
+    descEn: 'API aggregator | Claude Agent SDK | Multi-provider failover',
+    descZh: 'API 聚合 | Claude Agent SDK | 多供应商自动 failover',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     apiKeyPrefix: 'sk-or-',
@@ -400,7 +504,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'siliconflow',
     label: '硅基流动（SiliconFlow）',
-    description: 'API 聚合 | DeepSeek/Qwen/Llama 等 | 国内加速',
+    labelEn: 'SiliconFlow',
+    labelZh: '硅基流动（SiliconFlow）',
+    descEn: 'API aggregator | DeepSeek/Qwen/Llama | China accelerated',
+    descZh: 'API 聚合 | DeepSeek/Qwen/Llama | 国内加速',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.siliconflow.cn/v1',
@@ -411,7 +518,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'together',
     label: 'Together AI',
-    description: 'API 聚合 | Llama/DeepSeek/GLM/Kimi | $0.18-$7/M tokens',
+    labelEn: 'Together AI',
+    labelZh: 'Together AI',
+    descEn: 'API aggregator | Llama/DeepSeek/GLM/Kimi',
+    descZh: 'API 聚合 | Llama/DeepSeek/GLM/Kimi',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.together.xyz/v1',
@@ -422,7 +532,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'nvidia',
     label: 'NVIDIA NIM',
-    description: 'Llama / Nemotron | 免费额度 | GPU 优化推理',
+    labelEn: 'NVIDIA NIM',
+    labelZh: 'NVIDIA NIM',
+    descEn: 'Llama / Nemotron | Free tier | GPU optimized',
+    descZh: 'Llama / Nemotron | 免费额度 | GPU 优化推理',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://integrate.api.nvidia.com/v1',
@@ -433,7 +546,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'venice',
     label: 'Venice AI',
-    description: '隐私优先 | 无日志 | 开源模型 | 按 credit 计费',
+    labelEn: 'Venice AI',
+    labelZh: 'Venice AI',
+    descEn: 'Privacy-first | No logs | Open source models',
+    descZh: '隐私优先 | 无日志 | 开源模型',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.venice.ai/api/v1',
@@ -444,7 +560,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'huggingface',
     label: 'Hugging Face Inference',
-    description: '海量开源模型 | 免费推理 API | HF Token',
+    labelEn: 'Hugging Face Inference',
+    labelZh: 'Hugging Face Inference',
+    descEn: 'Open source models | Free inference API',
+    descZh: '海量开源模型 | 免费推理 API',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     apiKeyPrefix: 'hf_',
@@ -460,7 +579,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'bedrock',
     label: 'Amazon Bedrock',
-    description: 'Claude / Llama / Mistral via AWS | 需要 AWS 凭据',
+    labelEn: 'Amazon Bedrock',
+    labelZh: 'Amazon Bedrock',
+    descEn: 'Claude / Llama / Mistral via AWS',
+    descZh: 'Claude / Llama / Mistral via AWS | 需要 AWS 凭据',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     needsBaseUrl: true,
@@ -471,7 +593,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'github-copilot',
     label: 'GitHub Copilot',
-    description: 'GPT-4.1 / Claude | 需要 Copilot 订阅',
+    labelEn: 'GitHub Copilot',
+    labelZh: 'GitHub Copilot',
+    descEn: 'GPT-4.1 / Claude | Copilot subscription required',
+    descZh: 'GPT-4.1 / Claude | 需要 Copilot 订阅',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.githubcopilot.com',
@@ -486,7 +611,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'ollama',
     label: 'Ollama',
-    description: '本地模型 | 无需 API Key | 支持 Qwen/Llama/DeepSeek 等',
+    labelEn: 'Ollama',
+    labelZh: 'Ollama',
+    descEn: 'Local models | No API key needed | Qwen/Llama/DeepSeek',
+    descZh: '本地模型 | 无需 API Key | 支持 Qwen/Llama/DeepSeek',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'http://host.docker.internal:11434/v1',
@@ -498,7 +626,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'vllm',
     label: 'vLLM',
-    description: '自托管 | 高性能推理引擎 | OpenAI 兼容',
+    labelEn: 'vLLM',
+    labelZh: 'vLLM',
+    descEn: 'Self-hosted | High-performance inference | OpenAI compatible',
+    descZh: '自托管 | 高性能推理引擎 | OpenAI 兼容',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     needsBaseUrl: true,
@@ -509,7 +640,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'sglang',
     label: 'SGLang',
-    description: '自托管 | 超快推理 | OpenAI 兼容',
+    labelEn: 'SGLang',
+    labelZh: 'SGLang',
+    descEn: 'Self-hosted | Ultra-fast inference | OpenAI compatible',
+    descZh: '自托管 | 超快推理 | OpenAI 兼容',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     needsBaseUrl: true,
@@ -520,7 +654,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'lmstudio',
     label: 'LM Studio',
-    description: '桌面本地推理 | OpenAI 兼容 | 免费',
+    labelEn: 'LM Studio',
+    labelZh: 'LM Studio',
+    descEn: 'Desktop local inference | OpenAI compatible | Free',
+    descZh: '桌面本地推理 | OpenAI 兼容 | 免费',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'http://host.docker.internal:1234/v1',
@@ -535,7 +672,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'custom-openai',
     label: '自定义 OpenAI 兼容 API',
-    description: '任何兼容 OpenAI Chat Completions 的端点',
+    labelEn: 'Custom OpenAI-compatible API',
+    labelZh: '自定义 OpenAI 兼容 API',
+    descEn: 'Any OpenAI Chat Completions endpoint',
+    descZh: '任何兼容 OpenAI Chat Completions 的端点',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     needsBaseUrl: true,
@@ -545,7 +685,10 @@ const PROVIDERS: ProviderConfig[] = [
   {
     id: 'custom-anthropic',
     label: '自定义 Anthropic 兼容 API',
-    description: '任何兼容 Anthropic Messages 的端点（代理、网关等）',
+    labelEn: 'Custom Anthropic-compatible API',
+    labelZh: '自定义 Anthropic 兼容 API',
+    descEn: 'Any Anthropic Messages endpoint (proxy, gateway, etc.)',
+    descZh: '任何兼容 Anthropic Messages 的端点（代理、网关等）',
     engine: 'claude',
     apiKeyEnvName: 'ANTHROPIC_API_KEY',
     needsBaseUrl: true,
@@ -862,7 +1005,7 @@ export async function run(_args: string[]): Promise<void> {
       const p = PROVIDERS.find((pr) => pr.id === id);
       if (p) {
         providerChoices.push({
-          name: `  ${p.label}  ${c.dim}${p.description || ''}${c.reset}`,
+          name: `  ${providerLabel(p)}  ${c.dim}${providerDesc(p) || ''}${c.reset}`,
           value: p.id,
         });
       }
@@ -875,7 +1018,7 @@ export async function run(_args: string[]): Promise<void> {
     providerChoices.push(new Separator(`\n  ${c.brightCyan}━━ Other ━━${c.reset}`));
     for (const p of uncategorized) {
       providerChoices.push({
-        name: `  ${p.label}  ${c.dim}${p.description || ''}${c.reset}`,
+        name: `  ${providerLabel(p)}  ${c.dim}${providerDesc(p) || ''}${c.reset}`,
         value: p.id,
       });
     }
@@ -949,7 +1092,7 @@ export async function run(_args: string[]): Promise<void> {
   if (!useOAuth && !useEnvRef && !apiKey) {
     if (providerConfig.keyOptional) {
       const wantKey = await confirm({
-        message: t('api.keyOptionalPrompt', { provider: providerConfig.label }),
+        message: t('api.keyOptionalPrompt', { provider: providerLabel(providerConfig) }),
         default: false,
       });
       if (wantKey) {
@@ -964,7 +1107,7 @@ export async function run(_args: string[]): Promise<void> {
       }
     } else {
       const raw = await password({
-        message: t('api.enterKey', { provider: providerConfig.label }),
+        message: t('api.enterKey', { provider: providerLabel(providerConfig) }),
         mask: '*',
         validate: (val) => {
           const cleaned = sanitizeApiKey(val);
@@ -1110,7 +1253,7 @@ export async function run(_args: string[]): Promise<void> {
 
   const saveSpinner = ora({ text: t('api.saving'), spinner: 'dots' }).start();
   writeEnvKeys(projectRoot, updates);
-  saveSpinner.succeed(t('api.saved', { provider: providerConfig.label }));
+  saveSpinner.succeed(t('api.saved', { provider: providerLabel(providerConfig) }));
 
   emitStatus('CONFIGURE_API', {
     STATUS: 'ok',
