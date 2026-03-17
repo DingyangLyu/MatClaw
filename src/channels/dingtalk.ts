@@ -467,6 +467,10 @@ export class DingTalkChannel implements Channel {
       };
       setRegisteredGroup(jid, group);
 
+      // Update in-memory cache so the message is processed immediately
+      const groups = this.opts.registeredGroups();
+      groups[jid] = group;
+
       logger.info(
         { jid, folder, displayName, isGroup },
         'DingTalk: auto-registered new group',

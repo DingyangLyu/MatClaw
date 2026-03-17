@@ -546,6 +546,10 @@ export class FeishuChannel implements Channel {
       };
       setRegisteredGroup(chatId, group);
 
+      // Update in-memory cache so the message is processed immediately
+      const groups = this.opts.registeredGroups();
+      groups[chatId] = group;
+
       logger.info(
         { chatId, folder, displayName, isGroup },
         'Feishu: auto-registered new group',
