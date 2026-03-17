@@ -155,9 +155,7 @@ function getAgentCursorKey(chatJid: string, threadId?: string): string {
   return chatJid;
 }
 
-function deleteAndReplaceWebChatThread(
-  threadId: string,
-):
+function deleteAndReplaceWebChatThread(threadId: string):
   | {
       deletedThreadId: string;
       activeThreadId: string;

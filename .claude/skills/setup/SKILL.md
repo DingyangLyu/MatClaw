@@ -75,7 +75,7 @@ Run `npx tsx setup/index.ts --step container -- --runtime <chosen>` and parse th
 
 ## 4. API Configuration
 
-Run `npx tsx setup/index.ts --step configure-api` and parse the status block.
+Run `npm run setup:api` and parse the status block.
 
 The interactive wizard handles provider selection (34 providers: Anthropic, Gemini, OpenAI, DeepSeek, Qwen, GLM, Kimi, and more), API key input with validation, and `.env` updates. If the user already has keys configured (detected from `.env` or Claude OAuth), the wizard will show the current config and offer to keep or reconfigure.
 

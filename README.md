@@ -285,11 +285,23 @@ Benchmark tasks adapted from [QUASAR](https://github.com/fengxuyy/QUASAR). All e
 
 ## Quick Start
 
+### One-command setup (recommended)
+
+```bash
+git clone https://github.com/DingyangLyu/MatClaw.git
+cd MatClaw
+npm install && npm run setup
+```
+
+The interactive wizard guides you through environment check, container setup, API configuration, smoke test, and channel selection — step by step.
+
 ### Prerequisites
 
 - Linux (Ubuntu 24.04+ recommended) or macOS
 - [Docker](https://docs.docker.com/get-docker/)
-- An Anthropic-compatible API key (Claude, DeepSeek, etc.)
+- An Anthropic-compatible API key (Claude, DeepSeek, or [44 other providers](setup/configure-api.ts))
+
+### Manual setup
 
 ### 1. Get the container
 
