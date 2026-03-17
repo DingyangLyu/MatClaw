@@ -9,7 +9,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import ora from 'ora';
-import { select, input, password, confirm } from '@inquirer/prompts';
+import { select, input, password, confirm, Separator } from '@inquirer/prompts';
 import { readEnvFile } from '../src/env.js';
 import { writeEnvKeys, removeEnvKeys } from './env-writer.js';
 import { emitStatus } from './status.js';
@@ -798,6 +798,9 @@ export async function run(_args: string[]): Promise<void> {
   const langArg = _args.find((_, i, a) => a[i - 1] === '--lang') as Locale | undefined;
   setLocale(langArg || detectLocale());
 
+  // Suppress pino logger output during interactive wizard
+  process.env.LOG_LEVEL = 'silent';
+
   println();
   println(boxTop(t('api.title')));
   println(boxLine(`${c.dim}${t('api.detecting')}${c.reset}`));
@@ -828,13 +831,60 @@ export async function run(_args: string[]): Promise<void> {
     println(boxBottom());
   }
 
-  // Step 2: Provider selection
+  // Step 2: Provider selection (categorized)
+  const categories: { label: string; ids: string[] }[] = [
+    { label: t('api.cat.recommended'),
+      ids: ['anthropic'] },
+    { label: t('api.cat.international'),
+      ids: ['gemini', 'openai', 'deepseek', 'mistral', 'xai', 'perplexity'] },
+    { label: t('api.cat.domestic'),
+      ids: ['qwen', 'zhipu', 'moonshot', 'qianfan', 'volcengine', 'baichuan', 'stepfun', 'xiaomi'] },
+    { label: t('api.cat.codingPlan'),
+      ids: ['qwen-coding', 'qwen-coding-anthropic', 'qwen-coding-intl', 'qwen-coding-intl-anthropic',
+            'zhipu-anthropic', 'zhipu-coding', 'zhipu-coding-intl', 'moonshot-intl', 'kimi-coding',
+            'volcengine-anthropic', 'minimax', 'minimax-anthropic', 'minimax-anthropic-cn', 'byteplus'] },
+    { label: t('api.cat.aggregator'),
+      ids: ['openrouter', 'openrouter-anthropic', 'siliconflow', 'together', 'nvidia', 'venice', 'huggingface'] },
+    { label: t('api.cat.cloud'),
+      ids: ['bedrock', 'github-copilot'] },
+    { label: t('api.cat.selfHosted'),
+      ids: ['ollama', 'vllm', 'sglang', 'lmstudio'] },
+    { label: t('api.cat.custom'),
+      ids: ['custom-openai', 'custom-anthropic'] },
+  ];
+
+  const categorizedIds = new Set(categories.flatMap((cat) => cat.ids));
+  const providerChoices: (Separator | { name: string; value: string })[] = [];
+
+  for (const cat of categories) {
+    providerChoices.push(new Separator(`\n  ${c.brightCyan}━━ ${cat.label} ━━${c.reset}`));
+    for (const id of cat.ids) {
+      const p = PROVIDERS.find((pr) => pr.id === id);
+      if (p) {
+        providerChoices.push({
+          name: `  ${p.label}  ${c.dim}${p.description || ''}${c.reset}`,
+          value: p.id,
+        });
+      }
+    }
+  }
+
+  // Append any providers not in a category
+  const uncategorized = PROVIDERS.filter((p) => !categorizedIds.has(p.id));
+  if (uncategorized.length > 0) {
+    providerChoices.push(new Separator(`\n  ${c.brightCyan}━━ Other ━━${c.reset}`));
+    for (const p of uncategorized) {
+      providerChoices.push({
+        name: `  ${p.label}  ${c.dim}${p.description || ''}${c.reset}`,
+        value: p.id,
+      });
+    }
+  }
+
   const provider = await select({
     message: t('api.selectProvider'),
-    choices: PROVIDERS.map((p) => ({
-      name: p.description ? `${p.label}  —  ${p.description}` : p.label,
-      value: p.id,
-    })),
+    choices: providerChoices,
+    pageSize: 20,
   });
 
   const providerConfig = PROVIDERS.find((p) => p.id === provider)!;
@@ -844,6 +894,9 @@ export async function run(_args: string[]): Promise<void> {
   let useOAuth = false;
   let useEnvRef = false;
   let envRefName = '';
+
+  println();
+  println(boxTop(t('api.authMethod')));
 
   if (providerConfig.authMethods.length > 1) {
     const choices: { name: string; value: string }[] = [];
@@ -894,6 +947,8 @@ export async function run(_args: string[]): Promise<void> {
       // api_key — fall through to key input below
     }
   }
+
+  println(boxBottom());
 
   // Step 4: API Key input
   if (!useOAuth && !useEnvRef && !apiKey) {
@@ -962,6 +1017,7 @@ export async function run(_args: string[]): Promise<void> {
   }
 
   // Step 7: API Validation (skip for local providers with placeholder keys)
+  phaseHeader(t('api.validating'));
   if (!useOAuth && apiKey && !providerConfig.keyOptional) {
     const spinner = ora({ text: t('api.validating'), spinner: 'dots' }).start();
     let result: ValidationResult;
@@ -1001,8 +1057,10 @@ export async function run(_args: string[]): Promise<void> {
       process.exit(1);
     }
   }
+  phaseFooter();
 
   // Step 8: Write to .env
+  phaseHeader(t('api.saving'));
   // Clean up keys from other engines
   const currentEnv = readEnvFile(['AGENT_ENGINE', 'ANTHROPIC_API_KEY', 'CLAUDE_CODE_OAUTH_TOKEN']);
   const currentEngine = currentEnv.AGENT_ENGINE || 'claude';
@@ -1068,4 +1126,5 @@ export async function run(_args: string[]): Promise<void> {
     ENGINE: providerConfig.engine,
     KEY: useOAuth ? 'OAuth' : maskKey(apiKey),
   });
+  phaseFooter();
 }

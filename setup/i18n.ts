@@ -117,6 +117,7 @@ const en: TranslationMap = {
   'smoke.someFailed': 'Some checks failed',
   'smoke.allPassed': 'All smoke tests passed',
   'smoke.failed': 'Smoke test failed or timed out',
+  'smoke.results': 'Smoke Test Results',
 
   // ── Step 6: Channels ──
   'channels.webNote': 'The Web UI at localhost:3210 works without any channel.',
@@ -139,8 +140,13 @@ const en: TranslationMap = {
   'channels.gmailDesc': 'Email-based tasks',
   'channels.whatsapp': 'WhatsApp',
   'channels.whatsappDesc': 'QR code auth',
+  'channels.startSetup': 'Start {channel} setup now?',
+  'channels.setupDone': 'configured successfully',
+  'channels.setupFailed': 'setup failed or skipped',
   'channels.guide.feishu': 'docs/feishu-setup.md → then claude /add-feishu',
+  'channels.guide.feishu.intro': 'You will need a Feishu App ID and App Secret. Create at https://open.feishu.cn/app',
   'channels.guide.dingtalk': 'docs/dingtalk-setup.md → then claude /add-dingtalk',
+  'channels.guide.dingtalk.intro': 'You will need a DingTalk Client ID and Secret. Create at https://open-dev.dingtalk.com',
   'channels.guide.telegram': 'claude /add-telegram',
   'channels.guide.discord': 'claude /add-discord',
   'channels.guide.slack': 'claude /add-slack',
@@ -299,6 +305,7 @@ const zh: TranslationMap = {
   'smoke.someFailed': '部分检查失败',
   'smoke.allPassed': '所有冒烟测试通过',
   'smoke.failed': '冒烟测试失败或超时',
+  'smoke.results': '冒烟测试结果',
 
   // ── Step 6 ──
   'channels.webNote': 'Web 界面 (localhost:3210) 无需任何通道即可使用。',
@@ -321,8 +328,13 @@ const zh: TranslationMap = {
   'channels.gmailDesc': '邮件任务',
   'channels.whatsapp': 'WhatsApp',
   'channels.whatsappDesc': '扫码认证',
+  'channels.startSetup': '现在开始配置{channel}？',
+  'channels.setupDone': '配置成功',
+  'channels.setupFailed': '配置失败或已跳过',
   'channels.guide.feishu': 'docs/feishu-setup.md → 然后 claude /add-feishu',
+  'channels.guide.feishu.intro': '需要飞书 App ID 和 App Secret。在 https://open.feishu.cn/app 创建应用',
   'channels.guide.dingtalk': 'docs/dingtalk-setup.md → 然后 claude /add-dingtalk',
+  'channels.guide.dingtalk.intro': '需要钉钉 Client ID 和 Secret。在 https://open-dev.dingtalk.com 创建应用',
   'channels.guide.telegram': 'claude /add-telegram',
   'channels.guide.discord': 'claude /add-discord',
   'channels.guide.slack': 'claude /add-slack',

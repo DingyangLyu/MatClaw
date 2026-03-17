@@ -297,15 +297,40 @@ async function step5(hasDocker: boolean): Promise<void> {
 
     if (output.includes('FAILED')) {
       spinner.warn(t('smoke.someFailed'));
-      println();
-      for (const line of output.trim().split('\n').slice(-12)) {
-        if (line.includes('PASS')) println(`    ${c.brightGreen}✔${c.reset} ${line.trim()}`);
-        else if (line.includes('FAIL')) println(`    ${c.brightRed}✖${c.reset} ${line.trim()}`);
-        else println(`    ${c.dim}${line.trim()}${c.reset}`);
-      }
     } else {
       spinner.succeed(t('smoke.allPassed'));
     }
+
+    // Parse and display results in a box panel
+    const lines = output.trim().split('\n');
+    let firstSection = true;
+    println();
+    println(boxTop(t('smoke.results')));
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('=') || trimmed.startsWith('MatClaw')) continue;
+      if (trimmed === 'Python packages:' || trimmed === 'Computation engines:' || trimmed === 'Runtime:') {
+        if (!firstSection) println(boxDivider());
+        firstSection = false;
+        println(boxLine(`${c.bold}${c.brightCyan}${trimmed}${c.reset}`));
+        continue;
+      }
+      if (trimmed.startsWith('PASS')) {
+        const name = trimmed.replace('PASS', '').trim();
+        ok(name);
+      } else if (trimmed.startsWith('FAIL')) {
+        const name = trimmed.replace('FAIL', '').trim();
+        fail(name);
+      } else if (trimmed.startsWith('Results:')) {
+        println(boxDivider());
+        println(boxLine(`${c.bold}${trimmed}${c.reset}`));
+      } else if (trimmed.startsWith('SMOKE TEST')) {
+        // Final verdict line — skip, already shown by spinner
+      }
+    }
+
+    println(boxBottom());
   } catch {
     spinner.fail(t('smoke.failed'));
   }
@@ -353,8 +378,38 @@ async function step6(): Promise<void> {
 
   println();
   for (const ch of channels) {
-    const guideKey = `channels.guide.${ch}` as const;
-    println(`  ${c.brightCyan}→${c.reset} ${c.bold}${ch}${c.reset}: ${c.dim}${t(guideKey)}${c.reset}`);
+    println();
+    // Channels with interactive auth scripts
+    if (ch === 'feishu' || ch === 'dingtalk') {
+      const scriptMap: Record<string, string> = {
+        feishu: 'src/feishu-auth.ts',
+        dingtalk: 'src/dingtalk-auth.ts',
+      };
+      const script = scriptMap[ch];
+      println(boxTop(`${t(`channels.${ch}`)} Setup`));
+      println(boxLine(`${c.dim}${t(`channels.guide.${ch}.intro`)}${c.reset}`));
+      println(boxBottom());
+      println();
+
+      const proceed = await confirm({ message: `  ${t('channels.startSetup', { channel: t(`channels.${ch}`) })}`, default: true });
+      if (proceed) {
+        try {
+          const child = spawn('npx', ['tsx', script], {
+            cwd: process.cwd(),
+            stdio: 'inherit',
+          });
+          await new Promise<void>((resolve, reject) => {
+            child.on('close', code => code === 0 ? resolve() : reject(new Error(`exit ${code}`)));
+          });
+          ok(`${t(`channels.${ch}`)} ${t('channels.setupDone')}`);
+        } catch {
+          warn(`${t(`channels.${ch}`)} ${t('channels.setupFailed')}`);
+        }
+      }
+    } else {
+      // Channels without auth scripts - show guide
+      println(`  ${c.brightCyan}→${c.reset} ${c.bold}${ch}${c.reset}: ${c.dim}${t(`channels.guide.${ch}`)}${c.reset}`);
+    }
   }
   println();
 }
