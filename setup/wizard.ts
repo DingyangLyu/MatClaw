@@ -397,6 +397,7 @@ async function step6(): Promise<void> {
           const child = spawn('npx', ['tsx', script], {
             cwd: process.cwd(),
             stdio: 'inherit',
+            env: { ...process.env, MATCLAW_LANG: getLocale(), LOG_LEVEL: 'silent' },
           });
           await new Promise<void>((resolve, reject) => {
             child.on('close', code => code === 0 ? resolve() : reject(new Error(`exit ${code}`)));

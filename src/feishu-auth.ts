@@ -1,6 +1,6 @@
 /**
  * Feishu Bot Authentication Setup
- * Interactive guided setup with step-by-step instructions.
+ * Interactive guided setup with step-by-step instructions and i18n.
  * Run: npm run auth:feishu
  */
 
@@ -9,65 +9,11 @@ import path from 'path';
 import * as Lark from '@larksuiteoapi/node-sdk';
 import { input, password, confirm } from '@inquirer/prompts';
 import ora from 'ora';
-
-// Import shared UI (works when run from project root)
-const ESC = '\x1b';
-const c = {
-  reset: `${ESC}[0m`,
-  bold: `${ESC}[1m`,
-  dim: `${ESC}[2m`,
-  underline: `${ESC}[4m`,
-  red: `${ESC}[31m`,
-  green: `${ESC}[32m`,
-  yellow: `${ESC}[33m`,
-  cyan: `${ESC}[36m`,
-  brightRed: `${ESC}[91m`,
-  brightGreen: `${ESC}[92m`,
-  brightYellow: `${ESC}[93m`,
-  brightCyan: `${ESC}[96m`,
-  brightWhite: `${ESC}[97m`,
-  fg: (n: number) => `${ESC}[38;5;${n}m`,
-};
-
-const GRADIENT = [196, 197, 198, 199, 200, 164, 128, 92, 56, 57, 63, 69, 75, 81, 45, 39, 33, 27];
-
-function gradient(text: string): string {
-  return [...text].map((ch, i) => {
-    if (ch === ' ') return ch;
-    const idx = Math.floor((i / Math.max(text.length - 1, 1)) * (GRADIENT.length - 1));
-    return `${c.fg(GRADIENT[idx])}${c.bold}${ch}${c.reset}`;
-  }).join('');
-}
-
-function println(text = ''): void {
-  console.log(text);
-}
-
-const BOX_W = Math.min(process.stdout.columns || 80, 76);
-
-function boxTop(title?: string): string {
-  if (title) {
-    const t = ` ${title} `;
-    const left = 2;
-    const right = Math.max(0, BOX_W - 2 - t.length - left);
-    return `  ${c.dim}╭${'─'.repeat(left)}${c.reset}${c.bold}${c.brightCyan}${t}${c.reset}${c.dim}${'─'.repeat(right)}╮${c.reset}`;
-  }
-  return `  ${c.dim}╭${'─'.repeat(BOX_W - 2)}╮${c.reset}`;
-}
-
-function boxLine(text: string): string {
-  const vis = text.replace(/\x1b\[[0-9;]*m/g, '').length;
-  const pad = Math.max(0, BOX_W - 4 - vis);
-  return `  ${c.dim}│${c.reset} ${text}${' '.repeat(pad)} ${c.dim}│${c.reset}`;
-}
-
-function boxBottom(): string {
-  return `  ${c.dim}╰${'─'.repeat(BOX_W - 2)}╯${c.reset}`;
-}
-
-function boxDivider(): string {
-  return `  ${c.dim}├${'─'.repeat(BOX_W - 2)}┤${c.reset}`;
-}
+import {
+  c, gradient, println,
+  boxTop, boxLine, boxBottom, boxDivider,
+} from '../setup/ui.js';
+import { setLocale, detectLocale, t, type Locale } from '../setup/i18n.js';
 
 const STORE_DIR = path.join(process.cwd(), 'store');
 const CREDS_PATH = path.join(STORE_DIR, 'feishu-credentials.json');
@@ -97,81 +43,79 @@ async function testConnection(
     if (response.code === 0 && response.bot) {
       return { success: true, botName: response.bot.bot_name || response.bot.app_name };
     }
-    return {
-      success: false,
-      error: response.msg || `Error code: ${response.code}`,
-    };
+    return { success: false, error: response.msg || `Error code: ${response.code}` };
   } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
 async function main(): Promise<void> {
+  // Detect language
+  const langArg = process.argv.find((_, i, a) => a[i - 1] === '--lang') as Locale | undefined;
+  setLocale(langArg || detectLocale());
+
   println();
-  println(gradient('  Feishu Bot Setup'));
+  println(gradient(`  ${t('feishu.title')}`));
   println();
 
   // ── Step 1: Create App ──
-  println(boxTop('Step 1: Create App'));
-  println(boxLine(`${c.brightCyan}1.${c.reset} Open ${c.underline}https://open.feishu.cn/app${c.reset}`));
-  println(boxLine(`${c.brightCyan}2.${c.reset} Click ${c.bold}Create Custom App${c.reset}`));
-  println(boxLine(`${c.brightCyan}3.${c.reset} App name: e.g. "MatClaw", fill description`));
+  println(boxTop(t('feishu.step1')));
+  println(boxLine(`${c.brightCyan}1.${c.reset} ${t('feishu.step1.1')}`));
+  println(boxLine(`${c.brightCyan}2.${c.reset} ${t('feishu.step1.2')}`));
+  println(boxLine(`${c.brightCyan}3.${c.reset} ${t('feishu.step1.3')}`));
   println(boxBottom());
   println();
 
   // ── Step 2: Enable Bot ──
-  println(boxTop('Step 2: Enable Bot'));
-  println(boxLine(`${c.brightCyan}1.${c.reset} In app settings → ${c.bold}Add Capabilities${c.reset}`));
-  println(boxLine(`${c.brightCyan}2.${c.reset} Enable ${c.bold}Bot${c.reset} capability`));
+  println(boxTop(t('feishu.step2')));
+  println(boxLine(`${c.brightCyan}1.${c.reset} ${t('feishu.step2.1')}`));
+  println(boxLine(`${c.brightCyan}2.${c.reset} ${t('feishu.step2.2')}`));
   println(boxBottom());
   println();
 
   // ── Step 3: Event Subscriptions ──
-  println(boxTop('Step 3: Event Subscriptions'));
-  println(boxLine(`${c.brightCyan}1.${c.reset} Go to ${c.bold}Event Subscriptions${c.reset}`));
-  println(boxLine(`${c.brightCyan}2.${c.reset} Connection mode: ${c.bold}${c.brightGreen}Long Connection (WebSocket)${c.reset}`));
-  println(boxLine(`   ${c.dim}No public URL needed — works behind NAT/firewall${c.reset}`));
-  println(boxLine(`${c.brightCyan}3.${c.reset} Add event: ${c.bold}im.message.receive_v1${c.reset}`));
+  println(boxTop(t('feishu.step3')));
+  println(boxLine(`${c.brightCyan}1.${c.reset} ${t('feishu.step3.1')}`));
+  println(boxLine(`${c.brightCyan}2.${c.reset} ${t('feishu.step3.2')}`));
+  println(boxLine(`   ${c.dim}${t('feishu.step3.note')}${c.reset}`));
+  println(boxLine(`${c.brightCyan}3.${c.reset} ${t('feishu.step3.3')}`));
   println(boxBottom());
   println();
 
   // ── Step 4: Permissions ──
-  println(boxTop('Step 4: Add Permissions'));
-  println(boxLine(`Go to ${c.bold}Permissions & Scopes${c.reset} and add:`));
+  println(boxTop(t('feishu.step4')));
+  println(boxLine(`${t('feishu.step4.intro')}`));
   println(boxDivider());
-  println(boxLine(`${c.brightGreen}im:message${c.reset}                  ${c.dim}Receive messages${c.reset}`));
-  println(boxLine(`${c.brightGreen}im:message:send_as_bot${c.reset}     ${c.dim}Send messages as bot${c.reset}`));
-  println(boxLine(`${c.brightGreen}im:chat:readonly${c.reset}           ${c.dim}Read chat/group info${c.reset}`));
-  println(boxLine(`${c.brightGreen}im:resource${c.reset}                ${c.dim}Upload images (for plots)${c.reset}`));
-  println(boxLine(`${c.brightGreen}contact:contact.base:readonly${c.reset} ${c.dim}Read user names${c.reset}`));
+  println(boxLine(`${c.brightGreen}im:message${c.reset}                  ${c.dim}${t('feishu.perm.message')}${c.reset}`));
+  println(boxLine(`${c.brightGreen}im:message:send_as_bot${c.reset}     ${c.dim}${t('feishu.perm.send')}${c.reset}`));
+  println(boxLine(`${c.brightGreen}im:chat:readonly${c.reset}           ${c.dim}${t('feishu.perm.chat')}${c.reset}`));
+  println(boxLine(`${c.brightGreen}im:resource${c.reset}                ${c.dim}${t('feishu.perm.resource')}${c.reset}`));
+  println(boxLine(`${c.brightGreen}contact:contact.base:readonly${c.reset} ${c.dim}${t('feishu.perm.contact')}${c.reset}`));
   println(boxBottom());
   println();
 
   // ── Step 5: Publish ──
-  println(boxTop('Step 5: Publish App'));
-  println(boxLine(`${c.brightCyan}1.${c.reset} Go to ${c.bold}Version Management${c.reset}`));
-  println(boxLine(`${c.brightCyan}2.${c.reset} Create and ${c.bold}publish${c.reset} a new version`));
-  println(boxLine(`${c.brightCyan}3.${c.reset} Wait for admin approval ${c.dim}(enterprise accounts)${c.reset}`));
+  println(boxTop(t('feishu.step5')));
+  println(boxLine(`${c.brightCyan}1.${c.reset} ${t('feishu.step5.1')}`));
+  println(boxLine(`${c.brightCyan}2.${c.reset} ${t('feishu.step5.2')}`));
+  println(boxLine(`${c.brightCyan}3.${c.reset} ${t('feishu.step5.3')}`));
   println(boxBottom());
   println();
 
   const ready = await confirm({
-    message: '  Completed the steps above?',
+    message: `  ${t('feishu.ready')}`,
     default: true,
   });
 
   if (!ready) {
-    println(`\n  ${c.dim}Come back after completing the steps. Run: npm run auth:feishu${c.reset}\n`);
+    println(`\n  ${c.dim}${t('feishu.comeback')}${c.reset}\n`);
     process.exit(0);
   }
 
   // ── Step 6: Enter Credentials ──
   println();
-  println(boxTop('Step 6: Enter Credentials'));
-  println(boxLine(`${c.dim}Find these on your app's Credentials & Basic Info page${c.reset}`));
+  println(boxTop(t('feishu.step6')));
+  println(boxLine(`${c.dim}${t('feishu.step6.hint')}${c.reset}`));
   println(boxBottom());
   println();
 
@@ -180,18 +124,18 @@ async function main(): Promise<void> {
     try {
       JSON.parse(fs.readFileSync(CREDS_PATH, 'utf-8'));
       const overwrite = await confirm({
-        message: '  Existing credentials found. Overwrite?',
+        message: `  ${t('feishu.existingFound')}`,
         default: false,
       });
       if (!overwrite) {
-        println(`  ${c.dim}Keeping existing credentials.${c.reset}`);
-        const spinner = ora({ text: 'Testing connection...', indent: 4 }).start();
+        println(`  ${c.dim}${t('feishu.keeping')}${c.reset}`);
+        const spinner = ora({ text: t('feishu.testing'), indent: 4 }).start();
         const existing: FeishuCredentials = JSON.parse(fs.readFileSync(CREDS_PATH, 'utf-8'));
         const result = await testConnection(existing);
         if (result.success) {
-          spinner.succeed(`Connected! Bot: ${c.bold}${result.botName || 'Unknown'}${c.reset}`);
+          spinner.succeed(t('feishu.connected', { name: result.botName || 'Unknown' }));
         } else {
-          spinner.fail(`Connection failed: ${result.error}`);
+          spinner.fail(t('feishu.connFailed', { error: result.error || '' }));
         }
         process.exit(result.success ? 0 : 1);
       }
@@ -201,19 +145,19 @@ async function main(): Promise<void> {
   }
 
   const appId = await input({
-    message: '  App ID:',
-    validate: (val) => val.trim() ? true : 'App ID is required',
+    message: `  ${t('feishu.appId')}`,
+    validate: (val) => val.trim() ? true : t('feishu.appIdRequired'),
   });
 
   const appSecret = await password({
-    message: '  App Secret:',
+    message: `  ${t('feishu.appSecret')}`,
     mask: '*',
-    validate: (val) => val.trim() ? true : 'App Secret is required',
+    validate: (val) => val.trim() ? true : t('feishu.appSecretRequired'),
   });
 
-  println(`\n  ${c.dim}Optional security settings (Enter to skip):${c.reset}`);
-  const encryptKey = await input({ message: '  Encrypt Key (optional):' });
-  const verificationToken = await input({ message: '  Verification Token (optional):' });
+  println(`\n  ${c.dim}${t('feishu.optional')}${c.reset}`);
+  const encryptKey = await input({ message: `  ${t('feishu.encryptKey')}` });
+  const verificationToken = await input({ message: `  ${t('feishu.verifyToken')}` });
 
   const creds: FeishuCredentials = {
     appId: appId.trim(),
@@ -224,21 +168,21 @@ async function main(): Promise<void> {
 
   // ── Test Connection ──
   println();
-  const spinner = ora({ text: 'Testing connection to Feishu API...', indent: 4 }).start();
+  const spinner = ora({ text: t('feishu.testingApi'), indent: 4 }).start();
   const testResult = await testConnection(creds);
 
   if (!testResult.success) {
-    spinner.fail(`Connection failed: ${testResult.error}`);
+    spinner.fail(t('feishu.connFailed', { error: testResult.error || '' }));
     println();
-    println(boxTop('Troubleshooting'));
-    println(boxLine(`${c.brightYellow}1.${c.reset} Check App ID and App Secret are correct`));
-    println(boxLine(`${c.brightYellow}2.${c.reset} Ensure the app version is published`));
-    println(boxLine(`${c.brightYellow}3.${c.reset} Check network/VPN — feishu.cn must be reachable`));
+    println(boxTop(t('feishu.troubleshoot')));
+    println(boxLine(`${c.brightYellow}1.${c.reset} ${t('feishu.troubleshoot.1')}`));
+    println(boxLine(`${c.brightYellow}2.${c.reset} ${t('feishu.troubleshoot.2')}`));
+    println(boxLine(`${c.brightYellow}3.${c.reset} ${t('feishu.troubleshoot.3')}`));
     println(boxBottom());
     process.exit(1);
   }
 
-  spinner.succeed(`Connected! Bot: ${c.bold}${testResult.botName}${c.reset}`);
+  spinner.succeed(t('feishu.connected', { name: testResult.botName || '' }));
 
   // ── Save ──
   fs.mkdirSync(STORE_DIR, { recursive: true });
@@ -247,16 +191,16 @@ async function main(): Promise<void> {
 
   // ── Next Steps ──
   println();
-  println(boxTop('Done!'));
-  println(boxLine(`${c.brightGreen}✔${c.reset}  Credentials saved to ${c.dim}store/feishu-credentials.json${c.reset}`));
+  println(boxTop(t('feishu.done')));
+  println(boxLine(`${c.brightGreen}✔${c.reset}  ${t('feishu.saved')}`));
   println(boxDivider());
-  println(boxLine(`${c.bold}Next:${c.reset}`));
-  println(boxLine(`${c.brightCyan}1.${c.reset} Add the bot to your Feishu group or DM it directly`));
-  println(boxLine(`${c.brightCyan}2.${c.reset} Start MatClaw: ${c.bold}npm run dev${c.reset}`));
-  println(boxLine(`${c.brightCyan}3.${c.reset} Send a message — the chat auto-registers as a group`));
+  println(boxLine(`${c.bold}${t('feishu.next')}${c.reset}`));
+  println(boxLine(`${c.brightCyan}1.${c.reset} ${t('feishu.next.1')}`));
+  println(boxLine(`${c.brightCyan}2.${c.reset} ${t('feishu.next.2')}`));
+  println(boxLine(`${c.brightCyan}3.${c.reset} ${t('feishu.next.3')}`));
   println(boxDivider());
-  println(boxLine(`${c.dim}Group chat: @mention the bot to trigger${c.reset}`));
-  println(boxLine(`${c.dim}Direct message: all messages are processed${c.reset}`));
+  println(boxLine(`${c.dim}${t('feishu.next.group')}${c.reset}`));
+  println(boxLine(`${c.dim}${t('feishu.next.dm')}${c.reset}`));
   println(boxBottom());
   println();
 
