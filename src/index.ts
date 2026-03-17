@@ -973,20 +973,35 @@ async function handleControlCommand(
 function printStartupBanner(): void {
   const ESC = '\x1b';
   const C = {
-    reset: `${ESC}[0m`, bold: `${ESC}[1m`, dim: `${ESC}[2m`, underline: `${ESC}[4m`,
-    green: `${ESC}[32m`, yellow: `${ESC}[33m`, cyan: `${ESC}[36m`,
-    brightGreen: `${ESC}[92m`, brightYellow: `${ESC}[93m`, brightCyan: `${ESC}[96m`,
+    reset: `${ESC}[0m`,
+    bold: `${ESC}[1m`,
+    dim: `${ESC}[2m`,
+    underline: `${ESC}[4m`,
+    green: `${ESC}[32m`,
+    yellow: `${ESC}[33m`,
+    cyan: `${ESC}[36m`,
+    brightGreen: `${ESC}[92m`,
+    brightYellow: `${ESC}[93m`,
+    brightCyan: `${ESC}[96m`,
     brightWhite: `${ESC}[97m`,
     fg: (n: number) => `${ESC}[38;5;${n}m`,
   };
-  const GRAD = [196, 197, 198, 199, 200, 164, 128, 92, 56, 57, 63, 69, 75, 81, 45, 39, 33, 27];
+  const GRAD = [
+    196, 197, 198, 199, 200, 164, 128, 92, 56, 57, 63, 69, 75, 81, 45, 39, 33,
+    27,
+  ];
   const W = Math.min(process.stdout.columns || 80, 76);
 
-  const grad = (text: string) => [...text].map((ch, i) => {
-    if (ch === ' ') return ch;
-    const idx = Math.floor((i / Math.max(text.length - 1, 1)) * (GRAD.length - 1));
-    return `${C.fg(GRAD[idx])}${C.bold}${ch}${C.reset}`;
-  }).join('');
+  const grad = (text: string) =>
+    [...text]
+      .map((ch, i) => {
+        if (ch === ' ') return ch;
+        const idx = Math.floor(
+          (i / Math.max(text.length - 1, 1)) * (GRAD.length - 1),
+        );
+        return `${C.fg(GRAD[idx])}${C.bold}${ch}${C.reset}`;
+      })
+      .join('');
 
   const strip = (s: string) => s.replace(/\x1b\[[0-9;]*m/g, '');
   const bTop = (t?: string) => {
@@ -1023,19 +1038,39 @@ function printStartupBanner(): void {
   console.log(bTop('Channels'));
   for (const ch of channels) {
     const name = ch.constructor.name.replace('Channel', '');
-    console.log(bLine(`${C.brightGreen}✔${C.reset}  ${C.bold}${name}${C.reset} ${C.dim}connected${C.reset}`));
+    console.log(
+      bLine(
+        `${C.brightGreen}✔${C.reset}  ${C.bold}${name}${C.reset} ${C.dim}connected${C.reset}`,
+      ),
+    );
   }
   // Show skipped channels
   for (const chName of getRegisteredChannelNames()) {
-    if (!channels.find(ch => ch.constructor.name.toLowerCase().includes(chName.toLowerCase()))) {
-      console.log(bLine(`${C.brightYellow}⚠${C.reset}  ${C.bold}${chName}${C.reset} ${C.dim}credentials missing${C.reset}`));
+    if (
+      !channels.find((ch) =>
+        ch.constructor.name.toLowerCase().includes(chName.toLowerCase()),
+      )
+    ) {
+      console.log(
+        bLine(
+          `${C.brightYellow}⚠${C.reset}  ${C.bold}${chName}${C.reset} ${C.dim}credentials missing${C.reset}`,
+        ),
+      );
     }
   }
   console.log(bDiv());
   const groupCount = Object.keys(registeredGroups).length;
-  console.log(bLine(`${C.brightCyan}Groups:${C.reset} ${groupCount}  ${C.dim}│${C.reset}  ${C.brightCyan}Trigger:${C.reset} @${ASSISTANT_NAME}`));
+  console.log(
+    bLine(
+      `${C.brightCyan}Groups:${C.reset} ${groupCount}  ${C.dim}│${C.reset}  ${C.brightCyan}Trigger:${C.reset} @${ASSISTANT_NAME}`,
+    ),
+  );
   console.log(bDiv());
-  console.log(bLine(`${C.bold}/watch${C.reset}   ${C.dim}monitor${C.reset}  ${C.bold}/status${C.reset}  ${C.dim}info${C.reset}  ${C.bold}/stop${C.reset}  ${C.dim}halt${C.reset}  ${C.bold}/help${C.reset}  ${C.dim}all cmds${C.reset}`));
+  console.log(
+    bLine(
+      `${C.bold}/watch${C.reset}   ${C.dim}monitor${C.reset}  ${C.bold}/status${C.reset}  ${C.dim}info${C.reset}  ${C.bold}/stop${C.reset}  ${C.dim}halt${C.reset}  ${C.bold}/help${C.reset}  ${C.dim}all cmds${C.reset}`,
+    ),
+  );
   console.log(bBot());
   console.log();
 }

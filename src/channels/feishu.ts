@@ -13,7 +13,12 @@ import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-import { STORE_DIR, ASSISTANT_NAME, GROUPS_DIR, TRIGGER_PATTERN } from '../config.js';
+import {
+  STORE_DIR,
+  ASSISTANT_NAME,
+  GROUPS_DIR,
+  TRIGGER_PATTERN,
+} from '../config.js';
 import { storeChatMetadata, setRegisteredGroup } from '../db.js';
 import { logger } from '../logger.js';
 import {
