@@ -50,8 +50,8 @@ const PROVIDERS: ProviderConfig[] = [
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   {
     id: 'gemini',
-    label: 'Google Gemini',
-    description: 'Gemini 2.5 Pro/Flash | 免费额度可用',
+    label: 'Google Gemini [engine 开发中]',
+    description: 'Gemini 2.5 Pro/Flash | 免费额度可用 | 可预配置 Key，engine 待实现',
     engine: 'gemini',
     apiKeyEnvName: 'GOOGLE_API_KEY',
     apiKeyPrefix: 'AIza',
@@ -134,7 +134,7 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: 'qwen-coding',
-    label: '阿里通义 Coding Plan（国内）',
+    label: '阿里通义 Coding Plan（国内 / OpenAI 兼容）',
     description: 'Qwen3.5 / Qwen-Coder | 订阅制 | 1M 上下文 | 包含 GLM/Kimi/MiniMax',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
@@ -145,13 +145,37 @@ const PROVIDERS: ProviderConfig[] = [
     authMethods: ['api_key', 'env_ref'],
   },
   {
+    id: 'qwen-coding-anthropic',
+    label: '阿里通义 Coding Plan（国内 / Anthropic 兼容）',
+    description: 'Qwen3.5 / Qwen-Coder | 订阅制 | Claude Agent SDK 直接调用',
+    engine: 'claude',
+    apiKeyEnvName: 'ANTHROPIC_API_KEY',
+    apiKeyPrefix: 'sk-',
+    defaultBaseUrl: 'https://coding.dashscope.aliyuncs.com/apps/anthropic',
+    defaultModel: 'qwen3.5-plus',
+    needsModel: true,
+    authMethods: ['api_key', 'env_ref'],
+  },
+  {
     id: 'qwen-coding-intl',
-    label: '阿里通义 Coding Plan（国际）',
+    label: '阿里通义 Coding Plan（国际 / OpenAI 兼容）',
     description: 'Qwen3.5 / Qwen-Coder | 订阅制 | 海外加速端点',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     apiKeyPrefix: 'sk-',
     defaultBaseUrl: 'https://coding-intl.dashscope.aliyuncs.com/v1',
+    defaultModel: 'qwen3.5-plus',
+    needsModel: true,
+    authMethods: ['api_key', 'env_ref'],
+  },
+  {
+    id: 'qwen-coding-intl-anthropic',
+    label: '阿里通义 Coding Plan（国际 / Anthropic 兼容）',
+    description: 'Qwen3.5 / Qwen-Coder | 订阅制 | 海外 | Claude Agent SDK',
+    engine: 'claude',
+    apiKeyEnvName: 'ANTHROPIC_API_KEY',
+    apiKeyPrefix: 'sk-',
+    defaultBaseUrl: 'https://coding-intl.dashscope.aliyuncs.com/apps/anthropic',
     defaultModel: 'qwen3.5-plus',
     needsModel: true,
     authMethods: ['api_key', 'env_ref'],
@@ -246,12 +270,23 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: 'volcengine',
-    label: '火山引擎（豆包）',
-    description: 'Doubao / Seed 模型 | 字节跳动旗下',
+    label: '火山引擎（豆包 / OpenAI 兼容）',
+    description: 'Doubao-Seed-Code | 256K 上下文 | 字节跳动旗下',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
-    defaultModel: 'doubao-pro-256k',
+    defaultModel: 'doubao-seed-code',
+    needsModel: true,
+    authMethods: ['api_key', 'env_ref'],
+  },
+  {
+    id: 'volcengine-anthropic',
+    label: '火山引擎 Coding Plan（Anthropic 兼容）',
+    description: 'Doubao-Seed-Code | 订阅制 | Claude Agent SDK 直接调用',
+    engine: 'claude',
+    apiKeyEnvName: 'ANTHROPIC_API_KEY',
+    defaultBaseUrl: 'https://ark.cn-beijing.volces.com/api/coding',
+    defaultModel: 'doubao-seed-code',
     needsModel: true,
     authMethods: ['api_key', 'env_ref'],
   },
@@ -268,11 +303,33 @@ const PROVIDERS: ProviderConfig[] = [
   },
   {
     id: 'minimax',
-    label: 'MiniMax（海螺 AI）',
+    label: 'MiniMax（海螺 AI / OpenAI 兼容）',
     description: 'MiniMax-M2.5 | 200K 上下文 | 推理 | $0.3/$1.2 per M tokens',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     defaultBaseUrl: 'https://api.minimax.chat/v1',
+    defaultModel: 'MiniMax-M2.5',
+    needsModel: true,
+    authMethods: ['api_key', 'env_ref'],
+  },
+  {
+    id: 'minimax-anthropic',
+    label: 'MiniMax（海螺 AI / Anthropic 兼容）',
+    description: 'MiniMax-M2.5 | Claude Agent SDK 直接调用',
+    engine: 'claude',
+    apiKeyEnvName: 'ANTHROPIC_API_KEY',
+    defaultBaseUrl: 'https://api.minimax.io/anthropic',
+    defaultModel: 'MiniMax-M2.5',
+    needsModel: true,
+    authMethods: ['api_key', 'env_ref'],
+  },
+  {
+    id: 'minimax-anthropic-cn',
+    label: 'MiniMax（海螺 AI / Anthropic 兼容 / 国内）',
+    description: 'MiniMax-M2.5 | Claude Agent SDK | 国内端点',
+    engine: 'claude',
+    apiKeyEnvName: 'ANTHROPIC_API_KEY',
+    defaultBaseUrl: 'https://api.minimaxi.com/anthropic',
     defaultModel: 'MiniMax-M2.5',
     needsModel: true,
     authMethods: ['api_key', 'env_ref'],
@@ -316,12 +373,24 @@ const PROVIDERS: ProviderConfig[] = [
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   {
     id: 'openrouter',
-    label: 'OpenRouter',
-    description: 'API 聚合 | 一个 Key 访问所有模型 | 按量付费',
+    label: 'OpenRouter（OpenAI 兼容）',
+    description: 'API 聚合 | 320+ 模型 | 按量付费',
     engine: 'codex',
     apiKeyEnvName: 'OPENAI_API_KEY',
     apiKeyPrefix: 'sk-or-',
     defaultBaseUrl: 'https://openrouter.ai/api/v1',
+    defaultModel: 'anthropic/claude-sonnet-4',
+    needsModel: true,
+    authMethods: ['api_key', 'env_ref'],
+  },
+  {
+    id: 'openrouter-anthropic',
+    label: 'OpenRouter（Anthropic 兼容）',
+    description: 'API 聚合 | Claude Agent SDK 直接调用 | 多供应商自动 failover',
+    engine: 'claude',
+    apiKeyEnvName: 'ANTHROPIC_API_KEY',
+    apiKeyPrefix: 'sk-or-',
+    defaultBaseUrl: 'https://openrouter.ai/api',
     defaultModel: 'anthropic/claude-sonnet-4',
     needsModel: true,
     authMethods: ['api_key', 'env_ref'],
@@ -784,7 +853,7 @@ export async function run(_args: string[]): Promise<void> {
       choices.push({ name: label, value: 'oauth_auto' });
     }
     if (providerConfig.authMethods.includes('env_ref')) {
-      choices.push({ name: '使用环境变量', value: 'env_ref' });
+      choices.push({ name: '从环境变量导入（一次性复制到 .env）', value: 'env_ref' });
     }
 
     const authMethod = await select({
@@ -915,6 +984,21 @@ export async function run(_args: string[]): Promise<void> {
     }
   }
 
+  // Warn if engine is not yet implemented
+  if (providerConfig.engine === 'gemini') {
+    ora().warn(
+      'Gemini engine is not yet implemented. Key will be saved for future use,\n         but npm run dev will fail until the engine is added.',
+    );
+    const proceed = await confirm({
+      message: '仍然保存配置?',
+      default: true,
+    });
+    if (!proceed) {
+      ora().fail('Cancelled.');
+      process.exit(1);
+    }
+  }
+
   // Step 8: Write to .env
   // Clean up keys from other engines
   const currentEnv = readEnvFile(['AGENT_ENGINE', 'ANTHROPIC_API_KEY', 'CLAUDE_CODE_OAUTH_TOKEN']);
@@ -935,15 +1019,24 @@ export async function run(_args: string[]): Promise<void> {
     removeEnvKeys(projectRoot, ['ANTHROPIC_BASE_URL']);
   }
 
+  // Always clean stale model settings before writing new ones.
+  // Prevents e.g. AGENT_MODEL=glm-5 lingering when switching to Anthropic (no model).
+  removeEnvKeys(projectRoot, ['AGENT_MODEL', 'CODEX_MODEL']);
+
   // Build updates
   const updates: Record<string, string> = {
     AGENT_ENGINE: providerConfig.engine,
   };
 
   if (useOAuth) {
-    // OAuth auto-detected — no key to write, just set engine
+    // OAuth auto-detected — remove stale API key so OAuth takes effect
+    removeEnvKeys(projectRoot, ['ANTHROPIC_API_KEY', 'ANTHROPIC_BASE_URL']);
   } else if (apiKey) {
     updates[providerConfig.apiKeyEnvName] = apiKey;
+    // Using explicit API key — remove stale OAuth token from .env (if any)
+    if (providerConfig.engine === 'claude') {
+      removeEnvKeys(projectRoot, ['CLAUDE_CODE_OAUTH_TOKEN']);
+    }
   }
 
   if (baseUrl) {
