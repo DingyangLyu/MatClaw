@@ -19,6 +19,9 @@
     "auth": "tsx src/whatsapp-auth.ts",
     "auth:feishu": "tsx src/feishu-auth.ts",
     "auth:dingtalk": "tsx src/dingtalk-auth.ts",
+    "auth:telegram": "tsx src/telegram-auth.ts",
+    "auth:discord": "tsx src/discord-auth.ts",
+    "auth:slack": "tsx src/slack-auth.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

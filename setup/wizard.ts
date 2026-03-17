@@ -380,10 +380,13 @@ async function step6(): Promise<void> {
   for (const ch of channels) {
     println();
     // Channels with interactive auth scripts
-    if (ch === 'feishu' || ch === 'dingtalk') {
+    if (ch === 'feishu' || ch === 'dingtalk' || ch === 'telegram' || ch === 'discord' || ch === 'slack') {
       const scriptMap: Record<string, string> = {
         feishu: 'src/feishu-auth.ts',
         dingtalk: 'src/dingtalk-auth.ts',
+        telegram: 'src/telegram-auth.ts',
+        discord: 'src/discord-auth.ts',
+        slack: 'src/slack-auth.ts',
       };
       const script = scriptMap[ch];
       println(boxTop(`${t(`channels.${ch}`)} Setup`));
