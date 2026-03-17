@@ -8,6 +8,8 @@ import os from 'os';
 import path from 'path';
 
 import {
+  AGENT_ENGINE,
+  AGENT_MODEL,
   CONTAINER_GPU,
   CONTAINER_IMAGE,
   CONTAINER_MAX_OUTPUT_SIZE,
@@ -170,6 +172,25 @@ function buildVolumeMounts(
     });
   }
 
+  // Codex OAuth credentials (from `codex login` on host)
+  // Mounted read-only so the Codex CLI can authenticate without an API key.
+  // The CodexEngine writes config.toml separately for MCP server config.
+  const codexAuthFile = path.join(homeDir, '.codex', 'auth.json');
+  if (fs.existsSync(codexAuthFile)) {
+    // Ensure the target directory exists in the container's codex home
+    const groupCodexDir = path.join(
+      DATA_DIR, 'sessions', group.folder, '.codex',
+    );
+    fs.mkdirSync(groupCodexDir, { recursive: true });
+    // Copy auth.json so it coexists with engine-generated config.toml
+    fs.copyFileSync(codexAuthFile, path.join(groupCodexDir, 'auth.json'));
+    mounts.push({
+      hostPath: groupCodexDir,
+      containerPath: '/home/node/.codex',
+      readonly: false, // CodexEngine writes config.toml here at runtime
+    });
+  }
+
   // VASP remote configuration (for vasp-remote script in container)
   const vaspConfigDir = path.join(homeDir, '.vasp-remote');
   if (fs.existsSync(vaspConfigDir)) {
@@ -248,9 +269,16 @@ function buildVolumeMounts(
  */
 function readSecrets(): Record<string, string> {
   return readEnvFile([
+    // Claude Agent SDK
     'CLAUDE_CODE_OAUTH_TOKEN',
     'ANTHROPIC_API_KEY',
     'ANTHROPIC_BASE_URL',
+    // Codex SDK (OpenAI-compatible)
+    'CODEX_API_KEY',
+    'OPENAI_API_KEY',
+    'OPENAI_BASE_URL',
+    'CODEX_MODEL',
+    // Shared
     'MP_API_KEY',
   ]);
 }
@@ -268,6 +296,12 @@ function buildContainerArgs(
 
   // Pass host timezone so container's local time matches the user's
   args.push('-e', `TZ=${TIMEZONE}`);
+
+  // Pass agent engine and model selection to container
+  args.push('-e', `AGENT_ENGINE=${AGENT_ENGINE}`);
+  if (AGENT_MODEL) {
+    args.push('-e', `AGENT_MODEL=${AGENT_MODEL}`);
+  }
 
   // Run as host user so bind-mounted files are accessible.
   // Skip when running as root (uid 0), as the container's node user (uid 1000),
@@ -522,6 +556,30 @@ export async function runContainerAgent(
     container.on('close', (code) => {
       clearTimeout(timeout);
       const duration = Date.now() - startTime;
+
+      // Sync Codex OAuth token back to host after container exits.
+      // The Codex CLI may have refreshed the token during a long-running session;
+      // writing it back ensures the host's auth.json stays fresh for next run.
+      if (AGENT_ENGINE === 'codex') {
+        const hostAuthFile = path.join(os.homedir(), '.codex', 'auth.json');
+        const groupAuthFile = path.join(
+          DATA_DIR, 'sessions', group.folder, '.codex', 'auth.json',
+        );
+        try {
+          if (fs.existsSync(groupAuthFile)) {
+            const hostStat = fs.existsSync(hostAuthFile)
+              ? fs.statSync(hostAuthFile).mtimeMs : 0;
+            const groupStat = fs.statSync(groupAuthFile).mtimeMs;
+            if (groupStat > hostStat) {
+              fs.mkdirSync(path.dirname(hostAuthFile), { recursive: true });
+              fs.copyFileSync(groupAuthFile, hostAuthFile);
+              logger.info('Synced refreshed Codex OAuth token back to host');
+            }
+          }
+        } catch (err) {
+          logger.warn({ err }, 'Failed to sync Codex auth.json back to host');
+        }
+      }
 
       // Close the live log stream
       liveStream.write(`\n${'='.repeat(60)}\n`);

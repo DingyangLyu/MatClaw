@@ -42,3 +42,9 @@ cases/
 benchmarks/
 repo-tokens/
 docs/nanoclaw-*
+drift/
+parse_log.py
+test_quasar.sh
+test.sh
+docs/lobster-competition/
+examples/al_li_phase_diagram/

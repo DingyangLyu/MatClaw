@@ -1,5 +1,17 @@
 # MatClaw
 
+## Git Branch & Push Strategy
+
+- **Local `matclaw-release`** → stable, pushes to `main` on all remotes
+- **Local `dev`** → experimental, pushes to `dev` on github (DingyangLyu/MatClaw)
+- New features and large changes go on `dev` first, merge to `matclaw-release` after testing
+- Push commands:
+  - Stable: `git push github matclaw-release:main` (+ gitee, zgca, bjzgcai)
+  - Dev: `git push github dev`
+- **NEVER add Co-Authored-By to commits**
+
+## About
+
 Materials science AI assistant powered by Claude Agent SDK, with integrated computational materials science tools (Quantum ESPRESSO, LAMMPS, RASPA3, MACE, pymatgen, ASE, etc.).
 
 ## Quick Context

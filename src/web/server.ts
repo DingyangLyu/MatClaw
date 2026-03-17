@@ -12,7 +12,7 @@ import { parseTranscript, formatLogEntries } from './transcript-parser.js';
 import { logger } from '../logger.js';
 import { DATA_DIR, GROUPS_DIR } from '../config.js';
 
-const PORT = parseInt(process.env.DASHBOARD_PORT || '3210', 10);
+const PORT = parseInt(process.env.DASHBOARD_PORT || '3210', 10); // v4: compact md, no breaks, hide br
 
 let wss: WebSocketServer;
 
@@ -170,17 +170,19 @@ function getTranscriptEntries(
 }
 
 export function startDashboard() {
-  const dashboardHtml = fs.readFileSync(
-    path.join(import.meta.dirname, 'dashboard.html'),
-    'utf-8',
-  );
+  const dashboardPath = path.join(import.meta.dirname, 'dashboard.html');
 
   const server = http.createServer((req, res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
 
     if (url.pathname === '/' || url.pathname === '/dashboard') {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(dashboardHtml);
+      // Re-read on each request so HTML changes take effect without restart
+      const html = fs.readFileSync(dashboardPath, 'utf-8');
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache',
+      });
+      res.end(html);
       return;
     }
 
@@ -274,6 +276,64 @@ export function startDashboard() {
       }
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(entries));
+      return;
+    }
+
+    // ── API: Serve files from group workspace ──
+    // Supports: /api/file?group=feishu&path=band_structure.png
+    // Container path /workspace/group/X maps to groups/{folder}/X on host
+    if (url.pathname === '/api/file') {
+      const group = url.searchParams.get('group');
+      const filePath = url.searchParams.get('path');
+      if (!group || !filePath) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Missing group or path parameter' }));
+        return;
+      }
+      // Security: reject path traversal
+      if (group.includes('..') || filePath.includes('..')) {
+        res.writeHead(403);
+        res.end('Forbidden');
+        return;
+      }
+      // Strip container prefix if present
+      const cleanPath = filePath
+        .replace(/^\/workspace\/group\//, '')
+        .replace(/^\/home\/node\//, '');
+      const resolved = path.join(GROUPS_DIR, group, cleanPath);
+      // Ensure resolved path stays inside GROUPS_DIR
+      if (!resolved.startsWith(path.resolve(GROUPS_DIR))) {
+        res.writeHead(403);
+        res.end('Forbidden');
+        return;
+      }
+      if (!fs.existsSync(resolved)) {
+        res.writeHead(404);
+        res.end('File not found');
+        return;
+      }
+      const ext = path.extname(resolved).toLowerCase();
+      const mimeTypes: Record<string, string> = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml',
+        '.webp': 'image/webp',
+        '.pdf': 'application/pdf',
+        '.csv': 'text/csv',
+        '.txt': 'text/plain',
+        '.json': 'application/json',
+        '.html': 'text/html',
+      };
+      const contentType = mimeTypes[ext] || 'application/octet-stream';
+      const stat = fs.statSync(resolved);
+      res.writeHead(200, {
+        'Content-Type': contentType,
+        'Content-Length': stat.size,
+        'Cache-Control': 'public, max-age=300',
+      });
+      fs.createReadStream(resolved).pipe(res);
       return;
     }
 

@@ -223,8 +223,8 @@ ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 COPY scripts/vasp-remote /usr/local/bin/vasp-remote
 RUN chmod +x /usr/local/bin/vasp-remote
 
-# Install agent-browser and claude-code globally
-RUN npm install -g agent-browser @anthropic-ai/claude-code
+# Install agent-browser, claude-code, and codex globally
+RUN npm install -g agent-browser @anthropic-ai/claude-code @openai/codex
 
 # Create app directory
 WORKDIR /app
@@ -247,7 +247,8 @@ RUN mkdir -p /workspace/group /workspace/global /workspace/extra /workspace/ipc/
 # Create entrypoint script
 # Secrets are passed via stdin JSON — temp file is deleted immediately after Node reads it
 # Follow-up messages arrive via IPC files in /workspace/ipc/input/
-RUN printf '#!/bin/bash\nset -e\ncd /app && npx tsc --outDir /tmp/dist 2>&1 >&2\nln -s /app/node_modules /tmp/dist/node_modules\nchmod -R a-w /tmp/dist\ncat > /tmp/input.json\nnode /tmp/dist/index.js < /tmp/input.json\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+# For Codex engine: symlink skills from .claude/skills/ to .codex/skills/
+RUN printf '#!/bin/bash\nset -e\ncd /app && npx tsc --outDir /tmp/dist 2>&1 >&2\nln -s /app/node_modules /tmp/dist/node_modules\nchmod -R a-w /tmp/dist\nif [ "$AGENT_ENGINE" = "codex" ] && [ -d /home/node/.claude/skills ]; then\n  mkdir -p /home/node/.codex/skills\n  for skill in /home/node/.claude/skills/*/; do\n    [ -d "$skill" ] && ln -sf "$skill" /home/node/.codex/skills/ 2>/dev/null || true\n  done\nfi\ncat > /tmp/input.json\nnode /tmp/dist/index.js < /tmp/input.json\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Create node user (provided by node:22-slim but not ubuntu base)
 # Ubuntu 24.04 ships a default 'ubuntu' user at uid/gid 1000 — remove it first
