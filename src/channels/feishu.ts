@@ -13,7 +13,7 @@ import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-import { STORE_DIR, ASSISTANT_NAME, GROUPS_DIR } from '../config.js';
+import { STORE_DIR, ASSISTANT_NAME, GROUPS_DIR, TRIGGER_PATTERN } from '../config.js';
 import { storeChatMetadata, setRegisteredGroup } from '../db.js';
 import { logger } from '../logger.js';
 import {
@@ -461,6 +461,13 @@ export class FeishuChannel implements Channel {
     const { text: content, attachment } = this.parseContent(
       event.message.content,
       messageType,
+      event.message.mentions,
+    );
+
+    // If the bot was @mentioned, ensure the trigger pattern matches
+    // regardless of the bot's display name (matclaw2 vs MatClaw)
+    const botMentioned = event.message.mentions?.some(
+      (m) => m.id.open_id === this.botOpenId,
     );
 
     const senderName = await this.resolveSenderName(senderOpenId || '');
@@ -494,6 +501,13 @@ export class FeishuChannel implements Channel {
           const label = attachment.type === 'image' ? 'image' : 'file';
           finalContent = `[Attached ${label}: ${savedPath}]`;
         }
+      }
+
+      // In group chats, if bot was @mentioned but the text doesn't match
+      // the trigger pattern (e.g. bot named "matclaw2" but trigger is "@MatClaw"),
+      // normalize the content to ensure trigger matching works.
+      if (isGroup && botMentioned && !TRIGGER_PATTERN.test(finalContent)) {
+        finalContent = `@${ASSISTANT_NAME} ${finalContent.replace(/@\S+\s*/, '')}`;
       }
 
       this.opts.onMessage(chatId, {
@@ -831,6 +845,7 @@ export class FeishuChannel implements Channel {
   private parseContent(
     rawContent: string,
     messageType: string,
+    mentions?: Array<{ key: string; id: { open_id?: string }; name: string }>,
   ): {
     text: string;
     attachment?: { type: 'image' | 'file'; key: string; name: string };
@@ -838,8 +853,16 @@ export class FeishuChannel implements Channel {
     try {
       const parsed = JSON.parse(rawContent);
       switch (messageType) {
-        case 'text':
-          return { text: parsed.text || '' };
+        case 'text': {
+          let text = parsed.text || '';
+          // Replace mention placeholders (@_user_1) with actual names (@botName)
+          if (mentions) {
+            for (const m of mentions) {
+              text = text.replace(m.key, `@${m.name}`);
+            }
+          }
+          return { text };
+        }
         case 'post': {
           const title =
             parsed.zh_cn?.title || parsed.en_us?.title || parsed.title || '';
