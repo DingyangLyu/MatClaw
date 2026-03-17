@@ -254,7 +254,7 @@ async function step4(): Promise<void> {
     const child = spawn('npx', ['tsx', 'setup/index.ts', '--step', 'configure-api', '--lang', getLocale()], {
       cwd: process.cwd(),
       stdio: 'inherit',
-      env: { ...process.env, MATCLAW_LANG: getLocale() },
+      env: { ...process.env, MATCLAW_LANG: getLocale(), MATCLAW_WIZARD: '1', LOG_LEVEL: 'silent' },
     });
     await new Promise<void>((resolve, reject) => {
       child.on('close', code => code === 0 ? resolve() : reject(new Error(`exit ${code}`)));
@@ -291,8 +291,8 @@ async function step5(hasDocker: boolean): Promise<void> {
     if (!fs.existsSync(smokeTest)) { spinner.info(t('smoke.notFound')); return; }
 
     const output = execSync(
-      'docker run --rm --entrypoint bash -v ./container/smoke-test.py:/tmp/smoke-test.py matclaw-agent:latest -c "python3 /tmp/smoke-test.py"',
-      { encoding: 'utf-8', cwd: process.cwd(), timeout: 180000 },
+      'docker run --rm --entrypoint bash -v ./container/smoke-test.py:/tmp/smoke-test.py matclaw-agent:latest -c "python3 /tmp/smoke-test.py 2>/dev/null"',
+      { encoding: 'utf-8', cwd: process.cwd(), timeout: 180000, stdio: ['pipe', 'pipe', 'ignore'] },
     );
 
     if (output.includes('FAILED')) {

@@ -895,9 +895,6 @@ export async function run(_args: string[]): Promise<void> {
   let useEnvRef = false;
   let envRefName = '';
 
-  println();
-  println(boxTop(t('api.authMethod')));
-
   if (providerConfig.authMethods.length > 1) {
     const choices: { name: string; value: string }[] = [];
     if (providerConfig.authMethods.includes('api_key')) {
@@ -947,8 +944,6 @@ export async function run(_args: string[]): Promise<void> {
       // api_key — fall through to key input below
     }
   }
-
-  println(boxBottom());
 
   // Step 4: API Key input
   if (!useOAuth && !useEnvRef && !apiKey) {
@@ -1017,7 +1012,6 @@ export async function run(_args: string[]): Promise<void> {
   }
 
   // Step 7: API Validation (skip for local providers with placeholder keys)
-  phaseHeader(t('api.validating'));
   if (!useOAuth && apiKey && !providerConfig.keyOptional) {
     const spinner = ora({ text: t('api.validating'), spinner: 'dots' }).start();
     let result: ValidationResult;
@@ -1057,10 +1051,8 @@ export async function run(_args: string[]): Promise<void> {
       process.exit(1);
     }
   }
-  phaseFooter();
 
   // Step 8: Write to .env
-  phaseHeader(t('api.saving'));
   // Clean up keys from other engines
   const currentEnv = readEnvFile(['AGENT_ENGINE', 'ANTHROPIC_API_KEY', 'CLAUDE_CODE_OAUTH_TOKEN']);
   const currentEngine = currentEnv.AGENT_ENGINE || 'claude';
@@ -1126,5 +1118,4 @@ export async function run(_args: string[]): Promise<void> {
     ENGINE: providerConfig.engine,
     KEY: useOAuth ? 'OAuth' : maskKey(apiKey),
   });
-  phaseFooter();
 }
