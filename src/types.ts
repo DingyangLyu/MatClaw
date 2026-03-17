@@ -45,6 +45,7 @@ export interface RegisteredGroup {
 export interface NewMessage {
   id: string;
   chat_jid: string;
+  thread_id?: string;
   sender: string;
   sender_name: string;
   content: string;

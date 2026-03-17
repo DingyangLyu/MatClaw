@@ -5,7 +5,7 @@ import path from 'path';
 import { google, gmail_v1 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 
-// isMain flag is used instead of MAIN_GROUP_FOLDER constant
+import { GROUPS_DIR } from '../config.js';
 import { logger } from '../logger.js';
 import { registerChannel, ChannelOpts } from './registry.js';
 import {
@@ -306,7 +306,16 @@ export class GmailChannel implements Channel {
     const mainKey = mainJid.replace(/^gmail:/, '');
     this.threadMeta.set(mainKey, meta);
 
-    const content = `[Email from ${senderName} <${senderEmail}>]\nSubject: ${subject}\n\n${body}`;
+    // Download email attachments
+    const mainGroup = mainEntry[1];
+    const attachmentRefs = await this.downloadAttachments(
+      messageId,
+      msg.data.payload,
+      mainGroup.folder,
+    );
+    const attachmentText = attachmentRefs.length > 0 ? '\n' + attachmentRefs.join('\n') : '';
+
+    const content = `[Email from ${senderName} <${senderEmail}>]\nSubject: ${subject}\n\n${body}${attachmentText}`;
 
     this.opts.onMessage(mainJid, {
       id: messageId,
@@ -361,6 +370,67 @@ export class GmailChannel implements Channel {
     }
 
     return '';
+  }
+
+  /**
+   * Download email attachments and save to the group's uploads folder.
+   * Returns an array of "[Attached file: uploads/filename]" strings.
+   */
+  private async downloadAttachments(
+    messageId: string,
+    payload: gmail_v1.Schema$MessagePart | undefined,
+    groupFolder: string,
+  ): Promise<string[]> {
+    if (!this.gmail || !payload) return [];
+
+    const results: string[] = [];
+    const parts = this.collectAttachmentParts(payload);
+
+    for (const part of parts) {
+      if (!part.body?.attachmentId || !part.filename) continue;
+
+      try {
+        const att = await this.gmail.users.messages.attachments.get({
+          userId: 'me',
+          messageId,
+          id: part.body.attachmentId,
+        });
+
+        if (!att.data.data) continue;
+
+        const buffer = Buffer.from(att.data.data, 'base64');
+        const uploadDir = path.join(GROUPS_DIR, groupFolder, 'uploads');
+        fs.mkdirSync(uploadDir, { recursive: true });
+
+        const safeName = `${Date.now()}_${part.filename.replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_')}`;
+        fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+
+        const isImage = (part.mimeType || '').startsWith('image/');
+        const label = isImage ? 'image' : 'file';
+        results.push(`[Attached ${label}: uploads/${safeName}]`);
+        logger.info({ filename: safeName, messageId }, 'Gmail: downloaded attachment');
+      } catch (err) {
+        logger.warn({ filename: part.filename, messageId, err }, 'Gmail: failed to download attachment');
+      }
+    }
+
+    return results;
+  }
+
+  /** Recursively collect parts that have a filename (attachments). */
+  private collectAttachmentParts(
+    payload: gmail_v1.Schema$MessagePart,
+  ): gmail_v1.Schema$MessagePart[] {
+    const result: gmail_v1.Schema$MessagePart[] = [];
+    if (payload.filename && payload.body?.attachmentId) {
+      result.push(payload);
+    }
+    if (payload.parts) {
+      for (const part of payload.parts) {
+        result.push(...this.collectAttachmentParts(part));
+      }
+    }
+    return result;
   }
 }
 

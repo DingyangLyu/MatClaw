@@ -16,4 +16,7 @@ import './feishu.js';
 
 // telegram
 
+// web (browser chat — always available)
+import './web.js';
+
 // whatsapp

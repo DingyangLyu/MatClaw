@@ -458,7 +458,7 @@ export class FeishuChannel implements Channel {
       ? new Date(parseInt(event.message.create_time, 10)).toISOString()
       : new Date().toISOString();
 
-    const { text: content } = this.parseContent(
+    const { text: content, attachment } = this.parseContent(
       event.message.content,
       messageType,
     );
@@ -479,12 +479,29 @@ export class FeishuChannel implements Channel {
     }
 
     if (groups[chatId]) {
+      // Download attachment (image/file) if present
+      let finalContent = content;
+      if (attachment && attachment.key) {
+        const groupFolder = groups[chatId].folder;
+        const savedPath = await this.downloadAttachment(
+          event.message.message_id,
+          attachment.key,
+          attachment.type,
+          attachment.name,
+          groupFolder,
+        );
+        if (savedPath) {
+          const label = attachment.type === 'image' ? 'image' : 'file';
+          finalContent = `[Attached ${label}: ${savedPath}]`;
+        }
+      }
+
       this.opts.onMessage(chatId, {
         id: event.message.message_id,
         chat_jid: chatId,
         sender: senderOpenId || senderUserId || 'unknown',
         sender_name: senderName,
-        content,
+        content: finalContent,
         timestamp,
         is_from_me: false,
         is_bot_message: false,
@@ -767,10 +784,44 @@ export class FeishuChannel implements Channel {
     return groups[jid]?.folder || null;
   }
 
+  /**
+   * Download a message attachment (image/file) and save to group uploads folder.
+   * Returns the relative path (e.g., "uploads/123_photo.png") or null on failure.
+   */
+  private async downloadAttachment(
+    messageId: string,
+    fileKey: string,
+    type: 'image' | 'file',
+    filename: string,
+    groupFolder: string,
+  ): Promise<string | null> {
+    if (!this.client || !groupFolder) return null;
+
+    const uploadDir = path.join(GROUPS_DIR, groupFolder, 'uploads');
+    fs.mkdirSync(uploadDir, { recursive: true });
+
+    const safeName = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_')}`;
+    const filePath = path.join(uploadDir, safeName);
+
+    try {
+      const resp = await this.client.im.messageResource.get({
+        path: { message_id: messageId, file_key: fileKey },
+        params: { type },
+      });
+
+      await (resp as any).writeFile(filePath);
+      logger.info({ messageId, fileKey, filePath }, 'Feishu: downloaded attachment');
+      return `uploads/${safeName}`;
+    } catch (err) {
+      logger.error({ messageId, fileKey, err }, 'Feishu: failed to download attachment');
+      return null;
+    }
+  }
+
   private parseContent(
     rawContent: string,
     messageType: string,
-  ): { text: string } {
+  ): { text: string; attachment?: { type: 'image' | 'file'; key: string; name: string } } {
     try {
       const parsed = JSON.parse(rawContent);
       switch (messageType) {
@@ -800,13 +851,25 @@ export class FeishuChannel implements Channel {
           return { text: text.trim() || '[Rich Text]' };
         }
         case 'image':
-          return { text: '<media:image>' };
+          return {
+            text: '<media:image>',
+            attachment: { type: 'image', key: parsed.image_key || '', name: 'image.png' },
+          };
         case 'file':
-          return { text: `<media:file:${parsed.file_name || 'unknown'}>` };
+          return {
+            text: `<media:file:${parsed.file_name || 'unknown'}>`,
+            attachment: { type: 'file', key: parsed.file_key || '', name: parsed.file_name || 'file' },
+          };
         case 'audio':
-          return { text: '<media:audio>' };
+          return {
+            text: '<media:audio>',
+            attachment: { type: 'file', key: parsed.file_key || '', name: parsed.file_name || 'audio.ogg' },
+          };
         case 'video':
-          return { text: '<media:video>' };
+          return {
+            text: '<media:video>',
+            attachment: { type: 'file', key: parsed.file_key || '', name: parsed.file_name || 'video.mp4' },
+          };
         case 'sticker':
           return { text: '<media:sticker>' };
         default:

@@ -37,6 +37,9 @@ import {
   killContainer,
 } from './container-runtime.js';
 import {
+  assignWebChatThreadSession,
+  createWebChatThread,
+  deleteWebChatThread,
   getAllChats,
   getAllRegisteredGroups,
   deleteSession,
@@ -44,11 +47,16 @@ import {
   getAllTasks,
   getMessagesSince,
   getNewMessages,
+  getActiveWebChatThreadId,
   getRouterState,
+  getWebChatThread,
   initDatabase,
+  listWebChatThreads,
+  renameWebChatThread,
   setRegisteredGroup,
   setRouterState,
   setSession,
+  setActiveWebChatThreadId,
   storeChatMetadata,
   storeMessage,
 } from './db.js';
@@ -65,6 +73,7 @@ import {
 import { startSchedulerLoop } from './task-scheduler.js';
 import { Channel, NewMessage, RegisteredGroup } from './types.js';
 import { logger } from './logger.js';
+import { setWebChatActiveThread } from './channels/web.js';
 
 // Re-export for backwards compatibility during refactor
 export { escapeXml, formatMessages } from './router.js';
@@ -78,6 +87,8 @@ let messageLoopRunning = false;
 
 const channels: Channel[] = [];
 const queue = new GroupQueue();
+const WEB_CHAT_FOLDER = 'web_chat';
+const WEB_CHAT_JID = 'web:chat';
 
 function loadState(): void {
   lastTimestamp = getRouterState('last_timestamp') || '';
@@ -99,6 +110,80 @@ function loadState(): void {
 function saveState(): void {
   setRouterState('last_timestamp', lastTimestamp);
   setRouterState('last_agent_timestamp', JSON.stringify(lastAgentTimestamp));
+}
+
+function syncWebChatRuntimeSession(
+  threadId: string,
+  syncOutputThread = true,
+): void {
+  const thread = getWebChatThread(threadId);
+  if (!thread) return;
+  setActiveWebChatThreadId(threadId);
+  if (syncOutputThread) {
+    setWebChatActiveThread(threadId);
+  }
+
+  if (thread.agent_session_id) {
+    sessions[WEB_CHAT_FOLDER] = thread.agent_session_id;
+    setSession(WEB_CHAT_FOLDER, thread.agent_session_id);
+  } else {
+    delete sessions[WEB_CHAT_FOLDER];
+    deleteSession(WEB_CHAT_FOLDER);
+  }
+}
+
+function activateWebChatThread(threadId: string): void {
+  const currentThreadId = getActiveWebChatThreadId();
+  if (currentThreadId === threadId) {
+    syncWebChatRuntimeSession(threadId);
+    return;
+  }
+  const state = queue.getState(WEB_CHAT_JID);
+  const hasRunningWebAgent = !!(state?.active && state.process);
+  if (state?.active && state.process) {
+    queue.markSessionCleared(WEB_CHAT_JID);
+    state.process.kill('SIGTERM');
+    if (state.containerName) killContainer(state.containerName);
+  }
+  syncWebChatRuntimeSession(threadId, !hasRunningWebAgent);
+}
+
+function getAgentCursorKey(chatJid: string, threadId?: string): string {
+  if (chatJid === WEB_CHAT_JID) {
+    return `${chatJid}:${threadId || getActiveWebChatThreadId()}`;
+  }
+  return chatJid;
+}
+
+function deleteAndReplaceWebChatThread(threadId: string):
+  | { deletedThreadId: string; activeThreadId: string; activeSession: NonNullable<ReturnType<typeof getWebChatThread>> }
+  | undefined {
+  const target = getWebChatThread(threadId);
+  if (!target) return undefined;
+
+  const existing = listWebChatThreads().filter((thread) => thread.id !== threadId);
+  let fallback = existing[0];
+  if (!fallback) {
+    fallback = createWebChatThread('New chat');
+  }
+
+  const activeThreadId = getActiveWebChatThreadId();
+  deleteWebChatThread(threadId);
+
+  if (activeThreadId === threadId) {
+    activateWebChatThread(fallback.id);
+  } else if (!getWebChatThread(activeThreadId)) {
+    activateWebChatThread(fallback.id);
+  }
+
+  const nextActive = getWebChatThread(getActiveWebChatThreadId());
+  if (!nextActive) return undefined;
+
+  return {
+    deletedThreadId: threadId,
+    activeThreadId: getActiveWebChatThreadId(),
+    activeSession: nextActive,
+  };
 }
 
 function registerGroup(jid: string, group: RegisteredGroup): void {
@@ -165,12 +250,15 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   }
 
   const isMainGroup = group.isMain === true;
-
-  const sinceTimestamp = lastAgentTimestamp[chatJid] || '';
+  const activeThreadId =
+    group.folder === WEB_CHAT_FOLDER ? getActiveWebChatThreadId() : undefined;
+  const cursorKey = getAgentCursorKey(chatJid, activeThreadId);
+  const sinceTimestamp = lastAgentTimestamp[cursorKey] || '';
   const missedMessages = getMessagesSince(
     chatJid,
     sinceTimestamp,
     ASSISTANT_NAME,
+    activeThreadId,
   );
 
   if (missedMessages.length === 0) return true;
@@ -179,7 +267,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   const lastMsg = missedMessages[missedMessages.length - 1].content.trim();
 
   if (/^\/watch\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] =
+    lastAgentTimestamp[cursorKey] =
       missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     // Read tail of container-live.log and extract recent activity
@@ -229,7 +317,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   }
 
   if (/^\/help\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] =
+    lastAgentTimestamp[cursorKey] =
       missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     if (channel) {
@@ -252,7 +340,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   }
 
   if (/^\/stop\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] =
+    lastAgentTimestamp[cursorKey] =
       missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     const state = queue.getState(chatJid);
@@ -272,7 +360,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
   }
 
   if (/^\/status\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] =
+    lastAgentTimestamp[cursorKey] =
       missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     const state = queue.getState(chatJid);
@@ -321,7 +409,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
         lines.push(`${s.id.slice(0, 8)}  ${time}  ${kb}KB${marker}`);
       }
     }
-    lastAgentTimestamp[chatJid] =
+    lastAgentTimestamp[cursorKey] =
       missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     if (channel) {
@@ -342,7 +430,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
     queue.markSessionCleared(chatJid);
     delete sessions[group.folder];
     deleteSession(group.folder);
-    lastAgentTimestamp[chatJid] =
+    lastAgentTimestamp[cursorKey] =
       missedMessages[missedMessages.length - 1].timestamp;
     saveState();
     logger.info({ group: group.name }, 'Session reset via /new command');
@@ -377,7 +465,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
         if (match.length === 1) {
           targetId = match[0];
         } else if (match.length > 1) {
-          lastAgentTimestamp[chatJid] =
+          lastAgentTimestamp[cursorKey] =
             missedMessages[missedMessages.length - 1].timestamp;
           saveState();
           if (channel) {
@@ -400,7 +488,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
       }
       sessions[group.folder] = targetId;
       setSession(group.folder, targetId);
-      lastAgentTimestamp[chatJid] =
+      lastAgentTimestamp[cursorKey] =
         missedMessages[missedMessages.length - 1].timestamp;
       saveState();
       logger.info(
@@ -414,7 +502,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
         );
       }
     } else {
-      lastAgentTimestamp[chatJid] =
+      lastAgentTimestamp[cursorKey] =
         missedMessages[missedMessages.length - 1].timestamp;
       saveState();
       if (channel) {
@@ -458,8 +546,8 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
 
   // Advance cursor so the piping path in startMessageLoop won't re-fetch
   // these messages. Save the old cursor so we can roll back on error.
-  const previousCursor = lastAgentTimestamp[chatJid] || '';
-  lastAgentTimestamp[chatJid] =
+  const previousCursor = lastAgentTimestamp[cursorKey] || '';
+  lastAgentTimestamp[cursorKey] =
     missedMessages[missedMessages.length - 1].timestamp;
   saveState();
 
@@ -527,7 +615,7 @@ async function processGroupMessages(chatJid: string): Promise<boolean> {
       return true;
     }
     // Roll back cursor so retries can re-process these messages
-    lastAgentTimestamp[chatJid] = previousCursor;
+    lastAgentTimestamp[cursorKey] = previousCursor;
     saveState();
     logger.warn(
       { group: group.name },
@@ -581,6 +669,12 @@ async function runAgent(
         if (output.newSessionId && !queue.isSessionCleared(chatJid)) {
           sessions[group.folder] = output.newSessionId;
           setSession(group.folder, output.newSessionId);
+          if (group.folder === WEB_CHAT_FOLDER) {
+            assignWebChatThreadSession(
+              getActiveWebChatThreadId(),
+              output.newSessionId,
+            );
+          }
         }
         await onOutput(output);
       }
@@ -605,6 +699,12 @@ async function runAgent(
     if (output.newSessionId && !queue.isSessionCleared(chatJid)) {
       sessions[group.folder] = output.newSessionId;
       setSession(group.folder, output.newSessionId);
+      if (group.folder === WEB_CHAT_FOLDER) {
+        assignWebChatThreadSession(
+          getActiveWebChatThreadId(),
+          output.newSessionId,
+        );
+      }
     }
 
     if (output.status === 'error') {
@@ -633,10 +733,15 @@ async function handleControlCommand(
   channel: Channel,
   messages: NewMessage[],
 ): Promise<boolean> {
+  const threadId =
+    group.folder === WEB_CHAT_FOLDER
+      ? messages[messages.length - 1].thread_id || getActiveWebChatThreadId()
+      : undefined;
+  const cursorKey = getAgentCursorKey(chatJid, threadId);
   const lastMsg = messages[messages.length - 1].content.trim();
 
   if (/^\/stop\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    lastAgentTimestamp[cursorKey] = messages[messages.length - 1].timestamp;
     saveState();
     const state = queue.getState(chatJid);
     if (state?.active && state.process) {
@@ -667,7 +772,7 @@ async function handleControlCommand(
     }
     delete sessions[group.folder];
     deleteSession(group.folder);
-    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    lastAgentTimestamp[cursorKey] = messages[messages.length - 1].timestamp;
     saveState();
     logger.info({ group: group.name }, 'Session reset via /new command');
     await channel.sendMessage(
@@ -678,7 +783,7 @@ async function handleControlCommand(
   }
 
   if (/^\/watch\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    lastAgentTimestamp[cursorKey] = messages[messages.length - 1].timestamp;
     saveState();
     const liveLogPath = path.join(
       DATA_DIR,
@@ -723,7 +828,7 @@ async function handleControlCommand(
   }
 
   if (/^\/status\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    lastAgentTimestamp[cursorKey] = messages[messages.length - 1].timestamp;
     saveState();
     const state = queue.getState(chatJid);
     const sid = sessions[group.folder];
@@ -741,7 +846,7 @@ async function handleControlCommand(
   }
 
   if (/^\/help\b/i.test(lastMsg)) {
-    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    lastAgentTimestamp[cursorKey] = messages[messages.length - 1].timestamp;
     saveState();
     await channel.sendMessage(
       chatJid,
@@ -788,7 +893,7 @@ async function handleControlCommand(
         lines.push(`${s.id.slice(0, 8)}  ${time}  ${kb}KB${marker}`);
       }
     }
-    lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+    lastAgentTimestamp[cursorKey] = messages[messages.length - 1].timestamp;
     saveState();
     const msg =
       lines.length > 0
@@ -833,7 +938,7 @@ async function handleControlCommand(
     if (targetId) {
       sessions[group.folder] = targetId;
       setSession(group.folder, targetId);
-      lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+      lastAgentTimestamp[cursorKey] = messages[messages.length - 1].timestamp;
       saveState();
       logger.info(
         { group: group.name, sessionId: targetId },
@@ -844,7 +949,7 @@ async function handleControlCommand(
         `Session restored (${targetId.slice(0, 8)}...). Agent will continue with that session's history.`,
       );
     } else {
-      lastAgentTimestamp[chatJid] = messages[messages.length - 1].timestamp;
+      lastAgentTimestamp[cursorKey] = messages[messages.length - 1].timestamp;
       saveState();
       await channel.sendMessage(
         chatJid,
@@ -896,6 +1001,18 @@ async function startMessageLoop(): Promise<void> {
         for (const [chatJid, groupMessages] of messagesByGroup) {
           const group = registeredGroups[chatJid];
           if (!group) continue;
+          const activeThreadId =
+            group.folder === WEB_CHAT_FOLDER
+              ? getActiveWebChatThreadId()
+              : undefined;
+          const cursorKey = getAgentCursorKey(chatJid, activeThreadId);
+          const scopedGroupMessages =
+            group.folder === WEB_CHAT_FOLDER
+              ? groupMessages.filter(
+                  (msg) => (msg.thread_id || activeThreadId) === activeThreadId,
+                )
+              : groupMessages;
+          if (scopedGroupMessages.length === 0) continue;
 
           const channel = findChannel(channels, chatJid);
           if (!channel) {
@@ -909,7 +1026,7 @@ async function startMessageLoop(): Promise<void> {
             chatJid,
             group,
             channel,
-            groupMessages,
+            scopedGroupMessages,
           );
           if (handled) continue;
 
@@ -921,7 +1038,7 @@ async function startMessageLoop(): Promise<void> {
           // context when a trigger eventually arrives.
           if (needsTrigger) {
             const allowlistCfg = loadSenderAllowlist();
-            const hasTrigger = groupMessages.some(
+            const hasTrigger = scopedGroupMessages.some(
               (m) =>
                 TRIGGER_PATTERN.test(m.content.trim()) &&
                 (m.is_from_me ||
@@ -932,13 +1049,14 @@ async function startMessageLoop(): Promise<void> {
 
           // Pull all messages since lastAgentTimestamp so non-trigger
           // context that accumulated between triggers is included.
-          const allPending = getMessagesSince(
-            chatJid,
-            lastAgentTimestamp[chatJid] || '',
-            ASSISTANT_NAME,
-          );
+    const allPending = getMessagesSince(
+      chatJid,
+      lastAgentTimestamp[cursorKey] || '',
+      ASSISTANT_NAME,
+      activeThreadId,
+    );
           const messagesToSend =
-            allPending.length > 0 ? allPending : groupMessages;
+            allPending.length > 0 ? allPending : scopedGroupMessages;
           const formatted = formatMessages(messagesToSend);
 
           if (queue.sendMessage(chatJid, formatted)) {
@@ -946,7 +1064,7 @@ async function startMessageLoop(): Promise<void> {
               { chatJid, count: messagesToSend.length },
               'Piped messages to active container',
             );
-            lastAgentTimestamp[chatJid] =
+            lastAgentTimestamp[cursorKey] =
               messagesToSend[messagesToSend.length - 1].timestamp;
             saveState();
             // Show typing indicator while the container processes the piped message
@@ -974,8 +1092,16 @@ async function startMessageLoop(): Promise<void> {
  */
 function recoverPendingMessages(): void {
   for (const [chatJid, group] of Object.entries(registeredGroups)) {
-    const sinceTimestamp = lastAgentTimestamp[chatJid] || '';
-    const pending = getMessagesSince(chatJid, sinceTimestamp, ASSISTANT_NAME);
+    const activeThreadId =
+      group.folder === WEB_CHAT_FOLDER ? getActiveWebChatThreadId() : undefined;
+    const cursorKey = getAgentCursorKey(chatJid, activeThreadId);
+    const sinceTimestamp = lastAgentTimestamp[cursorKey] || '';
+    const pending = getMessagesSince(
+      chatJid,
+      sinceTimestamp,
+      ASSISTANT_NAME,
+      activeThreadId,
+    );
     if (pending.length > 0) {
       logger.info(
         { group: group.name, pendingCount: pending.length },
@@ -997,6 +1123,7 @@ async function main(): Promise<void> {
   initDatabase();
   logger.info('Database initialized');
   loadState();
+  syncWebChatRuntimeSession(getActiveWebChatThreadId());
 
   // Graceful shutdown handlers
   const shutdown = async (signal: string) => {
@@ -1103,8 +1230,23 @@ async function main(): Promise<void> {
     process.exit(1);
   });
 
-  // Start monitoring dashboard
-  startDashboard();
+  // Start monitoring dashboard (with channelOpts for web chat)
+  startDashboard(channelOpts, {
+    listSessions: () => listWebChatThreads(),
+    getActiveThreadId: () => getActiveWebChatThreadId(),
+    createSession: () => {
+      const thread = createWebChatThread();
+      activateWebChatThread(thread.id);
+      return getWebChatThread(thread.id)!;
+    },
+    switchSession: (threadId: string) => {
+      activateWebChatThread(threadId);
+      return getWebChatThread(threadId);
+    },
+    renameSession: (threadId: string, title: string) =>
+      renameWebChatThread(threadId, title),
+    deleteSession: (threadId: string) => deleteAndReplaceWebChatThread(threadId),
+  });
 }
 
 // Guard: only run when executed directly, not when imported by tests

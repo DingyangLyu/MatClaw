@@ -162,15 +162,22 @@ export class GroupQueue {
   }
 
   /**
-   * Write fresh secrets (OAuth token, API key) to the container's IPC directory.
-   * The container polls for this file and updates its SDK environment,
-   * preventing 401 errors when OAuth tokens expire during long-running sessions.
+   * Write the current host-side auth config to the container's IPC directory.
+   * The container polls this file and fully re-syncs its SDK env, including
+   * clearing stale keys/base URLs from a previous auth mode or provider.
    */
   private writeSecrets(groupFolder: string): void {
     const secrets = readEnvFile([
+      'AGENT_ENGINE',
+      'AGENT_MODEL',
       'CLAUDE_CODE_OAUTH_TOKEN',
       'ANTHROPIC_API_KEY',
       'ANTHROPIC_BASE_URL',
+      'CODEX_API_KEY',
+      'OPENAI_API_KEY',
+      'OPENAI_BASE_URL',
+      'CODEX_MODEL',
+      'GOOGLE_API_KEY',
     ]);
     if (Object.keys(secrets).length === 0) return;
 

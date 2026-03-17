@@ -46,6 +46,17 @@ const IPC_INPUT_DIR = '/workspace/ipc/input';
 const IPC_INPUT_CLOSE_SENTINEL = path.join(IPC_INPUT_DIR, '_close');
 const IPC_SECRETS_PATH = '/workspace/ipc/_secrets.json';
 const IPC_POLL_MS = 500;
+const MANAGED_SDK_ENV_KEYS = [
+  'AGENT_MODEL',
+  'CLAUDE_CODE_OAUTH_TOKEN',
+  'ANTHROPIC_API_KEY',
+  'ANTHROPIC_BASE_URL',
+  'CODEX_API_KEY',
+  'OPENAI_API_KEY',
+  'OPENAI_BASE_URL',
+  'CODEX_MODEL',
+  'GOOGLE_API_KEY',
+] as const;
 
 async function readStdin(): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -128,8 +139,22 @@ function waitForIpcMessage(): Promise<string | null> {
 function refreshSdkEnv(sdkEnv: Record<string, string | undefined>): void {
   try {
     if (!fs.existsSync(IPC_SECRETS_PATH)) return;
-    const secrets = JSON.parse(fs.readFileSync(IPC_SECRETS_PATH, 'utf-8'));
+    const secrets = JSON.parse(fs.readFileSync(IPC_SECRETS_PATH, 'utf-8')) as Record<string, unknown>;
     let updated = false;
+
+    // Full sync: remove stale auth/base-url/model values that are no longer
+    // present on the host, otherwise an old OAuth token or base URL can linger
+    // and break the next resumed turn with a 401.
+    for (const key of MANAGED_SDK_ENV_KEYS) {
+      const nextValue = secrets[key];
+      if (typeof nextValue !== 'string' || !nextValue) {
+        if (sdkEnv[key] !== undefined) {
+          delete sdkEnv[key];
+          updated = true;
+        }
+      }
+    }
+
     for (const [key, value] of Object.entries(secrets)) {
       if (typeof value === 'string' && sdkEnv[key] !== value) {
         sdkEnv[key] = value;

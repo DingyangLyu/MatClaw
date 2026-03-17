@@ -13,6 +13,18 @@ import {
 } from './types.js';
 
 let db: Database.Database;
+const WEB_CHAT_JID = 'web:chat';
+const WEB_CHAT_DEFAULT_THREAD_ID = 'default';
+
+export interface WebChatThread {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  agent_session_id: string | null;
+  last_message_preview: string | null;
+  message_count: number;
+}
 
 function createSchema(database: Database.Database): void {
   database.exec(`
@@ -26,6 +38,7 @@ function createSchema(database: Database.Database): void {
     CREATE TABLE IF NOT EXISTS messages (
       id TEXT,
       chat_jid TEXT,
+      thread_id TEXT,
       sender TEXT,
       sender_name TEXT,
       content TEXT,
@@ -73,6 +86,14 @@ function createSchema(database: Database.Database): void {
       group_folder TEXT PRIMARY KEY,
       session_id TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS web_chat_threads (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      agent_session_id TEXT,
+      last_message_preview TEXT
+    );
     CREATE TABLE IF NOT EXISTS registered_groups (
       jid TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -102,6 +123,13 @@ function createSchema(database: Database.Database): void {
     database
       .prepare(`UPDATE messages SET is_bot_message = 1 WHERE content LIKE ?`)
       .run(`${ASSISTANT_NAME}:%`);
+  } catch {
+    /* column already exists */
+  }
+
+  // Add thread_id column if it doesn't exist (migration for existing DBs)
+  try {
+    database.exec(`ALTER TABLE messages ADD COLUMN thread_id TEXT`);
   } catch {
     /* column already exists */
   }
@@ -138,6 +166,45 @@ function createSchema(database: Database.Database): void {
     );
   } catch {
     /* columns already exist */
+  }
+
+  ensureDefaultWebChatThread(database);
+}
+
+function ensureDefaultWebChatThread(database: Database.Database): void {
+  const now = new Date().toISOString();
+  database
+    .prepare(
+      `
+      INSERT OR IGNORE INTO web_chat_threads
+        (id, title, created_at, updated_at, agent_session_id, last_message_preview)
+      VALUES (?, ?, ?, ?, NULL, NULL)
+    `,
+    )
+    .run(
+      WEB_CHAT_DEFAULT_THREAD_ID,
+      'New chat',
+      now,
+      now,
+    );
+
+  database
+    .prepare(
+      `
+      UPDATE messages
+      SET thread_id = ?
+      WHERE chat_jid = ? AND (thread_id IS NULL OR thread_id = '')
+    `,
+    )
+    .run(WEB_CHAT_DEFAULT_THREAD_ID, WEB_CHAT_JID);
+
+  const active = database
+    .prepare('SELECT value FROM router_state WHERE key = ?')
+    .get('web_chat_active_thread') as { value: string } | undefined;
+  if (!active?.value) {
+    database
+      .prepare('INSERT OR REPLACE INTO router_state (key, value) VALUES (?, ?)')
+      .run('web_chat_active_thread', WEB_CHAT_DEFAULT_THREAD_ID);
   }
 }
 
@@ -262,10 +329,11 @@ export function setLastGroupSync(): void {
  */
 export function storeMessage(msg: NewMessage): void {
   db.prepare(
-    `INSERT OR REPLACE INTO messages (id, chat_jid, sender, sender_name, content, timestamp, is_from_me, is_bot_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT OR REPLACE INTO messages (id, chat_jid, thread_id, sender, sender_name, content, timestamp, is_from_me, is_bot_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     msg.id,
     msg.chat_jid,
+    msg.thread_id || null,
     msg.sender,
     msg.sender_name,
     msg.content,
@@ -281,6 +349,7 @@ export function storeMessage(msg: NewMessage): void {
 export function storeMessageDirect(msg: {
   id: string;
   chat_jid: string;
+  thread_id?: string;
   sender: string;
   sender_name: string;
   content: string;
@@ -289,10 +358,11 @@ export function storeMessageDirect(msg: {
   is_bot_message?: boolean;
 }): void {
   db.prepare(
-    `INSERT OR REPLACE INTO messages (id, chat_jid, sender, sender_name, content, timestamp, is_from_me, is_bot_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT OR REPLACE INTO messages (id, chat_jid, thread_id, sender, sender_name, content, timestamp, is_from_me, is_bot_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     msg.id,
     msg.chat_jid,
+    msg.thread_id || null,
     msg.sender,
     msg.sender_name,
     msg.content,
@@ -313,7 +383,7 @@ export function getNewMessages(
   // Filter bot messages using both the is_bot_message flag AND the content
   // prefix as a backstop for messages written before the migration ran.
   const sql = `
-    SELECT id, chat_jid, sender, sender_name, content, timestamp, is_from_me
+    SELECT id, chat_jid, thread_id, sender, sender_name, content, timestamp, is_from_me
     FROM messages
     WHERE timestamp > ? AND chat_jid IN (${placeholders})
       AND is_bot_message = 0 AND content NOT LIKE ?
@@ -333,24 +403,57 @@ export function getNewMessages(
   return { messages: rows, newTimestamp };
 }
 
+export function getRecentMessages(
+  chatJid: string,
+  limit = 100,
+  threadId?: string,
+): NewMessage[] {
+  const filters = ['chat_jid = ?', 'content != \'\'', 'content IS NOT NULL'];
+  const values: unknown[] = [chatJid];
+  if (threadId) {
+    filters.push('thread_id = ?');
+    values.push(threadId);
+  }
+  const sql = `
+    SELECT id, chat_jid, thread_id, sender, sender_name, content, timestamp, is_from_me, is_bot_message
+    FROM messages
+    WHERE ${filters.join(' AND ')}
+    ORDER BY timestamp DESC
+    LIMIT ?
+  `;
+  values.push(limit);
+  const rows = db.prepare(sql).all(...values) as NewMessage[];
+  return rows.reverse();
+}
+
 export function getMessagesSince(
   chatJid: string,
   sinceTimestamp: string,
   botPrefix: string,
+  threadId?: string,
 ): NewMessage[] {
+  const filters = [
+    'chat_jid = ?',
+    'timestamp > ?',
+    'is_bot_message = 0',
+    'content NOT LIKE ?',
+    "content != ''",
+    'content IS NOT NULL',
+  ];
+  const values: unknown[] = [chatJid, sinceTimestamp, `${botPrefix}:%`];
+  if (threadId) {
+    filters.push('thread_id = ?');
+    values.push(threadId);
+  }
   // Filter bot messages using both the is_bot_message flag AND the content
   // prefix as a backstop for messages written before the migration ran.
   const sql = `
-    SELECT id, chat_jid, sender, sender_name, content, timestamp, is_from_me
+    SELECT id, chat_jid, thread_id, sender, sender_name, content, timestamp, is_from_me
     FROM messages
-    WHERE chat_jid = ? AND timestamp > ?
-      AND is_bot_message = 0 AND content NOT LIKE ?
-      AND content != '' AND content IS NOT NULL
+    WHERE ${filters.join(' AND ')}
     ORDER BY timestamp
   `;
-  return db
-    .prepare(sql)
-    .all(chatJid, sinceTimestamp, `${botPrefix}:%`) as NewMessage[];
+  return db.prepare(sql).all(...values) as NewMessage[];
 }
 
 export function createTask(
@@ -499,6 +602,134 @@ export function setRouterState(key: string, value: string): void {
   db.prepare(
     'INSERT OR REPLACE INTO router_state (key, value) VALUES (?, ?)',
   ).run(key, value);
+}
+
+// --- Web chat thread accessors ---
+
+export function listWebChatThreads(): WebChatThread[] {
+  return db
+    .prepare(
+      `
+      SELECT
+        t.id,
+        t.title,
+        t.created_at,
+        t.updated_at,
+        t.agent_session_id,
+        t.last_message_preview,
+        (
+          SELECT COUNT(1)
+          FROM messages m
+          WHERE m.chat_jid = ? AND m.thread_id = t.id
+        ) AS message_count
+      FROM web_chat_threads t
+      ORDER BY t.updated_at DESC, t.created_at DESC
+    `,
+    )
+    .all(WEB_CHAT_JID) as WebChatThread[];
+}
+
+export function getWebChatThread(threadId: string): WebChatThread | undefined {
+  return db
+    .prepare(
+      `
+      SELECT
+        t.id,
+        t.title,
+        t.created_at,
+        t.updated_at,
+        t.agent_session_id,
+        t.last_message_preview,
+        (
+          SELECT COUNT(1)
+          FROM messages m
+          WHERE m.chat_jid = ? AND m.thread_id = t.id
+        ) AS message_count
+      FROM web_chat_threads t
+      WHERE t.id = ?
+    `,
+    )
+    .get(WEB_CHAT_JID, threadId) as WebChatThread | undefined;
+}
+
+export function createWebChatThread(title = 'New chat'): WebChatThread {
+  const now = new Date().toISOString();
+  const id = `thread_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  db.prepare(
+    `
+    INSERT INTO web_chat_threads
+      (id, title, created_at, updated_at, agent_session_id, last_message_preview)
+    VALUES (?, ?, ?, ?, NULL, NULL)
+  `,
+  ).run(id, title, now, now);
+  return getWebChatThread(id)!;
+}
+
+export function getActiveWebChatThreadId(): string {
+  return getRouterState('web_chat_active_thread') || WEB_CHAT_DEFAULT_THREAD_ID;
+}
+
+export function setActiveWebChatThreadId(threadId: string): void {
+  setRouterState('web_chat_active_thread', threadId);
+}
+
+export function touchWebChatThread(
+  threadId: string,
+  preview: string,
+  timestamp: string,
+): void {
+  const cleanPreview = preview.replace(/\s+/g, ' ').trim().slice(0, 160) || null;
+  const thread = getWebChatThread(threadId);
+  if (!thread) return;
+
+  const nextTitle =
+    thread.title === 'New chat' && cleanPreview
+      ? cleanPreview.slice(0, 48)
+      : thread.title;
+
+  db.prepare(
+    `
+    UPDATE web_chat_threads
+    SET title = ?, updated_at = ?, last_message_preview = ?
+    WHERE id = ?
+  `,
+  ).run(nextTitle, timestamp, cleanPreview, threadId);
+}
+
+export function assignWebChatThreadSession(
+  threadId: string,
+  sessionId: string,
+): void {
+  db.prepare(
+    `
+    UPDATE web_chat_threads
+    SET agent_session_id = ?, updated_at = COALESCE(updated_at, ?)
+    WHERE id = ?
+  `,
+  ).run(sessionId, new Date().toISOString(), threadId);
+}
+
+export function renameWebChatThread(
+  threadId: string,
+  title: string,
+): WebChatThread | undefined {
+  const cleanTitle = title.trim().slice(0, 80);
+  if (!cleanTitle) return getWebChatThread(threadId);
+  db.prepare(
+    `
+    UPDATE web_chat_threads
+    SET title = ?, updated_at = ?
+    WHERE id = ?
+  `,
+  ).run(cleanTitle, new Date().toISOString(), threadId);
+  return getWebChatThread(threadId);
+}
+
+export function deleteWebChatThread(threadId: string): void {
+  db.prepare(
+    'DELETE FROM messages WHERE chat_jid = ? AND thread_id = ?',
+  ).run(WEB_CHAT_JID, threadId);
+  db.prepare('DELETE FROM web_chat_threads WHERE id = ?').run(threadId);
 }
 
 // --- Session accessors ---

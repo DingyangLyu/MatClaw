@@ -302,10 +302,14 @@ function buildContainerArgs(
   // Pass host timezone so container's local time matches the user's
   args.push('-e', `TZ=${TIMEZONE}`);
 
-  // Pass agent engine and model selection to container
-  args.push('-e', `AGENT_ENGINE=${AGENT_ENGINE}`);
-  if (AGENT_MODEL) {
-    args.push('-e', `AGENT_MODEL=${AGENT_MODEL}`);
+  // Pass agent engine and model selection to container.
+  // Read fresh from .env each time so users can switch without restarting.
+  const freshConfig = readEnvFile(['AGENT_ENGINE', 'AGENT_MODEL']);
+  const engine = freshConfig.AGENT_ENGINE || AGENT_ENGINE;
+  const model = freshConfig.AGENT_MODEL || AGENT_MODEL;
+  args.push('-e', `AGENT_ENGINE=${engine}`);
+  if (model) {
+    args.push('-e', `AGENT_MODEL=${model}`);
   }
 
   // Run as host user so bind-mounted files are accessible.

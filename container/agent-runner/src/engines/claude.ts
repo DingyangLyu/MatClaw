@@ -234,11 +234,15 @@ export class ClaudeEngine implements AgentEngine {
     }
     if (extraDirs.length > 0) ctx.log(`Additional directories: ${extraDirs.join(', ')}`);
 
-    // Set model if AGENT_MODEL is configured (maps to CLAUDE_CODE_MODEL for SDK)
-    const agentModel = process.env['AGENT_MODEL'];
+    // Set model if AGENT_MODEL is configured (maps to CLAUDE_CODE_MODEL for SDK).
+    // Read from sdkEnv first (refreshed via IPC) so model can switch mid-session,
+    // then fall back to container env var set at startup.
+    const agentModel = ctx.sdkEnv['AGENT_MODEL'] || process.env['AGENT_MODEL'];
     if (agentModel) {
       ctx.sdkEnv['CLAUDE_CODE_MODEL'] = agentModel;
       ctx.log(`Using model: ${agentModel}`);
+    } else {
+      delete ctx.sdkEnv['CLAUDE_CODE_MODEL'];
     }
 
     for await (const message of query({

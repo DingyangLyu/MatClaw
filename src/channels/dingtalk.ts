@@ -258,6 +258,58 @@ export class DingTalkChannel implements Channel {
     }
   }
 
+  /**
+   * Download a media file from DingTalk using downloadCode.
+   * Returns the relative path (e.g., "uploads/123_photo.png") or null.
+   */
+  private async downloadMedia(
+    downloadCode: string,
+    filename: string,
+    groupFolder: string,
+  ): Promise<string | null> {
+    if (!this.credentials) return null;
+
+    try {
+      const token = await this.getAccessToken();
+      if (!token) return null;
+
+      const response = await fetch(
+        'https://api.dingtalk.com/v1.0/robot/messageFiles/download',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-acs-dingtalk-access-token': token,
+          },
+          body: JSON.stringify({
+            downloadCode,
+            robotCode: this.credentials.clientId,
+          }),
+        },
+      );
+
+      if (!response.ok) return null;
+      const result: any = await response.json();
+      if (!result.downloadUrl) return null;
+
+      // Download the actual file
+      const fileResp = await fetch(result.downloadUrl);
+      if (!fileResp.ok) return null;
+      const buffer = Buffer.from(await fileResp.arrayBuffer());
+
+      const uploadDir = path.join(GROUPS_DIR, groupFolder, 'uploads');
+      fs.mkdirSync(uploadDir, { recursive: true });
+      const safeName = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_')}`;
+      fs.writeFileSync(path.join(uploadDir, safeName), buffer);
+
+      logger.info({ filename: safeName, groupFolder }, 'DingTalk: downloaded media');
+      return `uploads/${safeName}`;
+    } catch (err) {
+      logger.error({ err, downloadCode }, 'DingTalk: failed to download media');
+      return null;
+    }
+  }
+
   private async handleMessage(data: any): Promise<void> {
     const conversationId: string = data.conversationId;
     if (!conversationId) return;
@@ -270,13 +322,50 @@ export class DingTalkChannel implements Channel {
       ? new Date(data.createAt).toISOString()
       : new Date().toISOString();
 
-    // Extract text content
+    // Extract text content and detect media
     let content = '';
-    if (data.text?.content) {
+    let downloadCode = '';
+    let mediaFilename = '';
+    let mediaType = '';
+
+    const msgtype = data.msgtype || '';
+
+    if (msgtype === 'picture' || msgtype === 'image') {
+      try {
+        const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+        downloadCode = parsed?.pictureDownloadCode || parsed?.downloadCode || '';
+        mediaFilename = 'image.png';
+        mediaType = 'image';
+      } catch { /* ignore */ }
+      if (!downloadCode && data.picUrl) {
+        content = `[Image: ${data.picUrl}]`;
+      }
+    } else if (msgtype === 'file') {
+      try {
+        const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+        downloadCode = parsed?.downloadCode || '';
+        mediaFilename = parsed?.fileName || 'file';
+        mediaType = 'file';
+      } catch { /* ignore */ }
+    } else if (msgtype === 'video') {
+      try {
+        const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+        downloadCode = parsed?.downloadCode || '';
+        mediaFilename = parsed?.fileName || 'video.mp4';
+        mediaType = 'file';
+      } catch { /* ignore */ }
+    } else if (msgtype === 'audio') {
+      try {
+        const parsed = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+        downloadCode = parsed?.downloadCode || '';
+        mediaFilename = parsed?.fileName || 'audio.ogg';
+        mediaType = 'file';
+      } catch { /* ignore */ }
+    } else if (data.text?.content) {
       content = data.text.content.trim();
     }
 
-    if (!content) return;
+    if (!content && !downloadCode) return;
 
     // Store session webhook for replying
     if (data.sessionWebhook) {
@@ -297,6 +386,19 @@ export class DingTalkChannel implements Channel {
     }
 
     if (groups[jid]) {
+      // Download media attachment if present
+      if (downloadCode && groups[jid].folder) {
+        const savedPath = await this.downloadMedia(downloadCode, mediaFilename, groups[jid].folder);
+        if (savedPath) {
+          const label = mediaType === 'image' ? 'image' : 'file';
+          content = content
+            ? `${content}\n[Attached ${label}: ${savedPath}]`
+            : `[Attached ${label}: ${savedPath}]`;
+        } else if (!content) {
+          content = `[${mediaType || 'media'}: download failed]`;
+        }
+      }
+
       this.opts.onMessage(jid, {
         id: data.msgId || `dt_${Date.now()}`,
         chat_jid: jid,

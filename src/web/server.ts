@@ -11,13 +11,39 @@ import { agentEvents, type AgentEvent } from './events.js';
 import { parseTranscript, formatLogEntries } from './transcript-parser.js';
 import { logger } from '../logger.js';
 import { DATA_DIR, GROUPS_DIR } from '../config.js';
+import { getRecentMessages, type WebChatThread } from '../db.js';
+import { handleWebChatMessage, setWebBroadcast } from '../channels/web.js';
+import type { ChannelOpts } from '../channels/registry.js';
 
 const PORT = parseInt(process.env.DASHBOARD_PORT || '3210', 10); // v4: compact md, no breaks, hide br
 
 let wss: WebSocketServer;
 
+interface WebChatController {
+  listSessions(): WebChatThread[];
+  getActiveThreadId(): string;
+  createSession(): WebChatThread;
+  switchSession(threadId: string): WebChatThread | undefined;
+  renameSession(threadId: string, title: string): WebChatThread | undefined;
+  deleteSession(threadId: string): {
+    deletedThreadId: string;
+    activeThreadId: string;
+    activeSession: WebChatThread;
+  } | undefined;
+}
+
 function broadcast(event: AgentEvent) {
   const msg = JSON.stringify(event);
+  for (const client of wss.clients) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(msg);
+    }
+  }
+}
+
+/** Broadcast any JSON to all WS clients (used for chat:message events) */
+function broadcastRaw(data: unknown): void {
+  const msg = JSON.stringify(data);
   for (const client of wss.clients) {
     if (client.readyState === WebSocket.OPEN) {
       client.send(msg);
@@ -169,7 +195,10 @@ function getTranscriptEntries(
   return parseTranscript(content);
 }
 
-export function startDashboard() {
+export function startDashboard(
+  channelOpts?: ChannelOpts,
+  webChatController?: WebChatController,
+) {
   const dashboardPath = path.join(import.meta.dirname, 'dashboard.html');
 
   const server = http.createServer((req, res) => {
@@ -337,21 +366,263 @@ export function startDashboard() {
       return;
     }
 
-    // ── Static: Logo ──
-    if (url.pathname === '/assets/logo.png') {
-      const logoPath = path.join(
-        process.cwd(),
-        'assets',
-        'matclaw-icon-square.png',
-      );
-      if (fs.existsSync(logoPath)) {
-        res.writeHead(200, {
-          'Content-Type': 'image/png',
-          'Cache-Control': 'public, max-age=86400',
-        });
-        fs.createReadStream(logoPath).pipe(res);
+    // ── API: Chat history ──
+    if (url.pathname === '/api/chat/sessions') {
+      if (!webChatController) {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Web chat controller unavailable' }));
         return;
       }
+
+      if (req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            sessions: webChatController.listSessions(),
+            activeThreadId: webChatController.getActiveThreadId(),
+          }),
+        );
+        return;
+      }
+
+      if (req.method === 'POST') {
+        const thread = webChatController.createSession();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            session: thread,
+            activeThreadId: thread.id,
+          }),
+        );
+        return;
+      }
+    }
+
+    if (url.pathname === '/api/chat/switch' && req.method === 'POST') {
+      if (!webChatController) {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Web chat controller unavailable' }));
+        return;
+      }
+
+      let body = '';
+      req.on('data', (chunk) => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const { threadId } = JSON.parse(body);
+          if (!threadId || typeof threadId !== 'string') {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Missing threadId field' }));
+            return;
+          }
+          const thread = webChatController.switchSession(threadId);
+          if (!thread) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Session not found' }));
+            return;
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              session: thread,
+              activeThreadId: thread.id,
+            }),
+          );
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        }
+      });
+      return;
+    }
+
+    if (url.pathname === '/api/chat/rename' && req.method === 'POST') {
+      if (!webChatController) {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Web chat controller unavailable' }));
+        return;
+      }
+
+      let body = '';
+      req.on('data', (chunk) => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const { threadId, title } = JSON.parse(body);
+          if (
+            !threadId ||
+            typeof threadId !== 'string' ||
+            !title ||
+            typeof title !== 'string'
+          ) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Missing threadId or title field' }));
+            return;
+          }
+          const thread = webChatController.renameSession(threadId, title);
+          if (!thread) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Session not found' }));
+            return;
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ session: thread }));
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        }
+      });
+      return;
+    }
+
+    if (url.pathname === '/api/chat/delete' && req.method === 'POST') {
+      if (!webChatController) {
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Web chat controller unavailable' }));
+        return;
+      }
+
+      let body = '';
+      req.on('data', (chunk) => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const { threadId } = JSON.parse(body);
+          if (!threadId || typeof threadId !== 'string') {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Missing threadId field' }));
+            return;
+          }
+          const result = webChatController.deleteSession(threadId);
+          if (!result) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Session not found' }));
+            return;
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        }
+      });
+      return;
+    }
+
+    if (url.pathname === '/api/chat/history') {
+      const threadId =
+        url.searchParams.get('threadId') ||
+        webChatController?.getActiveThreadId() ||
+        undefined;
+      const messages = getRecentMessages('web:chat', 100, threadId);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(messages));
+      return;
+    }
+
+    // ── API: Chat file upload ──
+    if (url.pathname === '/api/chat/upload' && req.method === 'POST') {
+      const filename = url.searchParams.get('filename');
+      if (!filename) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Missing filename parameter' }));
+        return;
+      }
+      // Sanitize filename
+      const safeName = path.basename(filename).replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_');
+      const uniqueName = `${Date.now()}_${safeName}`;
+      const uploadDir = path.join(GROUPS_DIR, 'web_chat', 'uploads');
+      fs.mkdirSync(uploadDir, { recursive: true });
+      const filePath = path.join(uploadDir, uniqueName);
+
+      const chunks: Buffer[] = [];
+      let totalSize = 0;
+      const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+      let aborted = false;
+
+      req.on('data', (chunk: Buffer) => {
+        totalSize += chunk.length;
+        if (totalSize > MAX_SIZE && !aborted) {
+          aborted = true;
+          res.writeHead(413, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'File too large (max 50MB)' }));
+          req.destroy();
+          return;
+        }
+        chunks.push(chunk);
+      });
+
+      req.on('end', () => {
+        if (aborted) return;
+        fs.writeFileSync(filePath, Buffer.concat(chunks));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ path: `uploads/${uniqueName}`, filename: safeName }));
+      });
+      return;
+    }
+
+    // ── API: Chat send (POST fallback for non-WS clients) ──
+    if (url.pathname === '/api/chat/send' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk) => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const { text, threadId } = JSON.parse(body);
+          if (!text || typeof text !== 'string') {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Missing text field' }));
+            return;
+          }
+          if (
+            threadId &&
+            typeof threadId === 'string' &&
+            webChatController
+          ) {
+            webChatController.switchSession(threadId);
+          }
+          if (channelOpts) {
+            handleWebChatMessage(text, channelOpts, threadId);
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true }));
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        }
+      });
+      return;
+    }
+
+    // ── Static: bundled assets ──
+    if (url.pathname.startsWith('/assets/')) {
+      const assetName = path.basename(url.pathname);
+      const assetPath = path.join(process.cwd(), 'assets', assetName);
+      const resolved = path.resolve(assetPath);
+      const assetsRoot = path.resolve(path.join(process.cwd(), 'assets'));
+      if (!resolved.startsWith(assetsRoot)) {
+        res.writeHead(403);
+        res.end('Forbidden');
+        return;
+      }
+      if (!fs.existsSync(resolved)) {
+        res.writeHead(404);
+        res.end('Not found');
+        return;
+      }
+      const ext = path.extname(resolved).toLowerCase();
+      const mimeTypes: Record<string, string> = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml',
+        '.webp': 'image/webp',
+        '.ico': 'image/x-icon',
+      };
+      res.writeHead(200, {
+        'Content-Type': mimeTypes[ext] || 'application/octet-stream',
+        'Cache-Control': 'public, max-age=86400',
+      });
+      fs.createReadStream(resolved).pipe(res);
+      return;
     }
 
     res.writeHead(404);
@@ -363,10 +634,34 @@ export function startDashboard() {
   wss.on('connection', (ws) => {
     logger.debug('Dashboard WebSocket client connected');
 
+    ws.on('message', (raw) => {
+      try {
+        const msg = JSON.parse(String(raw));
+        if (msg.type === 'chat:send' && typeof msg.text === 'string' && channelOpts) {
+          if (
+            typeof msg.threadId === 'string' &&
+            webChatController
+          ) {
+            webChatController.switchSession(msg.threadId);
+          }
+          handleWebChatMessage(
+            msg.text,
+            channelOpts,
+            typeof msg.threadId === 'string' ? msg.threadId : undefined,
+          );
+        }
+      } catch {
+        // Ignore malformed messages
+      }
+    });
+
     ws.on('close', () => {
       logger.debug('Dashboard WebSocket client disconnected');
     });
   });
+
+  // Wire up web channel broadcast
+  setWebBroadcast(broadcastRaw);
 
   // Forward all agent events to WebSocket clients
   agentEvents.on('agent', broadcast);

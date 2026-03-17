@@ -292,13 +292,41 @@ export class CodexEngine implements AgentEngine {
   /**
    * Write system prompt as AGENTS.md in the working directory.
    * Codex reads AGENTS.md for project-level instructions (similar to CLAUDE.md).
+   *
+   * Unlike Claude (which auto-loads ~/.claude/skills/), Codex has no built-in
+   * skill loader. We inject skill content directly into AGENTS.md so the model
+   * has access to computation guides and tool references.
    */
   private writeSystemPrompt(ctx: EngineContext): void {
+    const parts: string[] = [];
+
+    // 1. Global CLAUDE.md (project-level instructions)
     const globalClaudeMdPath = '/workspace/global/CLAUDE.md';
     if (!ctx.isMain && fs.existsSync(globalClaudeMdPath)) {
-      const content = fs.readFileSync(globalClaudeMdPath, 'utf-8');
-      // Write as AGENTS.md so Codex picks it up as project context
-      fs.writeFileSync('/workspace/group/AGENTS.md', content);
+      parts.push(fs.readFileSync(globalClaudeMdPath, 'utf-8'));
+    }
+
+    // 2. Load skills — Codex doesn't have a skill loader, so we bundle
+    //    top-level SKILL.md files into the prompt. Sub-skills are referenced
+    //    by path so the model can read them on demand via file tools.
+    const skillsDirs = ['/home/node/.claude/skills', '/home/node/.codex/skills'];
+    for (const skillsDir of skillsDirs) {
+      if (!fs.existsSync(skillsDir)) continue;
+      for (const entry of fs.readdirSync(skillsDir)) {
+        const skillMd = path.join(skillsDir, entry, 'SKILL.md');
+        if (!fs.existsSync(skillMd)) continue;
+        const stat = fs.statSync(skillMd);
+        // Only inject top-level index skills (< 20KB) to avoid prompt bloat.
+        // The model can read sub-skill files on demand.
+        if (stat.size > 20480) continue;
+        parts.push(`\n---\n\n# Skill: ${entry}\n\n${fs.readFileSync(skillMd, 'utf-8')}`);
+      }
+      break; // Use first existing skills dir
+    }
+
+    if (parts.length > 0) {
+      fs.writeFileSync('/workspace/group/AGENTS.md', parts.join('\n\n'));
+      ctx.log(`Wrote AGENTS.md with ${parts.length} sections (skills injected for Codex)`);
     }
   }
 
