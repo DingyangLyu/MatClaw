@@ -735,8 +735,9 @@ export function startDashboard(
       let aborted = false;
 
       req.on('data', (chunk: Buffer) => {
+        if (aborted) return;
         totalSize += chunk.length;
-        if (totalSize > MAX_SIZE && !aborted) {
+        if (totalSize > MAX_SIZE) {
           aborted = true;
           res.writeHead(413, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'File too large (max 50MB)' }));

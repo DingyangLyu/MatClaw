@@ -731,20 +731,32 @@ function maskKey(key: string): string {
 }
 
 function detectOAuthToken(): string | undefined {
-  const credFile = path.join(os.homedir(), '.claude', '.credentials.json');
-  try {
-    const data = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
-    const oauth = data.claudeAiOauth;
-    if (!oauth?.accessToken) return undefined;
-    if (oauth.expiresAt) {
-      const expiresMs =
-        oauth.expiresAt > 1e12 ? oauth.expiresAt : oauth.expiresAt * 1000;
-      if (Date.now() > expiresMs) return undefined;
-    }
-    return oauth.accessToken;
-  } catch {
-    return undefined;
+  const home = os.homedir();
+  const candidates = [
+    path.join(home, '.claude', '.credentials.json'),
+    path.join(home, '.claude', 'credentials.json'),
+    ...(process.platform === 'darwin'
+      ? [path.join(home, 'Library', 'Application Support', 'Claude', 'credentials.json')]
+      : []),
+    path.join(home, '.config', 'claude', 'credentials.json'),
+  ];
+
+  for (const credFile of candidates) {
+    try {
+      if (!fs.existsSync(credFile)) continue;
+      const data = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
+      const oauth = data.claudeAiOauth ?? data.oauth ?? data;
+      const token = oauth?.accessToken ?? oauth?.access_token;
+      if (!token) continue;
+      const expiresAt = oauth.expiresAt ?? oauth.expires_at;
+      if (expiresAt) {
+        const expiresMs = expiresAt > 1e12 ? expiresAt : expiresAt * 1000;
+        if (Date.now() > expiresMs) continue;
+      }
+      return token;
+    } catch { /* try next */ }
   }
+  return undefined;
 }
 
 interface ExistingConfig {

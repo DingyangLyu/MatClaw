@@ -62,28 +62,50 @@ export function readEnvFile(keys: string[]): Record<string, string> {
 
 /**
  * Read OAuth access token from Claude Code's credentials file.
+ * Searches multiple known locations across platforms:
+ *   - ~/.claude/.credentials.json (Linux/macOS, Claude Code CLI)
+ *   - ~/.claude/credentials.json  (alternate naming)
+ *   - ~/Library/Application Support/Claude/credentials.json (macOS app)
+ *   - ~/.config/claude/credentials.json (XDG Linux)
  * Returns undefined if not available.
  */
 function readClaudeOAuthToken(): string | undefined {
-  const credFile = path.join(os.homedir(), '.claude', '.credentials.json');
-  try {
-    const data = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
-    const oauth = data.claudeAiOauth;
-    if (!oauth?.accessToken) return undefined;
+  const home = os.homedir();
+  const candidates = [
+    path.join(home, '.claude', '.credentials.json'),
+    path.join(home, '.claude', 'credentials.json'),
+    ...(process.platform === 'darwin'
+      ? [path.join(home, 'Library', 'Application Support', 'Claude', 'credentials.json')]
+      : []),
+    path.join(home, '.config', 'claude', 'credentials.json'),
+  ];
 
-    // Check expiry if available
-    if (oauth.expiresAt) {
-      const expiresMs =
-        oauth.expiresAt > 1e12 ? oauth.expiresAt : oauth.expiresAt * 1000;
-      if (Date.now() > expiresMs) {
-        logger.warn('Claude OAuth token expired, skipping');
-        return undefined;
+  for (const credFile of candidates) {
+    try {
+      if (!fs.existsSync(credFile)) continue;
+      const data = JSON.parse(fs.readFileSync(credFile, 'utf-8'));
+
+      // Try multiple known token locations in the JSON structure
+      const oauth = data.claudeAiOauth ?? data.oauth ?? data;
+      const token = oauth?.accessToken ?? oauth?.access_token;
+      if (!token) continue;
+
+      // Check expiry if available
+      const expiresAt = oauth.expiresAt ?? oauth.expires_at;
+      if (expiresAt) {
+        const expiresMs = expiresAt > 1e12 ? expiresAt : expiresAt * 1000;
+        if (Date.now() > expiresMs) {
+          logger.warn({ file: credFile }, 'Claude OAuth token expired, skipping');
+          continue;
+        }
       }
-    }
 
-    logger.info('Using Claude OAuth token from ~/.claude/.credentials.json');
-    return oauth.accessToken;
-  } catch {
-    return undefined;
+      logger.info({ file: credFile }, 'Using Claude OAuth token');
+      return token;
+    } catch {
+      // Try next candidate
+    }
   }
+
+  return undefined;
 }

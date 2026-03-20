@@ -818,12 +818,12 @@ export class FeishuChannel implements Channel {
     filename: string,
     groupFolder: string,
   ): Promise<string | null> {
-    if (!this.client || !groupFolder) return null;
+    if (!this.client || !groupFolder || !fileKey || !filename) return null;
 
     const uploadDir = path.join(GROUPS_DIR, groupFolder, 'uploads');
     fs.mkdirSync(uploadDir, { recursive: true });
 
-    const safeName = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_')}`;
+    const safeName = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_').slice(0, 200)}`;
     const filePath = path.join(uploadDir, safeName);
 
     try {

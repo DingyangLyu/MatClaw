@@ -490,6 +490,26 @@ async function step7(): Promise<void> {
   await new Promise(() => {});
 }
 
+// ── Sentinel for "go back" ───────────────────────────────────────────────
+
+class GoBackError extends Error { constructor() { super('go_back'); } }
+
+/**
+ * Wrap an @inquirer/prompts call so that ESC (or Ctrl+B) triggers "go back".
+ * @inquirer/prompts throws an ExitPromptError on Ctrl+C; we intercept it
+ * and re-throw GoBackError so the step loop can navigate backward.
+ */
+function enableEscBack(): { cleanup: () => void } {
+  const handler = (_: unknown, key: { name?: string; ctrl?: boolean }) => {
+    if (key.name === 'escape' || (key.ctrl && key.name === 'b')) {
+      // Simulate Ctrl+C to cancel current prompt, then we catch it as GoBack
+      process.stdin.emit('keypress', '', { name: 'c', ctrl: true });
+    }
+  };
+  process.stdin.on('keypress', handler);
+  return { cleanup: () => process.stdin.removeListener('keypress', handler) };
+}
+
 // ── Main ────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
@@ -502,28 +522,48 @@ async function main(): Promise<void> {
   await printBanner();
   await sleep(200);
 
-  const { docker } = await step1();
-  await sleep(200);
+  // Run steps 1–7 with back navigation support
+  let hasDocker = false;
 
-  await step2();
-  await sleep(150);
+  const steps = [
+    { name: 'environment', run: async () => { const r = await step1(); hasDocker = r.docker; } },
+    { name: 'dependencies', run: async () => { await step2(); } },
+    { name: 'container', run: async () => { await step3(hasDocker); } },
+    { name: 'api', run: async () => { await step4(); } },
+    { name: 'smoke', run: async () => { await step5(hasDocker); } },
+    { name: 'channels', run: async () => { await step6(); } },
+    { name: 'launch', run: async () => { await step7(); } },
+  ];
 
-  await step3(docker);
-  await sleep(150);
-
-  await step4();
-  await sleep(150);
-
-  await step5(docker);
-  await sleep(150);
-
-  await step6();
-  await sleep(150);
-
-  await step7();
+  let idx = 0;
+  while (idx < steps.length) {
+    try {
+      await steps[idx].run();
+      await sleep(150);
+      idx++;
+    } catch (err) {
+      // @inquirer/prompts throws ExitPromptError (name) on Ctrl+C / ESC
+      const isCancel = err instanceof Error &&
+        (err.message === 'go_back' || err.name === 'ExitPromptError');
+      if (isCancel && idx > 0) {
+        idx--;
+        println(`\n  ${c.dim}← ${t('nav.back') || 'Back to previous step'}${c.reset}\n`);
+        continue;
+      }
+      if (isCancel && idx === 0) {
+        println(`\n  ${c.dim}${t('nav.firstStep') || 'Already at first step. Ctrl+C again to exit.'}${c.reset}\n`);
+        continue;
+      }
+      throw err; // Re-throw unexpected errors
+    }
+  }
 }
 
 main().catch(err => {
+  if (err.name === 'ExitPromptError') {
+    println(`\n  ${c.dim}Setup cancelled.${c.reset}\n`);
+    process.exit(0);
+  }
   console.error(`\n${c.brightRed}Setup failed:${c.reset}`, err.message);
   process.exit(1);
 });

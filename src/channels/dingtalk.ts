@@ -299,7 +299,7 @@ export class DingTalkChannel implements Channel {
 
       const uploadDir = path.join(GROUPS_DIR, groupFolder, 'uploads');
       fs.mkdirSync(uploadDir, { recursive: true });
-      const safeName = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_')}`;
+      const safeName = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._\-\u4e00-\u9fff]/g, '_').slice(0, 200)}`;
       fs.writeFileSync(path.join(uploadDir, safeName), buffer);
 
       logger.info(

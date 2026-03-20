@@ -131,12 +131,15 @@ export class GmailChannel implements Channel {
       ? meta.subject
       : `Re: ${meta.subject}`;
 
+    // Sanitize header values to prevent CRLF injection
+    const sanitize = (s: string) => s.replace(/[\r\n]/g, ' ');
+
     const headers = [
-      `To: ${meta.sender}`,
-      `From: ${this.userEmail}`,
-      `Subject: ${subject}`,
-      `In-Reply-To: ${meta.messageId}`,
-      `References: ${meta.messageId}`,
+      `To: ${sanitize(meta.sender)}`,
+      `From: ${sanitize(this.userEmail)}`,
+      `Subject: ${sanitize(subject)}`,
+      `In-Reply-To: ${sanitize(meta.messageId)}`,
+      `References: ${sanitize(meta.messageId)}`,
       'Content-Type: text/plain; charset=utf-8',
       '',
       text,
@@ -427,14 +430,16 @@ export class GmailChannel implements Channel {
   /** Recursively collect parts that have a filename (attachments). */
   private collectAttachmentParts(
     payload: gmail_v1.Schema$MessagePart,
+    depth = 0,
   ): gmail_v1.Schema$MessagePart[] {
+    if (depth > 10) return [];
     const result: gmail_v1.Schema$MessagePart[] = [];
     if (payload.filename && payload.body?.attachmentId) {
       result.push(payload);
     }
     if (payload.parts) {
       for (const part of payload.parts) {
-        result.push(...this.collectAttachmentParts(part));
+        result.push(...this.collectAttachmentParts(part, depth + 1));
       }
     }
     return result;
