@@ -2768,6 +2768,7 @@ function parseLiveLine(line, ts) {
   // [Assistant] text → Agent message
   const assistantMatch = content.match(/^\[Assistant\]\s*(.*)/s);
   if (assistantMatch) {
+    flushUnstructured();
     flushPendingCmd();
     addAssistant(lineTs, assistantMatch[1]);
     return;
@@ -2776,6 +2777,7 @@ function parseLiveLine(line, ts) {
   // [Thinking] text → Thinking block
   const thinkingMatch = content.match(/^\[Thinking\]\s*(.*)/s);
   if (thinkingMatch) {
+    flushUnstructured();
     flushPendingCmd();
     addThinking(lineTs, thinkingMatch[1]);
     return;
@@ -2784,6 +2786,7 @@ function parseLiveLine(line, ts) {
   // [ToolCall] Name (id: toolu_xxx) → Tool call card
   const toolCallMatch = content.match(/^\[ToolCall\]\s+(\S+)\s+\(id:\s*([^)]+)\)/);
   if (toolCallMatch) {
+    flushUnstructured();
     flushPendingCmd();
     pendingToolId = toolCallMatch[2];
     // Don't create card yet — wait for [ToolInput] to get the input JSON
@@ -2815,6 +2818,7 @@ function parseLiveLine(line, ts) {
   // [ToolResult] (id: toolu_xxx) text → Tool result
   const toolResultMatch = content.match(/^\[ToolResult\]\s*\(id:\s*([^)]+)\)\s*(.*)/s);
   if (toolResultMatch) {
+    flushUnstructured();
     const resultId = toolResultMatch[1];
     const resultText = toolResultMatch[2];
     addToolResult(lineTs, resultId, resultText, false);
@@ -2833,6 +2837,7 @@ function parseLiveLine(line, ts) {
   // [Agent] ... → Assistant message (Codex)
   const agentMatch = content.match(/^\[Agent\]\s*(.*)/s);
   if (agentMatch) {
+    flushUnstructured();
     flushPendingCmd();
     addAssistant(lineTs, agentMatch[1]);
     return;
@@ -2902,9 +2907,52 @@ function parseLiveLine(line, ts) {
     return;
   }
 
-  // Fallback: show as system event (but skip very short noise)
+  // Fallback: accumulate consecutive unstructured lines into a buffer
+  // and merge them into a single code block instead of one-per-line
   if (content.length > 2) {
-    addLiveEvent(lineTs, 'info', content);
+    accumulateUnstructuredLine(lineTs, content);
+  }
+}
+
+// ── Unstructured line accumulator ──
+// Groups rapid-fire log/code lines into a single collapsible block
+let _unstructuredBuf = [];
+let _unstructuredTimer = null;
+let _unstructuredTs = '';
+
+function accumulateUnstructuredLine(ts, line) {
+  _unstructuredBuf.push(line);
+  _unstructuredTs = ts;
+  if (_unstructuredTimer) clearTimeout(_unstructuredTimer);
+  _unstructuredTimer = setTimeout(flushUnstructured, 150);
+}
+
+function flushUnstructured() {
+  _unstructuredTimer = null;
+  if (_unstructuredBuf.length === 0) return;
+  const lines = _unstructuredBuf.splice(0);
+  if (lines.length === 1) {
+    addLiveEvent(_unstructuredTs, 'info', lines[0]);
+  } else {
+    // Create a single collapsible code block
+    const el = document.createElement('div');
+    el.className = 'live-event entry-animate';
+    const summary = lines.length <= 3
+      ? lines.join('\n')
+      : lines.slice(0, 2).join('\n') + `\n... +${lines.length - 2} lines`;
+    const preview = document.createElement('div');
+    preview.className = 'log-block';
+    preview.style.cssText = 'cursor:pointer;max-height:3.6em;overflow:hidden;transition:max-height 0.2s';
+    const pre = document.createElement('pre');
+    pre.textContent = lines.join('\n');
+    pre.style.cssText = 'margin:0;font-size:11px;line-height:1.3;white-space:pre-wrap;word-break:break-all';
+    preview.appendChild(pre);
+    preview.addEventListener('click', () => {
+      preview.style.maxHeight = preview.style.maxHeight === 'none' ? '3.6em' : 'none';
+    });
+    el.appendChild(preview);
+    liveEl.appendChild(el);
+    autoScroll();
   }
 }
 
