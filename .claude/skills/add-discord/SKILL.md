@@ -1,3 +1,8 @@
+---
+name: add-discord
+description: "Add Discord as a messaging channel to MatClaw. Uses the skills engine for deterministic code changes, then walks through bot creation, authentication, and channel registration. Use when the user wants to connect Discord, integrate a Discord bot, set up Discord messaging, or add Discord as a channel."
+---
+
 # Add Discord Channel
 
 This skill adds Discord support to MatClaw using the skills engine for deterministic code changes, then walks through interactive setup.

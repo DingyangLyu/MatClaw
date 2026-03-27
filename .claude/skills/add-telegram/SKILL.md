@@ -1,6 +1,6 @@
 ---
 name: add-telegram
-description: Add Telegram as a channel. Can replace WhatsApp entirely or run alongside it. Also configurable as a control-only channel (triggers actions) or passive channel (receives notifications only).
+description: "Add Telegram as a messaging channel to MatClaw. Uses the skills engine for deterministic code changes, then walks through bot creation via BotFather, authentication, and chat registration. Supports main chat, trigger-only groups, control-only, or passive notification modes. Use when the user wants to connect Telegram, set up a Telegram bot, integrate Telegram messaging, or add Telegram as a channel."
 ---
 
 # Add Telegram Channel

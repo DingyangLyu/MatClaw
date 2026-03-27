@@ -1,6 +1,6 @@
 ---
 name: add-whatsapp
-description: Add WhatsApp as a channel. Can replace other channels entirely or run alongside them. Uses QR code or pairing code for authentication.
+description: "Add WhatsApp as a messaging channel to MatClaw. Installs WhatsApp channel code and dependencies, then guides through QR code or pairing code authentication, chat registration, and verification. Supports self-chat, groups, and dedicated number setups. Use when the user wants to connect WhatsApp, set up WhatsApp messaging, authenticate WhatsApp, or add WhatsApp as a channel."
 ---
 
 # Add WhatsApp Channel

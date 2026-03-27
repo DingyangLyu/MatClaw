@@ -1,3 +1,8 @@
+---
+name: add-parallel
+description: "Add Parallel AI MCP integration to MatClaw for web research capabilities including quick search and deep research. Configures MCP servers, environment variables, and container runner. Use when the user wants to add web search, integrate Parallel AI, enable deep research, or connect Parallel MCP tools."
+---
+
 # Add Parallel AI Integration
 
 Adds Parallel AI MCP integration to MatClaw for advanced web research capabilities.

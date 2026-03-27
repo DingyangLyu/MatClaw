@@ -1,29 +1,7 @@
 ---
 name: get-qodo-rules
 description: "Loads org- and repo-level coding rules from Qodo before code tasks begin, ensuring all generation and modification follows team standards. Use before any code generation or modification task when rules are not already loaded. Invoke when user asks to write, edit, refactor, or review code, or when starting implementation planning."
-version: 2.0.0
-allowed-tools: ["Bash"]
-triggers:
-  - "get.?qodo.?rules"
-  - "get.?rules"
-  - "load.?qodo.?rules"
-  - "load.?rules"
-  - "fetch.?qodo.?rules"
-  - "fetch.?rules"
-  - "qodo.?rules"
-  - "coding.?rules"
-  - "code.?rules"
-  - "before.?cod"
-  - "start.?coding"
-  - "write.?code"
-  - "implement"
-  - "create.*code"
-  - "build.*feature"
-  - "add.*feature"
-  - "fix.*bug"
-  - "refactor"
-  - "modify.*code"
-  - "update.*code"
+allowed-tools: "Bash"
 ---
 
 # Get Qodo Rules Skill
