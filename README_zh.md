@@ -451,6 +451,10 @@ container/skills/<group>/<your-skill>/SKILL.md
 
 详见 [CONTRIBUTING.md](CONTRIBUTING.md)，包含 SKILL.md 模板、测试方法和 PR 流程。
 
+## 相关项目
+
+- [MatOS](https://github.com/DingyangLyu/MatOS)：我们的材料科研智能体操作系统，围绕分层科学资产图、有状态自适应工作流和证据驱动的资产演化构建。
+
 ## 致谢
 
 MatClaw 基于 [NanoClaw](https://github.com/qwibitai/nanoclaw) 构建，并依赖以下开源项目：

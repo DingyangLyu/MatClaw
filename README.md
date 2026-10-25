@@ -451,6 +451,10 @@ container/skills/<group>/<your-skill>/SKILL.md
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including the SKILL.md template, testing instructions, and PR workflow.
 
+## Related Projects
+
+- [MatOS](https://github.com/DingyangLyu/MatOS): our agent operating system for materials research, built around a layered scientific asset graph, stateful adaptive workflows and evidence-driven asset evolution.
+
 ## Acknowledgments
 
 MatClaw is built on [NanoClaw](https://github.com/qwibitai/nanoclaw) and relies on the following open-source projects:
