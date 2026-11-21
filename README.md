@@ -2,6 +2,10 @@
   <img src="assets/matclaw-logo.svg" alt="MatClaw" width="720">
 </p>
 
+<!-- yarkr:badges:start -->
+[![Indexed on Yarkr](https://api.yarkr.com/functions/v1/api/api/v1/badges/repos/DingyangLyu/MatClaw/version.svg)](https://yarkr.com/arks/dingyanglyu/matclaw)
+<!-- yarkr:badges:end -->
+
 <p align="center">
   <strong>Describe a materials problem in plain language. MatClaw writes the code, runs the simulation, and delivers results.</strong>
 </p>
@@ -363,6 +367,40 @@ Configure at least one messaging channel to chat with your agent:
 - **Discord / Slack** — Add via `/add-discord` or `/add-slack` skill.
 
 Channels are added via the skill system — run the corresponding `/add-*` command inside `claude` CLI.
+
+<!-- yarkr:install:start -->
+## Install with Yarkr
+
+This repo is indexed on [Yarkr](https://yarkr.com/arks/dingyanglyu/matclaw) as the ark [dingyanglyu/matclaw](https://yarkr.com/arks/dingyanglyu/matclaw), so its skills install into Claude Code, Codex, Cursor and other agent harnesses with one command.
+
+### CLI
+
+Install the whole ark, which Yarkr keeps equal to this repo:
+
+```bash
+npx yarkr-cli sync dingyanglyu/matclaw
+```
+
+Or add individual skills:
+
+```bash
+npx yarkr-cli add skill:dingyanglyu/matclaw/add-dingtalk
+npx yarkr-cli add skill:dingyanglyu/matclaw/add-gmail
+npx yarkr-cli add skill:dingyanglyu/matclaw/add-ollama-tool
+```
+
+No Node.js? `curl -fsSL https://yarkr.com/install.sh | sh` (macOS, Linux) or `irm https://yarkr.com/install.ps1 | iex` (Windows PowerShell) installs `yarkr` as a standalone binary; then type `yarkr` in place of `npx yarkr-cli`.
+
+### MCP
+
+Connect your agent to the ark over MCP:
+
+```bash
+npx yarkr-cli mcp add dingyanglyu/matclaw
+```
+
+Or point any MCP client at `https://api.yarkr.com/functions/v1/api/mcp/o/dingyanglyu/matclaw`.
+<!-- yarkr:install:end -->
 
 ## Architecture
 
